@@ -1,0 +1,3213 @@
+<title>FND 카운터 만들기</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&family=Nanum+Gothic+Coding&display=swap">
+<style>
+:root{
+  --paper:#F3F5F7; --surface:#FFFFFF; --sunken:#E9EDF1;
+  --ink:#18212B; --muted:#5A6573; --rule:#D5DCE3;
+  --pcb:#0B6E6A; --pcb-soft:#DCEFEC; --pcb-ink:#FFFFFF;
+  --led:#D92D3F; --led-off:#EBDDE0; --led-glow:rgba(217,45,63,.28);
+  --warn-bg:#FFF4DA; --warn-ink:#6B4A00; --warn-rule:#EBCB7A;
+  --term:#10171E; --term-ink:#D8E1EA; --term-dim:#6F7F8E; --term-rule:#26313C;
+  --tok-kw:#FF8A9A; --tok-type:#7FD1C9; --tok-str:#E9C77B; --tok-num:#B9A3FF; --tok-com:#6F8494; --tok-fn:#8CC8FF;
+  --radius:6px;
+  --font-body:"IBM Plex Sans KR","Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif;
+  --font-mono:"JetBrains Mono","Nanum Gothic Coding",Consolas,"D2Coding",monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#0E1419; --surface:#151D24; --sunken:#1B252E;
+    --ink:#E3E9EF; --muted:#94A1AE; --rule:#28333D;
+    --pcb:#3DB5AB; --pcb-soft:#16312F; --pcb-ink:#07201E;
+    --led:#FF4A5C; --led-off:#2A1F24; --led-glow:rgba(255,74,92,.45);
+    --warn-bg:#2B2413; --warn-ink:#F0D48A; --warn-rule:#5A4A20;
+    --term:#0A0F13; --term-rule:#222C35;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#0E1419; --surface:#151D24; --sunken:#1B252E;
+  --ink:#E3E9EF; --muted:#94A1AE; --rule:#28333D;
+  --pcb:#3DB5AB; --pcb-soft:#16312F; --pcb-ink:#07201E;
+  --led:#FF4A5C; --led-off:#2A1F24; --led-glow:rgba(255,74,92,.45);
+  --warn-bg:#2B2413; --warn-ink:#F0D48A; --warn-rule:#5A4A20;
+  --term:#0A0F13; --term-rule:#222C35;
+}
+*{box-sizing:border-box}
+body{background:var(--paper);color:var(--ink);font-family:var(--font-body);font-size:16px;line-height:1.7;-webkit-font-smoothing:antialiased}
+a{color:var(--pcb)}
+code{font-family:var(--font-mono);font-size:.88em;background:var(--sunken);padding:.1em .35em;border-radius:4px}
+:focus-visible{outline:2px solid var(--pcb);outline-offset:2px}
+
+/* ---------- layout ---------- */
+.app{display:grid;grid-template-columns:clamp(200px,24vw,272px) minmax(0,1fr);align-items:start;min-height:100vh}
+.side{position:sticky;top:env(safe-area-inset-top,0px);height:100vh;max-height:100dvh;overflow:auto;border-right:1px solid var(--rule);background:var(--surface);padding:24px 16px}
+.brand{display:flex;gap:10px;align-items:center;padding:0 8px 18px;border-bottom:1px solid var(--rule);margin-bottom:14px}
+.brand b{font-size:15px;line-height:1.3;display:block}
+.brand small{color:var(--muted);font-size:12px}
+.progress{margin:0 8px 14px;font-size:12px;color:var(--muted)}
+.bar{height:4px;background:var(--sunken);border-radius:2px;margin-top:6px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--pcb);width:0;transition:width .3s}
+.steps{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:2px}
+.steps button{all:unset;box-sizing:border-box;width:100%;display:grid;grid-template-columns:26px 1fr 16px;gap:10px;align-items:center;padding:8px;border-radius:var(--radius);cursor:pointer;font-size:14px;line-height:1.35;color:var(--ink)}
+.steps button:hover{background:var(--sunken)}
+.steps button[aria-current="step"]{background:var(--pcb-soft)}
+.steps button[aria-current="step"] .t{font-weight:600}
+.steps .t small{display:block;color:var(--muted);font-family:var(--font-mono);font-size:11px}
+.steps .ok{width:16px;height:16px;border-radius:50%;border:1.5px solid var(--rule)}
+.steps .done .ok{background:var(--pcb);border-color:var(--pcb);box-shadow:inset 0 0 0 3px var(--surface)}
+
+main{min-width:0;padding-block:40px 80px;padding-inline:clamp(16px,5vw,64px)}
+.page{max-width:820px;margin:0 auto}
+.step[hidden]{display:none}
+.eyebrow{font-family:var(--font-mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--pcb);font-weight:600}
+h1{font-size:clamp(28px,4vw,38px);line-height:1.25;margin:6px 0 12px;text-wrap:balance;letter-spacing:-.01em}
+h2{font-size:21px;margin:44px 0 12px;text-wrap:balance;padding-top:20px;border-top:1px solid var(--rule)}
+h3{font-size:16px;margin:24px 0 8px}
+.lead{font-size:17px;color:var(--muted);max-width:65ch;margin:0}
+p,li{max-width:68ch}
+.goals{display:flex;flex-wrap:wrap;gap:8px;margin:18px 0 0;padding:0;list-style:none}
+.goals li{font-size:13px;padding:4px 10px;border:1px solid var(--rule);border-radius:99px;background:var(--surface)}
+.sig{font-family:var(--font-mono);font-size:14px;background:var(--surface);border:1px solid var(--rule);border-left:3px solid var(--pcb);padding:10px 14px;margin:16px 0;overflow-x:auto;white-space:nowrap}
+
+.note{background:var(--warn-bg);color:var(--warn-ink);border:1px solid var(--warn-rule);border-radius:var(--radius);padding:12px 16px;font-size:14.5px;margin:16px 0}
+.note b{color:inherit}
+
+table.data{border-collapse:collapse;font-size:14px;font-variant-numeric:tabular-nums;width:100%}
+table.data th,table.data td{border-bottom:1px solid var(--rule);padding:6px 10px;text-align:center}
+table.data th{font-weight:600;color:var(--muted);font-size:12.5px}
+table.data tr.hit td{background:var(--pcb-soft);font-weight:600}
+.scroll{overflow-x:auto;margin:12px 0}
+
+/* ---------- code / console ---------- */
+.code{position:relative;background:var(--term);border-radius:var(--radius);margin:14px 0;border:1px solid var(--term-rule)}
+.code .cap{display:flex;justify-content:space-between;align-items:center;padding:6px 12px;border-bottom:1px solid var(--term-rule);font-family:var(--font-mono);font-size:12px;color:var(--term-dim)}
+.code .cap button{all:unset;cursor:pointer;color:var(--term-ink);font-size:12px;padding:2px 8px;border:1px solid var(--term-rule);border-radius:4px}
+.code .cap button:focus-visible{outline:2px solid var(--pcb)}
+.code pre{margin:0;padding:14px 16px;overflow-x:auto;font-family:var(--font-mono);font-size:13.5px;line-height:1.6;color:var(--term-ink);tab-size:4}
+.code pre code{background:none;padding:0;font-size:inherit;color:inherit}
+.code.out pre{color:#F2B8BF}
+.token.keyword,.token.boolean{color:var(--tok-kw)}
+.token.class-name,.token.builtin{color:var(--tok-type)}
+.token.string,.token.char{color:var(--tok-str)}
+.token.number{color:var(--tok-num)}
+.token.comment{color:var(--tok-com);font-style:italic}
+.token.function{color:var(--tok-fn)}
+.token.operator,.token.punctuation{color:#AEBBC8}
+
+/* ---------- lab (interactive) ---------- */
+.lab{background:var(--surface);border:1px solid var(--rule);border-radius:10px;padding:20px;margin:18px 0}
+.lab-h{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap;margin-bottom:14px}
+.lab-h b{font-size:15px}
+.lab-h span{font-size:12px;color:var(--muted);font-family:var(--font-mono)}
+.row{display:flex;flex-wrap:wrap;gap:16px;align-items:center}
+.col{display:flex;flex-direction:column;gap:6px}
+.lbl{font-size:12px;color:var(--muted);letter-spacing:.04em}
+input[type=number]{font:600 20px var(--font-mono);width:110px;padding:6px 10px;border:1px solid var(--rule);border-radius:var(--radius);background:var(--paper);color:var(--ink)}
+input[type=range]{accent-color:var(--pcb);width:min(260px,100%)}
+.btn{font:500 14px var(--font-body);padding:7px 14px;border-radius:var(--radius);border:1px solid var(--rule);background:var(--surface);color:var(--ink);cursor:pointer}
+.btn:hover{background:var(--sunken)}
+.btn.primary{background:var(--pcb);border-color:var(--pcb);color:var(--pcb-ink)}
+.btn.on{background:var(--led);border-color:var(--led);color:#fff}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+
+.bits{display:flex;gap:6px}
+.bit{all:unset;box-sizing:border-box;width:48px;text-align:center;border:1px solid var(--rule);border-radius:var(--radius);padding:4px 0 6px;background:var(--paper);cursor:default}
+button.bit{cursor:pointer}
+button.bit:hover{border-color:var(--pcb)}
+.bit .v{display:block;font:700 22px var(--font-mono)}
+.bit .w{display:block;font:11px var(--font-mono);color:var(--muted)}
+.bit.one{background:var(--pcb-soft);border-color:var(--pcb)}
+.bit.one .v{color:var(--pcb)}
+.arr{font-family:var(--font-mono);font-size:15px;background:var(--sunken);padding:6px 10px;border-radius:var(--radius);white-space:nowrap}
+
+.fnd{display:block}
+.fnd .s{fill:var(--led-off);transition:fill .12s}
+.fnd .s.lit{fill:var(--led);filter:drop-shadow(0 0 4px var(--led-glow))}
+.fnd .lab-t{fill:var(--muted);font:600 11px var(--font-mono)}
+.fnd-row{display:flex;gap:10px;align-items:flex-end;background:var(--sunken);padding:12px 14px;border-radius:8px;width:max-content;max-width:100%;overflow-x:auto}
+
+.grid5{display:grid;grid-template-columns:18px repeat(5,30px);grid-auto-rows:30px;gap:2px;font:12px var(--font-mono)}
+.grid5 .ix{display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:11px}
+.grid5 .c{display:flex;align-items:center;justify-content:center;background:var(--paper);border:1px solid var(--rule);border-radius:3px;font-weight:700;font-size:16px;color:var(--led)}
+.grid5 .c.on{background:var(--led-off)}
+.grid5 .c.hl{outline:2px solid var(--pcb);outline-offset:-2px}
+.segbtns{display:flex;flex-wrap:wrap;gap:6px}
+.segbtns .btn{font-family:var(--font-mono);min-width:44px}
+
+.console{background:var(--term);color:#F2B8BF;font:13.5px/1.25 var(--font-mono);padding:12px 14px;border-radius:var(--radius);white-space:pre;overflow-x:auto;margin:0;min-height:40px}
+
+.pipe{display:flex;flex-wrap:wrap;align-items:stretch;gap:8px;margin:16px 0}
+.pipe .n{background:var(--surface);border:1px solid var(--rule);border-radius:8px;padding:8px 12px;min-width:0}
+.pipe .n small{display:block;color:var(--muted);font-size:11px;font-family:var(--font-mono)}
+.pipe .n b{font-family:var(--font-mono);font-size:14px}
+.pipe .n.m{border-color:var(--pcb);background:var(--pcb-soft)}
+.pipe .ar{align-self:center;color:var(--muted);font-family:var(--font-mono)}
+
+.wave{width:100%;height:auto;display:block}
+.wave .ln{fill:none;stroke:var(--pcb);stroke-width:2}
+.wave .ax{stroke:var(--rule);stroke-width:1}
+.wave .fe{fill:var(--led)}
+.wave text{fill:var(--muted);font:11px var(--font-mono)}
+.log{font:12.5px/1.6 var(--font-mono);max-height:180px;overflow:auto;background:var(--sunken);border-radius:var(--radius);padding:8px 12px;margin:0;white-space:pre}
+.log .up{color:var(--led);font-weight:600}
+.log .rst{color:var(--pcb);font-weight:600}
+.bit.tap{box-shadow:inset 0 0 0 2px var(--led)}
+.bit.tap .w{color:var(--led);font-weight:600}
+
+/* ---------- 2부 : 클래스 ---------- */
+.steps .grp{font:600 11px var(--font-body);letter-spacing:.06em;color:var(--muted);padding:14px 8px 4px;list-style:none}
+.steps .grp:first-child{padding-top:0}
+.uml-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin:16px 0}
+.uml{border:1.5px solid var(--ink);border-radius:4px;background:var(--surface);font:13px/1.55 var(--font-mono);overflow:hidden}
+.uml > div{padding:8px 12px}
+.uml > div + div{border-top:1px solid var(--rule)}
+.uml .nm{font-weight:600;text-align:center;background:var(--pcb-soft);color:var(--ink)}
+.uml .nm small{display:block;font:12px var(--font-body);color:var(--muted)}
+.uml .f{color:var(--muted)}
+.uml .f b,.uml .m b{color:var(--ink);font-weight:500}
+.uml .m b{color:var(--pcb)}
+.objs{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:12px}
+.obj{border:1px solid var(--rule);border-radius:8px;padding:14px;background:var(--paper);display:flex;flex-direction:column;gap:10px}
+.obj h4{font:600 13px var(--font-mono);margin:0}
+.obj .fields{font:13px/1.6 var(--font-mono);background:var(--surface);border:1px solid var(--rule);border-radius:var(--radius);padding:6px 10px}
+.obj .fields span{color:var(--muted)}
+.obj .row{gap:6px}
+.obj .btn{font-family:var(--font-mono);font-size:12.5px;padding:5px 9px}
+.flash{animation:flash .6s ease-out}
+@keyframes flash{from{background:var(--led-off)}to{background:transparent}}
+.clockface{display:flex;align-items:center;gap:6px;background:var(--sunken);padding:14px 16px;border-radius:8px;width:max-content;max-width:100%;overflow-x:auto;margin-top:16px}
+.clockface .gap{width:6px}
+.colon{display:flex;flex-direction:column;gap:18px;padding:0 4px}
+.colon i{width:7px;height:7px;border-radius:50%;background:var(--led);box-shadow:0 0 6px var(--led-glow)}
+.ampm{display:flex;flex-direction:column;gap:28px;margin-right:8px;font:600 12px var(--font-mono)}
+.ampm b{color:var(--led-off);font-weight:600}
+.ampm b.on{color:var(--led)}
+select{font:14px var(--font-body);padding:6px 8px;border:1px solid var(--rule);border-radius:var(--radius);background:var(--surface);color:var(--ink)}
+input.ch{font:600 18px var(--font-mono);width:48px;text-align:center;padding:5px;border:1px solid var(--rule);border-radius:var(--radius);background:var(--paper);color:var(--ink)}
+input.digits{font:600 18px var(--font-mono);width:120px;padding:5px 8px;border:1px solid var(--rule);border-radius:var(--radius);background:var(--paper);color:var(--ink)}
+.screen{font:14px/1.3 var(--font-mono);white-space:pre;background:var(--term);color:#6d5a5f;padding:10px 14px;border-radius:var(--radius);overflow-x:auto;margin:0}
+.screen .cur{color:#F2B8BF;background:rgba(255,255,255,.08)}
+.flow{display:grid;gap:8px;margin:16px 0}
+.flow .pipe{margin:0}
+
+.sch{display:block;width:100%;min-width:560px;height:auto;margin:8px 0}
+.sch .box{fill:var(--surface);stroke:var(--ink);stroke-width:1.5}
+.sch .gate{fill:var(--surface);stroke:var(--led);stroke-width:2}
+.sch .w{stroke:var(--muted);stroke-width:1.5;fill:none}
+.sch .w.hot{stroke:var(--led);stroke-width:2.5}
+.sch .dot{fill:var(--led)}
+.sch .dot.dim{fill:var(--muted)}
+.sch text{font-family:var(--font-mono);font-size:12px;fill:var(--ink)}
+.sch .ttl{font-size:14px;font-weight:600}
+.sch .pin{fill:var(--muted)}
+.sch .hot-t{fill:var(--led);font-weight:600}
+
+/* ---------- quiz / exercise ---------- */
+details.q{border:1px solid var(--rule);border-radius:var(--radius);background:var(--surface);margin:8px 0}
+details.q summary{cursor:pointer;padding:10px 14px;font-weight:500;list-style:none;display:flex;gap:10px}
+details.q summary::before{content:"Q";font:700 13px var(--font-mono);color:var(--pcb);padding-top:2px}
+details.q[open] summary{border-bottom:1px solid var(--rule)}
+details.q .a{padding:10px 14px 12px;font-size:15px}
+.task{counter-reset:t;list-style:none;padding:0}
+.task li{counter-increment:t;position:relative;padding-left:34px;margin:8px 0}
+.task li::before{content:counter(t);position:absolute;left:0;top:2px;width:22px;height:22px;border-radius:50%;background:var(--sunken);font:600 12px/22px var(--font-mono);text-align:center}
+
+.foot{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:center;margin-top:48px;padding-top:20px;border-top:1px solid var(--rule)}
+.foot label{display:flex;gap:8px;align-items:center;font-size:14px;cursor:pointer}
+.foot input{accent-color:var(--pcb);width:18px;height:18px}
+.foot .nav{display:flex;gap:8px}
+
+@media (min-width:641px) and (max-width:1000px){
+  .side{padding:18px 10px}
+  .steps button{grid-template-columns:20px 1fr 14px;gap:8px;font-size:13px}
+  .steps .t small{display:none}
+  main{padding-inline:clamp(16px,3vw,32px)}
+}
+@media (max-width:640px){
+  .app{grid-template-columns:minmax(0,1fr)}
+  .side{min-width:0;position:sticky;top:env(safe-area-inset-top,0px);z-index:5;height:auto;border-right:0;border-bottom:1px solid var(--rule);padding:10px 16px}
+  .brand,.progress{display:none}
+  .steps{flex-direction:row;overflow-x:auto;gap:4px}
+  .steps button{grid-template-columns:22px auto;width:auto;white-space:nowrap;padding:6px 10px}
+  .steps .ok{display:none}
+  .steps .t small{display:none}
+  .steps .grp{padding:0 4px 0 10px;align-self:center;white-space:nowrap}
+  main{padding-block:24px 64px}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+
+<div class="app">
+  <aside class="side">
+    <div class="brand">
+      <svg class="fnd" data-digit="8" width="26" height="40" aria-hidden="true"></svg>
+      <div><b>FND 카운터 만들기</b><small>Java 메서드와 클래스로 만드는 디지털 회로</small></div>
+    </div>
+    <div class="progress"><span id="progTxt">0 / 8 완료</span><div class="bar"><i id="progBar"></i></div></div>
+    <nav aria-label="강좌 단계"><ol class="steps" id="stepNav"></ol></nav>
+  </aside>
+  <main>
+    <div class="page" id="pages">
+<!-- ================= STEP 0 ================= -->
+<section class="step" id="step-0" data-n="0" data-title="강좌 소개" data-sub="overview">
+  <div class="eyebrow">시작하기</div>
+  <h1>숫자 하나가 FND에 켜지기까지</h1>
+  <p class="lead">디지털 시계 속 숫자는 <b>카운터(7490)</b> → <b>디코더(7446)</b> → <b>FND</b> 순서로 신호가 흘러가며 만들어집니다. 이 강좌에서는 각 칩이 하는 일을 Java <b>메서드 하나씩</b>으로 만들고, 서로 연결해 0 ~ 9를 세는 카운터를 콘솔에 출력합니다. 마지막에는 카운터 두 개를 이어 시계의 기본인 100진·60진 카운터를 만듭니다.</p>
+
+  <h2>전체 흐름</h2>
+  <div class="scroll">
+    <div class="pipe" style="flex-wrap:nowrap;width:max-content">
+      <div class="n"><small>입력</small><b>int 7</b></div><span class="ar">→</span>
+      <div class="n m"><small>Step 1 · 6</small><b>cnvtDec2Bin / ttl7490</b></div><span class="ar">→</span>
+      <div class="n"><small>4비트</small><b>{1,1,1,0}</b></div><span class="ar">→</span>
+      <div class="n m"><small>Step 2</small><b>ttl7446</b></div><span class="ar">→</span>
+      <div class="n"><small>7비트</small><b>{1,1,1,0,0,1,0}</b></div><span class="ar">→</span>
+      <div class="n m"><small>Step 3</small><b>makeFnd</b></div><span class="ar">→</span>
+      <div class="n"><small>콘솔</small><b>char[5][5]</b></div>
+    </div>
+  </div>
+  <p>하드웨어로 보면 이런 회로입니다. 오른쪽 FND는 Step 2의 결과인 7비트 값으로 그린 모양입니다.</p>
+  <div class="fnd-row">
+    <svg class="fnd" data-digit="7" data-labels="1" width="92" height="140" aria-label="숫자 7을 표시한 FND"></svg>
+  </div>
+
+  <h2>단계 구성</h2>
+  <div class="scroll">
+  <table class="data" style="text-align:left">
+    <thead><tr><th>단계</th><th style="text-align:left">만드는 것</th><th style="text-align:left">메서드</th></tr></thead>
+    <tbody>
+      <tr><td>1</td><td style="text-align:left">10진수 → 4비트 배열</td><td style="text-align:left"><code>int[] cnvtDec2Bin(int)</code></td></tr>
+      <tr><td>2</td><td style="text-align:left">4비트 → FND 7비트 배열</td><td style="text-align:left"><code>int[] ttl7446(int[])</code></td></tr>
+      <tr><td>3</td><td style="text-align:left">7비트 → 5×5 문자 배열, 콘솔 출력</td><td style="text-align:left"><code>makeFnd</code>, <code>printFnd</code></td></tr>
+      <tr><td>4</td><td style="text-align:left">1 ~ 3 연결, 0 ~ 9 출력</td><td style="text-align:left"><code>void dispNum(int)</code></td></tr>
+      <tr><td>5</td><td style="text-align:left">4자리 FND, 0 ~ 9999 출력</td><td style="text-align:left"><code>void dispNum4(int)</code></td></tr>
+      <tr><td>6</td><td style="text-align:left">10진 카운터</td><td style="text-align:left"><code>int[] ttl7490(clk, R0, R1, R2)</code></td></tr>
+      <tr><td>7</td><td style="text-align:left">for문으로 클럭을 넣어 0 ~ 9 카운트</td><td style="text-align:left"><code>main</code></td></tr>
+      <tr><td>8</td><td style="text-align:left">7490 두 개를 이어 100진 카운터 (00 ~ 99)</td><td style="text-align:left"><code>int[][] counter100(int)</code></td></tr>
+      <tr><td>9</td><td style="text-align:left">출력을 R0로 되돌려 60진 카운터 (00 ~ 59)</td><td style="text-align:left"><code>int[][] counter60(int)</code></td></tr>
+      <tr><td>2부</td><td style="text-align:left">칩을 클래스로 만들고 디지털 시계 완성 (7단계)</td><td style="text-align:left"><code>TTL7490</code>, <code>TTL7446</code>, <code>FND</code>, <code>DigitalClock</code></td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h2>준비물</h2>
+  <ul>
+    <li>JDK 8 이상 (예제는 JDK 17에서 확인했습니다)</li>
+    <li>각 단계의 코드는 <code>StepN.java</code> 하나로 완결되어 있어 복사해서 바로 실행할 수 있습니다.</li>
+    <li>모든 메서드는 <code>static</code>입니다. 클래스로 나누는 작업은 다음 강좌에서 다룹니다.</li>
+  </ul>
+  <div class="code out"><div class="cap"><span>실행 방법</span></div><pre>javac -encoding UTF-8 Step1.java
+java Step1</pre></div>
+</section>
+
+<!-- ================= STEP 1 ================= -->
+<section class="step" id="step-1" data-n="1" data-title="10진수 → 2진수" data-sub="cnvtDec2Bin()" hidden>
+  <div class="eyebrow">Step 1</div>
+  <h1>10진수를 4비트 배열로 바꾸기</h1>
+  <p class="lead">FND 회로의 모든 칩은 0과 1만 주고받습니다. 첫 단계에서는 10진수 하나를 받아 네 개의 비트를 배열에 담아 돌려주는 메서드를 만듭니다.</p>
+  <ul class="goals"><li>나머지(%)와 몫(/)으로 2진수 구하기</li><li>배열 인덱스와 비트 자리의 관계</li><li>배열을 반환하는 메서드</li></ul>
+
+  <div class="sig">static int[] cnvtDec2Bin(int num)</div>
+
+  <h2>원리: 2로 나눈 나머지가 비트</h2>
+  <p>10진수를 2로 계속 나누면, 매번 나오는 <b>나머지</b>가 낮은 자리부터 차례로 2진수의 비트가 됩니다. 4비트면 네 번만 나누면 됩니다.</p>
+
+  <div class="lab" id="lab1">
+    <div class="lab-h"><b>직접 해보기</b><span>num = 0 ~ 15</span></div>
+    <div class="row">
+      <div class="col"><label class="lbl" for="l1num">10진수 입력</label><input type="number" id="l1num" min="0" max="15" value="6"></div>
+      <div class="col"><span class="lbl">결과 (MSB → LSB)</span><div class="bits" id="l1bits"></div></div>
+    </div>
+    <div class="scroll"><table class="data" id="l1tbl"></table></div>
+    <div class="row"><span class="lbl">반환 배열</span><span class="arr" id="l1arr"></span></div>
+  </div>
+
+  <div class="note"><b>배열 순서에 주의하세요.</b> <code>out[0]</code>에는 가장 낮은 자리(2⁰), <code>out[3]</code>에는 가장 높은 자리(2³)가 들어갑니다. 그래서 6(<code>0110</code>)을 배열 그대로 출력하면 <code>{0,1,1,0}</code>, 5(<code>0101</code>)는 <code>{1,0,1,0}</code>처럼 <b>거꾸로</b> 보입니다. 7490 칩의 출력 핀 Q<sub>A</sub>~Q<sub>D</sub> 순서와 같습니다.</div>
+
+  <h2>코드</h2>
+  <div class="code" data-src="src1" data-cap="Step1.java"></div>
+  <p><code>cnvtDec2BinBit</code>은 같은 일을 비트 연산으로 합니다. <code>num &amp; 0x01</code>은 맨 오른쪽 비트만 남기고, <code>num &gt;&gt;= 1</code>은 한 칸 오른쪽으로 밀어 다음 비트를 꺼낼 준비를 합니다. 결과는 두 메서드가 같습니다.</p>
+
+  <h3>실행 결과</h3>
+  <div class="code out" data-src="out1" data-cap="콘솔"></div>
+
+  <h2>확인 문제</h2>
+  <details class="q"><summary>cnvtDec2Bin(9)가 반환하는 배열은?</summary><div class="a"><code>{1,0,0,1}</code> — 9 = 8 + 1 이므로 out[0]과 out[3]이 1입니다.</div></details>
+  <details class="q"><summary>num에 16을 넣으면 어떻게 될까요?</summary><div class="a">네 번만 나누므로 <code>{0,0,0,0}</code>이 됩니다. 5번째 비트(16의 자리)는 버려집니다. 4비트로 표현할 수 있는 범위는 0 ~ 15입니다.</div></details>
+  <details class="q"><summary>반복문 안에서 <code>num = num / 2</code>를 빼먹으면?</summary><div class="a">num이 바뀌지 않아 네 칸 모두 같은 값(num % 2)이 들어갑니다. 예: 6 → <code>{0,0,0,0}</code>, 7 → <code>{1,1,1,1}</code>.</div></details>
+
+  <h2>연습 과제</h2>
+  <ol class="task">
+    <li>배열을 MSB부터 출력하는 <code>printBin(int[] bin)</code>을 직접 작성해 보세요.</li>
+    <li>반대로 4비트 배열을 받아 10진수를 돌려주는 <code>int cnvtBin2Dec(int[] bin)</code>을 만드세요. (Step 2에서 사용합니다)</li>
+    <li>비트 수를 매개변수로 받는 <code>int[] cnvtDec2Bin(int num, int size)</code>로 확장해 보세요.</li>
+  </ol>
+</section>
+
+<!-- ================= STEP 2 ================= -->
+<section class="step" id="step-2" data-n="2" data-title="4비트 → FND 7비트" data-sub="ttl7446()" hidden>
+  <div class="eyebrow">Step 2</div>
+  <h1>4비트를 FND 세그먼트 신호로 바꾸기</h1>
+  <p class="lead">FND는 막대 7개(a ~ g)의 LED로 숫자를 만듭니다. 4비트 값을 보고 어떤 막대를 켤지 정해 주는 칩이 BCD-7세그먼트 디코더 7446이고, 이번 단계에서 이 칩을 메서드로 만듭니다.</p>
+  <ul class="goals"><li>세그먼트 a ~ g의 위치</li><li>2차원 배열로 만든 진리표</li><li>가중치 8·4·2·1로 인덱스 구하기</li></ul>
+
+  <div class="sig">static int[] ttl7446(int[] bin)  // 반환: {a, b, c, d, e, f, g}</div>
+
+  <h2>세그먼트 이름과 진리표</h2>
+  <p>위에서부터 시계 방향으로 a, b, c, d, e, f, 가운데가 g입니다. 숫자 0 ~ 9마다 켜야 할 세그먼트를 표로 만들어 두고, 4비트 값을 10진수로 바꾼 뒤 그 행을 꺼내면 됩니다.</p>
+
+  <div class="lab" id="lab2">
+    <div class="lab-h"><b>직접 해보기</b><span>비트를 눌러서 바꿔 보세요</span></div>
+    <div class="row" style="align-items:flex-start;gap:24px">
+      <div class="col">
+        <span class="lbl">입력 bin (MSB → LSB)</span>
+        <div class="bits" id="l2bits"></div>
+        <span class="lbl" style="margin-top:8px">인덱스 계산</span>
+        <span class="arr" id="l2calc"></span>
+        <span class="lbl" style="margin-top:8px">반환 배열 {a,b,c,d,e,f,g}</span>
+        <span class="arr" id="l2arr"></span>
+      </div>
+      <div class="fnd-row"><svg class="fnd" id="l2fnd" data-labels="1" width="92" height="140" aria-label="FND 표시"></svg></div>
+    </div>
+    <div class="scroll"><table class="data" id="l2tbl"></table></div>
+  </div>
+
+  <div class="note"><b>실제 7446과의 차이.</b> 실제 74LS46/47은 출력이 <b>0일 때</b> 세그먼트가 켜지는 Active-Low 칩(Common Anode FND용)입니다. 이 강좌에서는 이해하기 쉽도록 <b>1 = 켜짐</b>으로 통일했습니다. (Active-High인 7448과 같은 동작)</div>
+
+  <h2>코드</h2>
+  <div class="code" data-src="src2" data-cap="Step2.java"></div>
+  <p>참고 코드의 원래 버전은 <code>return table[num];</code>만 있어서 10 ~ 15가 들어오면 <code>ArrayIndexOutOfBoundsException</code>이 발생합니다. 여기서는 <code>if (num &gt; 9) return new int[7];</code>로 모든 세그먼트를 끄도록 막았습니다. <code>new int[7]</code>은 0으로 채워진 배열입니다.</p>
+
+  <h3>실행 결과</h3>
+  <div class="code out" data-src="out2" data-cap="콘솔"></div>
+
+  <h2>확인 문제</h2>
+  <details class="q"><summary>bin = {0,1,1,0} 일 때 num은?</summary><div class="a">0×8 + 1×4 + 1×2 + 0×1 = <b>6</b> 입니다. bin[3]이 MSB라는 점을 기억하세요.</div></details>
+  <details class="q"><summary>숫자 1에서 켜지는 세그먼트는?</summary><div class="a"><b>b, c</b> — 오른쪽 세로 막대 두 개입니다. 표의 {0,1,1,0,0,0,0}.</div></details>
+  <details class="q"><summary><code>return table[num];</code>이 반환하는 배열을 밖에서 바꾸면 어떤 일이 생길까요?</summary><div class="a">table은 메서드가 호출될 때마다 새로 만들어지므로 다음 호출에는 영향이 없습니다. 하지만 table을 <code>static</code> 필드로 옮기면 원본 표가 바뀌는 버그가 생깁니다. 그럴 땐 <code>table[num].clone()</code>을 반환하세요.</div></details>
+
+  <h2>연습 과제</h2>
+  <ol class="task">
+    <li>10 ~ 15일 때 16진수 A ~ F 모양이 나오도록 표를 16행으로 늘려 보세요. (A: a,b,c,e,f,g)</li>
+    <li>Active-Low 버전 <code>ttl7446Low(int[] bin)</code>을 만들어 0과 1을 뒤집어 반환해 보세요.</li>
+  </ol>
+</section>
+
+<!-- ================= STEP 3 ================= -->
+<section class="step" id="step-3" data-n="3" data-title="5×5 배열로 그리기" data-sub="makeFnd() · printFnd()" hidden>
+  <div class="eyebrow">Step 3</div>
+  <h1>세그먼트 신호를 5×5 문자 배열로 그리기</h1>
+  <p class="lead">콘솔에는 LED가 없으니 <code>char</code> 2차원 배열에 <code>'#'</code>을 찍어 FND 모양을 흉내 냅니다. 세그먼트 하나가 배열의 한 줄 또는 한 열의 일부에 대응합니다.</p>
+  <ul class="goals"><li>char[][] 초기화</li><li>세그먼트 → 행·열 좌표</li><li>중첩 for문으로 2차원 배열 출력</li></ul>
+
+  <div class="sig">static char[][] makeFnd(int[] seg)<br>static void printFnd(char[][] fnd)</div>
+
+  <h2>좌표 대응표</h2>
+  <p><code>fnd[행][열]</code>입니다. 세로 막대(b, c, e, f)는 3칸씩이라 가운데 줄(행 2)에서 겹치지만, 같은 <code>'#'</code>을 찍으므로 문제없습니다.</p>
+  <div class="scroll">
+  <table class="data">
+    <thead><tr><th>seg</th><th>이름</th><th>칠하는 칸</th><th>반복문</th></tr></thead>
+    <tbody>
+      <tr><td>[0]</td><td>a</td><td>행 0, 열 0 ~ 4</td><td><code>fnd[0][i]</code></td></tr>
+      <tr><td>[1]</td><td>b</td><td>열 4, 행 0 ~ 2</td><td><code>fnd[i][4]</code></td></tr>
+      <tr><td>[2]</td><td>c</td><td>열 4, 행 2 ~ 4</td><td><code>fnd[i+2][4]</code></td></tr>
+      <tr><td>[3]</td><td>d</td><td>행 4, 열 0 ~ 4</td><td><code>fnd[4][i]</code></td></tr>
+      <tr><td>[4]</td><td>e</td><td>열 0, 행 2 ~ 4</td><td><code>fnd[i+2][0]</code></td></tr>
+      <tr><td>[5]</td><td>f</td><td>열 0, 행 0 ~ 2</td><td><code>fnd[i][0]</code></td></tr>
+      <tr><td>[6]</td><td>g</td><td>행 2, 열 0 ~ 4</td><td><code>fnd[2][i]</code></td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <div class="lab" id="lab3">
+    <div class="lab-h"><b>직접 해보기</b><span>세그먼트를 켜고 끄며 배열을 확인하세요</span></div>
+    <div class="segbtns" id="l3segs"></div>
+    <div class="row" style="margin-top:16px;align-items:flex-start;gap:24px">
+      <div class="col"><span class="lbl">char[5][5] fnd</span><div class="grid5" id="l3grid"></div></div>
+      <div class="col"><span class="lbl">printFnd 출력</span><pre class="console" id="l3out"></pre></div>
+    </div>
+    <div class="row" style="margin-top:14px"><span class="lbl">숫자 불러오기</span><div class="segbtns" id="l3nums"></div></div>
+  </div>
+
+  <h2>코드</h2>
+  <div class="code" data-src="src3" data-cap="Step3.java"></div>
+  <p>초기화를 빠뜨리면 <code>char</code> 배열의 기본값 <code>' '</code>이 출력되어 콘솔에 따라 네모나 이상한 문자가 보입니다. 그래서 먼저 공백으로 채웁니다.</p>
+
+  <h3>실행 결과 (앞부분)</h3>
+  <div class="code out" data-src="out3" data-cap="콘솔"></div>
+
+  <h2>확인 문제</h2>
+  <details class="q"><summary>seg = {0,0,0,0,0,0,1} 이면 어떤 모양일까요?</summary><div class="a">가운데 줄(행 2)만 <code>#####</code>인 "−" 모양입니다.</div></details>
+  <details class="q"><summary><code>System.out.println()</code>을 안쪽 for문 안으로 옮기면?</summary><div class="a">한 글자마다 줄이 바뀌어 25줄짜리 세로 한 줄로 출력됩니다.</div></details>
+
+  <h2>연습 과제</h2>
+  <ol class="task">
+    <li>찍을 문자를 매개변수로 받는 <code>makeFnd(int[] seg, char ch)</code>로 바꿔 보세요. (참고: FND.java의 <code>setChar</code>)</li>
+    <li>7×5 크기로 늘려 세로 막대가 더 길어 보이게 만들어 보세요.</li>
+  </ol>
+</section>
+
+<!-- ================= STEP 4 ================= -->
+<section class="step" id="step-4" data-n="4" data-title="메서드 연결하기" data-sub="dispNum()" hidden>
+  <div class="eyebrow">Step 4</div>
+  <h1>세 메서드를 연결해 0 ~ 9 출력하기</h1>
+  <p class="lead">지금까지 만든 메서드는 각자 입력과 출력이 분명합니다. 앞 메서드의 반환값을 다음 메서드의 인자로 넘기기만 하면, 칩을 전선으로 잇는 것처럼 하나의 회로가 됩니다.</p>
+  <ul class="goals"><li>반환값을 인자로 전달하기</li><li>작은 메서드를 조합하는 설계</li></ul>
+
+  <div class="sig">static void dispNum(int n)</div>
+
+  <div class="lab" id="lab4">
+    <div class="lab-h"><b>직접 해보기</b><span>숫자를 고르면 각 단계의 값이 표시됩니다</span></div>
+    <div class="segbtns" id="l4nums"></div>
+    <div class="scroll">
+      <div class="pipe" style="flex-wrap:nowrap;width:max-content" id="l4pipe"></div>
+    </div>
+    <pre class="console" id="l4out" style="width:max-content"></pre>
+  </div>
+
+  <h2>코드</h2>
+  <p>Step 1 ~ 3의 메서드는 그대로 복사해 두고, <code>dispNum</code>만 새로 추가합니다.</p>
+  <div class="code" data-src="src4" data-cap="Step4.java"></div>
+  <p>중간 변수 없이 한 줄로 쓸 수도 있습니다. 다만 처음에는 위처럼 변수에 담아 두어야 디버깅할 때 값을 확인하기 쉽습니다.</p>
+  <div class="code" data-src="src4b" data-cap="한 줄 버전"></div>
+
+  <h3>실행 결과 (앞부분)</h3>
+  <div class="code out" data-src="out4" data-cap="콘솔"></div>
+
+  <h2>확인 문제</h2>
+  <details class="q"><summary>dispNum(12)를 호출하면?</summary><div class="a">cnvtDec2Bin(12) = {0,0,1,1} → num = 12 → Step 2의 범위 검사에 걸려 {0,0,0,0,0,0,0} → 빈 5×5가 출력됩니다.</div></details>
+  <details class="q"><summary>메서드를 나눠 두면 무엇이 좋을까요?</summary><div class="a">단계별로 따로 테스트할 수 있고, Step 6에서 cnvtDec2Bin 자리를 ttl7490으로 <b>바꿔 끼우기</b>만 하면 됩니다. 실제 회로에서 칩을 교체하는 것과 같습니다.</div></details>
+
+  <h2>연습 과제</h2>
+  <ol class="task">
+    <li>0 ~ 9를 거꾸로(9 → 0) 출력해 보세요.</li>
+    <li>화면 출력 없이 <code>char[][]</code>만 반환하는 <code>char[][] getDigit(int n)</code>을 만들어 보세요. 다음 단계에서 필요합니다.</li>
+  </ol>
+</section>
+
+<!-- ================= STEP 5 ================= -->
+<section class="step" id="step-5" data-n="5" data-title="4자리 FND" data-sub="dispNum4()" hidden>
+  <div class="eyebrow">Step 5</div>
+  <h1>4자리 FND로 0 ~ 9999 출력하기</h1>
+  <p class="lead">Step 1 ~ 4를 한 자리(digit)로 보고, 네 개를 가로로 나란히 붙입니다. 핵심은 두 가지입니다: 숫자를 자릿수로 쪼개기, 그리고 콘솔은 <b>한 줄씩</b>만 출력할 수 있다는 점.</p>
+  <ul class="goals"><li>/ 와 % 로 자릿수 분리</li><li>char[][][] 3차원 배열</li><li>줄 단위로 가로 출력</li></ul>
+
+  <div class="sig">static int[] splitDigits(int num)<br>static void printFnds(char[][][] fnds)<br>static void dispNum4(int num)</div>
+
+  <h2>문제: 세로로만 출력된다</h2>
+  <p><code>printFnd</code>를 네 번 부르면 자리마다 5줄씩 아래로 쌓입니다. 콘솔은 이미 출력한 줄로 돌아갈 수 없으므로, <b>행(row)을 바깥 반복문</b>으로 두고 각 행마다 네 자리의 같은 행을 이어서 출력해야 합니다.</p>
+  <div class="code" data-src="loopdiag" data-cap="출력 순서"></div>
+
+  <div class="lab" id="lab5">
+    <div class="lab-h"><b>직접 해보기</b><span>0 ~ 9999</span></div>
+    <div class="row">
+      <div class="col"><label class="lbl" for="l5num">num</label><input type="number" id="l5num" min="0" max="9999" value="2026"></div>
+      <div class="col"><span class="lbl">splitDigits(num)</span><span class="arr" id="l5split"></span></div>
+      <div class="col"><span class="lbl">카운트 재생</span>
+        <div class="row" style="gap:8px"><button class="btn primary" id="l5play" type="button">재생</button><button class="btn" id="l5reset" type="button">0으로</button></div>
+      </div>
+    </div>
+    <div class="fnd-row" id="l5fnds" style="margin-top:16px"></div>
+    <pre class="console" id="l5out" style="margin-top:12px"></pre>
+  </div>
+
+  <h2>코드</h2>
+  <div class="code" data-src="src5" data-cap="Step5.java"></div>
+  <p><code>char[][][] fnds = new char[4][][];</code>는 "5×5 배열 4개를 담을 칸"만 만듭니다. 실제 5×5 배열은 <code>digit()</code>이 만들어 반환하므로 뒤의 크기는 비워 둡니다.</p>
+
+  <h3>실행 결과 (처음 3개와 마지막)</h3>
+  <div class="code out" data-src="out5" data-cap="콘솔"></div>
+  <div class="note"><b>출력량 주의.</b> 0 ~ 9999를 모두 찍으면 60,000줄이 나옵니다. 먼저 <code>n &lt;= 20</code> 정도로 확인한 뒤 전체를 실행하세요. 천천히 보고 싶다면 반복문 안에 <code>Thread.sleep(100);</code>을 넣습니다. (이때 <code>main</code>에 <code>throws InterruptedException</code>이 필요합니다)</div>
+
+  <h2>확인 문제</h2>
+  <details class="q"><summary>num = 507 일 때 splitDigits의 결과는?</summary><div class="a"><code>{0,5,0,7}</code> — 507/1000 = 0, 507/100 = 5, 507/10 %10 = 0, 507 %10 = 7.</div></details>
+  <details class="q"><summary>printFnds에서 row 반복문과 k 반복문의 순서를 바꾸면?</summary><div class="a">자리 하나를 다 찍은 뒤 다음 자리로 넘어가므로, 줄바꿈 위치가 어긋나 모양이 깨집니다. 가로 출력은 반드시 <b>행이 바깥</b>이어야 합니다.</div></details>
+
+  <h2>연습 과제</h2>
+  <ol class="task">
+    <li>앞자리 0을 표시하지 않도록 바꿔 보세요. (예: 42 → 빈칸 빈칸 4 2). 힌트: 빈 FND는 <code>makeFnd(new int[7])</code>.</li>
+    <li>자리 수를 매개변수로 받는 <code>dispNumN(int num, int size)</code>로 일반화해 보세요.</li>
+    <li>가운데에 <code>:</code>를 넣어 시계처럼 <code>12:34</code> 형태로 출력해 보세요. (참고: Main.java의 <code>"@ "</code> 출력 부분)</li>
+  </ol>
+</section>
+
+<!-- ================= STEP 6 ================= -->
+<section class="step" id="step-6" data-n="6" data-title="10진 카운터 7490" data-sub="ttl7490()" hidden>
+  <div class="eyebrow">Step 6</div>
+  <h1>10진 카운터 ttl7490 만들기</h1>
+  <p class="lead">지금까지의 메서드는 같은 입력이면 항상 같은 결과를 냈습니다. 카운터는 다릅니다. <b>지난번 값을 기억</b>하고 있다가 클럭이 떨어지는 순간에만 1씩 올라갑니다.</p>
+  <ul class="goals"><li>static 변수로 상태 기억</li><li>하강 엣지(1 → 0) 검출</li><li>리셋 우선순위</li></ul>
+
+  <div class="sig">static int[] ttl7490(int clk, int R0, int R1, int R2)</div>
+
+  <h2>동작 규칙</h2>
+  <div class="scroll">
+  <table class="data">
+    <thead><tr><th>R0</th><th>R1</th><th>R2</th><th>clk</th><th>동작</th></tr></thead>
+    <tbody>
+      <tr><td>1</td><td>×</td><td>×</td><td>×</td><td>cnt = 0</td></tr>
+      <tr><td>0</td><td>1</td><td>×</td><td>×</td><td>cnt = 1</td></tr>
+      <tr><td>0</td><td>0</td><td>1</td><td>×</td><td>cnt = 2</td></tr>
+      <tr><td>0</td><td>0</td><td>0</td><td>1 → 0</td><td>cnt + 1 (9 다음은 0)</td></tr>
+      <tr><td>0</td><td>0</td><td>0</td><td>그 외</td><td>유지</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>× 는 "상관없음"입니다. <code>if ~ else if</code> 순서가 그대로 <b>우선순위</b>가 되어 R0 &gt; R1 &gt; R2 &gt; clk 순으로 적용됩니다.</p>
+
+  <h2>엣지는 어떻게 알 수 있을까?</h2>
+  <p>메서드는 호출되는 순간의 clk 값만 받습니다. "1에서 0으로 <b>바뀌었다</b>"를 알려면 직전 값이 필요하므로, 메서드 밖에 <code>static int oldclk</code>를 두고 매번 마지막에 현재 clk를 저장합니다. 지역 변수는 메서드가 끝나면 사라지기 때문에 쓸 수 없습니다.</p>
+
+  <div class="lab" id="lab6">
+    <div class="lab-h"><b>직접 해보기</b><span>clk를 눌러 0/1을 바꾸면 ttl7490이 한 번 호출됩니다</span></div>
+    <div class="row" style="gap:10px">
+      <button class="btn primary" id="l6clk" type="button">clk = <b>0</b></button>
+      <button class="btn" id="l6r0" type="button" aria-pressed="false">R0</button>
+      <button class="btn" id="l6r1" type="button" aria-pressed="false">R1</button>
+      <button class="btn" id="l6r2" type="button" aria-pressed="false">R2</button>
+      <button class="btn" id="l6pulse" type="button">펄스 1회 (1→0)</button>
+    </div>
+    <div class="row" style="margin-top:16px;align-items:flex-end;gap:24px">
+      <div class="fnd-row"><svg class="fnd" id="l6fnd" width="62" height="94" aria-label="카운터 값"></svg></div>
+      <div class="col"><span class="lbl">static 변수</span><span class="arr" id="l6state"></span></div>
+      <div class="col"><span class="lbl">반환 Q (MSB → LSB)</span><div class="bits" id="l6bits"></div></div>
+    </div>
+    <svg class="wave" id="l6wave" viewBox="0 0 640 70" preserveAspectRatio="none" style="margin-top:16px" aria-label="clk 파형"></svg>
+    <pre class="log" id="l6log"></pre>
+  </div>
+
+  <h2>코드</h2>
+  <div class="code" data-src="src6" data-cap="Step6.java"></div>
+  <p>리셋할 때 <code>oldclk = 0</code>으로 두는 이유: 리셋 직전에 clk가 1이었다면, 리셋을 풀고 clk = 0을 넣는 순간 하강 엣지로 오인해 곧바로 1이 되기 때문입니다.</p>
+
+  <h3>실행 결과</h3>
+  <div class="code out" data-src="out6" data-cap="콘솔"></div>
+
+  <div class="note"><b>실제 74LS90과의 차이.</b> 실제 칩은 R0(1)·R0(2) 두 핀이 모두 1일 때 0, R9(1)·R9(2)가 모두 1일 때 9로 초기화합니다. 이 강좌의 R0/R1/R2는 이후 시계 회로(12시 → 1시 등)를 만들기 편하도록 단순화한 모델입니다.</div>
+
+  <h2>확인 문제</h2>
+  <details class="q"><summary>clk를 0 → 1 → 1 → 0 순서로 넣으면 몇 번 카운트될까요?</summary><div class="a"><b>1번</b>. 1 → 1은 변화가 없고, 마지막 1 → 0에서만 올라갑니다.</div></details>
+  <details class="q"><summary>cnt가 9일 때 하강 엣지가 들어오면?</summary><div class="a"><code>++cnt</code>로 10이 된 뒤 <code>== 10</code> 검사에 걸려 0이 됩니다. Q = 0000.</div></details>
+  <details class="q"><summary>R0 = 1, R2 = 1을 동시에 넣으면?</summary><div class="a">if 문이 먼저 검사하는 R0가 이겨서 cnt = 0입니다.</div></details>
+
+  <h2>연습 과제</h2>
+  <ol class="task">
+    <li>상승 엣지(0 → 1)에서 카운트하도록 조건을 바꿔 보세요.</li>
+    <li>9 다음에 0이 되는 순간을 알려 주는 캐리 출력 <code>static int carry</code>를 추가해 보세요.</li>
+    <li>9로 초기화하는 입력 R9를 추가해 보세요.</li>
+  </ol>
+</section>
+
+<!-- ================= STEP 7 ================= -->
+<section class="step" id="step-7" data-n="7" data-title="for문으로 카운트" data-sub="main()" hidden>
+  <div class="eyebrow">Step 7</div>
+  <h1>for문으로 클럭을 만들어 0 ~ 9 세기</h1>
+  <p class="lead">실제 회로에서는 발진기가 0과 1을 번갈아 만들어 줍니다. 여기서는 <code>i % 2</code>가 그 역할을 합니다. 카운터 출력은 Step 1의 <code>cnvtDec2Bin</code> 자리에 들어가 7446 → FND로 이어집니다.</p>
+  <ul class="goals"><li>i % 2 로 클럭 생성</li><li>반복 횟수와 카운트 수의 관계</li><li>7490 → 7446 → FND 연결</li></ul>
+
+  <div class="scroll">
+    <div class="pipe" style="flex-wrap:nowrap;width:max-content">
+      <div class="n"><small>for</small><b>clk = i % 2</b></div><span class="ar">→</span>
+      <div class="n m"><small>Step 6</small><b>ttl7490</b></div><span class="ar">→</span>
+      <div class="n m"><small>Step 2</small><b>ttl7446</b></div><span class="ar">→</span>
+      <div class="n m"><small>Step 3</small><b>makeFnd → printFnd</b></div>
+    </div>
+  </div>
+
+  <h2>반복 횟수 정하기</h2>
+  <p>clk는 i = 0, 1, 2, 3 … 에서 0, 1, 0, 1 … 이 됩니다. 하강 엣지는 <b>i가 짝수(2 이상)</b>일 때 생기므로, 2번 반복할 때마다 1씩 올라갑니다. 0 ~ 9 열 개를 보려면 <b>20번</b> 반복하고 clk가 0인 순간에 출력합니다.</p>
+
+  <div class="lab" id="lab7">
+    <div class="lab-h"><b>직접 해보기</b><span id="l7info">i = -</span></div>
+    <div class="row" style="gap:8px">
+      <button class="btn primary" id="l7step" type="button">i++ 한 번 실행</button>
+      <button class="btn" id="l7run" type="button">자동 실행</button>
+      <button class="btn" id="l7reset" type="button">처음부터</button>
+    </div>
+    <div class="row" style="margin-top:16px;align-items:flex-end;gap:24px">
+      <div class="fnd-row"><svg class="fnd" id="l7fnd" width="62" height="94" aria-label="카운터 값"></svg></div>
+      <div class="col"><span class="lbl">이번 반복</span><span class="arr" id="l7now">ttl7490(0, 1, 0, 0)</span></div>
+    </div>
+    <svg class="wave" id="l7wave" viewBox="0 0 640 70" preserveAspectRatio="none" style="margin-top:16px" aria-label="clk 파형"></svg>
+    <pre class="log" id="l7log"></pre>
+  </div>
+
+  <h2>코드</h2>
+  <p>Step 2, 3, 6의 메서드를 모두 가져오고 <code>main</code>만 새로 씁니다.</p>
+  <div class="code" data-src="src7" data-cap="Step7.java"></div>
+
+  <h3>실행 결과 (앞부분)</h3>
+  <div class="code out" data-src="out7" data-cap="콘솔"></div>
+
+  <h2>확인 문제</h2>
+  <details class="q"><summary>반복을 <code>i &lt; 22</code>로 늘리면 마지막에 무엇이 출력될까요?</summary><div class="a">i = 20에서 하강 엣지가 한 번 더 생겨 9 → <b>0</b>으로 돌아갑니다. 10진 카운터이기 때문입니다.</div></details>
+  <details class="q"><summary><code>if (clk == 0)</code> 조건을 빼면?</summary><div class="a">clk = 1일 때도 출력되어 같은 숫자가 두 번씩 찍힙니다.</div></details>
+  <details class="q"><summary>시작 전에 <code>ttl7490(0, 0, 1, 0)</code>을 호출하면?</summary><div class="a">R1으로 1에서 시작하므로 1, 2, … 9, 0 순서로 출력됩니다.</div></details>
+
+  <h2>연습 과제</h2>
+  <ol class="task">
+    <li>카운터가 3이 되면 R0를 1로 넣어 0 ~ 2만 반복하는 3진 카운터를 만들어 보세요.</li>
+    <li>카운터를 두 개 동시에 쓰려면 <code>static int cnt</code>, <code>oldclk</code>를 어떻게 바꿔야 할지 생각해 보세요. (Step 8에서 다룹니다)</li>
+  </ol>
+</section>
+
+<!-- ================= STEP 8 ================= -->
+<section class="step" id="step-8" data-n="8" data-title="100진 카운터" data-sub="counter100()" hidden>
+  <div class="eyebrow">Step 8</div>
+  <h1>7490 두 개로 100진 카운터 만들기</h1>
+  <p class="lead">1의 자리가 9에서 0으로 넘어가는 순간 10의 자리가 하나 올라가야 합니다. 이 순간은 1의 자리 출력 <b>b3가 1 → 0으로 떨어지는 하강 엣지</b>로 알 수 있으므로, b3를 10의 자리 7490의 clk에 그대로 연결합니다.</p>
+  <ul class="goals"><li>자리올림을 클럭으로 연결</li><li>static 배열로 카운터 여러 개 관리</li><li>2차원 배열 반환</li></ul>
+
+  <div class="sig">static int[] ttl7490(int id, int clk, int R0, int R1, int R2)<br>static int[][] counter100(int clk)   // 반환: {10의 자리 Q, 1의 자리 Q}</div>
+
+  <h2>왜 b3일까?</h2>
+  <p>b3(가중치 8)는 8과 9일 때만 1입니다. 그래서 1 → 0으로 떨어지는 순간은 9 → 0으로 넘어갈 때 <b>딱 한 번</b>뿐입니다. 7490은 하강 엣지에서만 세므로, 7 → 8에서 b3가 0 → 1로 올라갈 때는 아무 일도 일어나지 않습니다.</p>
+  <div class="scroll">
+  <table class="data">
+    <thead><tr><th>1의 자리 변화</th><th>b3 b2 b1 b0</th><th>b3 변화</th><th>10의 자리</th></tr></thead>
+    <tbody>
+      <tr><td>6 → 7</td><td>0110 → 0111</td><td>0 → 0</td><td>유지</td></tr>
+      <tr><td>7 → 8</td><td>0111 → 1000</td><td>0 → 1 (상승)</td><td>유지</td></tr>
+      <tr><td>8 → 9</td><td>1000 → 1001</td><td>1 → 1</td><td>유지</td></tr>
+      <tr class="hit"><td>9 → 0</td><td>1001 → 0000</td><td>1 → 0 (하강)</td><td>+1</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h2>회로 연결</h2>
+  <div class="scroll">
+  <svg class="sch" viewBox="0 0 640 310" role="img" aria-label="1의 자리 7490의 b3 출력이 10의 자리 7490의 CLK 입력에 연결된 회로도">
+    <!-- 10의 자리 -->
+    <rect class="box" x="160" y="60" width="150" height="100" rx="4"/>
+    <text class="ttl" x="222" y="110" text-anchor="middle">7490</text>
+    <text class="pin" x="222" y="128" text-anchor="middle">10의 자리</text>
+    <text class="pin" x="168" y="89">CLK</text>
+    <line class="w" x1="235" y1="44" x2="235" y2="60"/><text class="pin" x="235" y="40" text-anchor="middle">0</text><text class="pin" x="235" y="76" text-anchor="middle">R0</text>
+    <g class="w-out"><line class="w" x1="310" y1="75" x2="470" y2="75"/><line class="w" x1="310" y1="95" x2="470" y2="95"/><line class="w" x1="310" y1="115" x2="470" y2="115"/><line class="w" x1="310" y1="135" x2="470" y2="135"/></g>
+    <text class="pin" x="302" y="79" text-anchor="end">b3</text><text class="pin" x="302" y="99" text-anchor="end">b2</text><text class="pin" x="302" y="119" text-anchor="end">b1</text><text class="pin" x="302" y="139" text-anchor="end">b0</text>
+    <rect class="box" x="470" y="62" width="140" height="86" rx="4"/>
+    <text class="ttl" x="540" y="100" text-anchor="middle">7446 → FND</text><text class="pin" x="540" y="120" text-anchor="middle">10의 자리</text>
+    <!-- 1의 자리 -->
+    <rect class="box" x="160" y="195" width="150" height="100" rx="4"/>
+    <text class="ttl" x="222" y="245" text-anchor="middle">7490</text>
+    <text class="pin" x="222" y="263" text-anchor="middle">1의 자리</text>
+    <text class="pin" x="168" y="224">CLK</text>
+    <line class="w" x1="100" y1="220" x2="160" y2="220"/><text class="pin" x="96" y="224" text-anchor="end">i % 2</text>
+    <line class="w" x1="235" y1="183" x2="235" y2="195"/><text class="pin" x="244" y="192">0</text><text class="pin" x="235" y="211" text-anchor="middle">R0</text>
+    <line class="w" x1="310" y1="210" x2="470" y2="210"/><line class="w" x1="310" y1="230" x2="470" y2="230"/><line class="w" x1="310" y1="250" x2="470" y2="250"/><line class="w" x1="310" y1="270" x2="470" y2="270"/>
+    <text class="pin" x="302" y="214" text-anchor="end">b3</text><text class="pin" x="302" y="234" text-anchor="end">b2</text><text class="pin" x="302" y="254" text-anchor="end">b1</text><text class="pin" x="302" y="274" text-anchor="end">b0</text>
+    <rect class="box" x="470" y="197" width="140" height="86" rx="4"/>
+    <text class="ttl" x="540" y="235" text-anchor="middle">7446 → FND</text><text class="pin" x="540" y="255" text-anchor="middle">1의 자리</text>
+    <!-- 자리올림 -->
+    <path class="w hot" d="M330,210 V172 H40 V85 H160"/>
+    <circle class="dot" cx="330" cy="210" r="4"/>
+    <text class="hot-t" x="340" y="192">b3 → 10의 자리 CLK</text>
+  </svg>
+  </div>
+  <p style="font-size:14px;color:var(--muted)">점(●)이 찍힌 곳만 연결된 것이고, 선이 그냥 지나가는 곳은 연결되지 않은 것입니다. R1, R2는 0이라 생략했습니다.</p>
+
+  <h2>카운터가 두 개면 기억할 값도 두 개</h2>
+  <p>Step 6의 <code>static int cnt</code>, <code>oldclk</code>는 하나뿐이라 두 카운터가 같은 값을 나눠 쓰게 됩니다. 그래서 <b>배열</b>로 바꾸고, 몇 번 카운터인지 <code>id</code>로 알려 줍니다. 메서드 안의 <code>cnt</code>가 <code>cnt[id]</code>로 바뀐 것 말고는 Step 6과 똑같습니다.</p>
+  <div class="code" data-src="src8a" data-cap="Step 6 → Step 8 에서 바뀐 부분"></div>
+
+  <div class="lab" id="lab8">
+    <div class="lab-h"><b>직접 해보기</b><span id="l8info">count = 00</span></div>
+    <div class="row" style="gap:8px">
+      <button class="btn primary" id="l8p1" type="button">펄스 1회</button>
+      <button class="btn" id="l8p10" type="button">펄스 10회</button>
+      <button class="btn" id="l8run" type="button">자동 실행</button>
+      <button class="btn" id="l8reset" type="button">처음부터</button>
+    </div>
+    <div class="row" style="margin-top:16px;align-items:flex-end;gap:24px">
+      <div class="fnd-row"><svg class="fnd" id="l8t" width="62" height="94" aria-label="10의 자리"></svg><svg class="fnd" id="l8o" width="62" height="94" aria-label="1의 자리"></svg></div>
+      <div class="col"><span class="lbl">10의 자리 Q · cnt[TEN]</span><div class="bits" id="l8tb"></div></div>
+      <div class="col"><span class="lbl">1의 자리 Q · cnt[ONE]</span><div class="bits" id="l8ob"></div></div>
+    </div>
+    <div class="lbl" style="margin-top:16px">10의 자리 clk = 1의 자리 b3 &nbsp;(● 하강 엣지, 숫자 = 올라간 10의 자리 값)</div>
+    <svg class="wave" id="l8wave" viewBox="0 0 640 70" aria-label="10의 자리 clk 파형"></svg>
+    <pre class="log" id="l8log"></pre>
+  </div>
+
+  <h2>코드</h2>
+  <div class="code" data-src="src8" data-cap="Step8.java"></div>
+  <p><code>counter100</code>에서 <b>1의 자리를 먼저</b> 호출하는 이유: 10의 자리의 clk로 쓸 <code>q1[3]</code>이 이번 반복에서 새로 계산된 값이어야 하기 때문입니다. 회로에서 신호가 1의 자리 → 10의 자리 방향으로 흐르는 것과 같습니다.</p>
+
+  <h3>실행 결과 (09 → 10, 99 → 00 부분)</h3>
+  <div class="code out" data-src="out8" data-cap="콘솔"></div>
+
+  <h2>확인 문제</h2>
+  <details class="q"><summary>b3 대신 b0를 10의 자리 clk에 연결하면?</summary><div class="a">b0는 1 → 0이 홀수 → 짝수로 넘어갈 때마다(1→2, 3→4 …) 떨어지므로, 1의 자리가 <b>2씩 올라갈 때마다</b> 10의 자리가 올라가 버립니다.</div></details>
+  <details class="q"><summary><code>counter100</code>에서 10의 자리를 먼저 호출하면 어떻게 보일까요?</summary><div class="a">10의 자리가 지난 반복의 b3를 보고 한 박자 늦게 올라갑니다. 화면에는 <b>08, 09, 00, 11</b>처럼 10이 00으로 보였다가 넘어갑니다.</div></details>
+  <details class="q"><summary>반복 횟수가 <code>i &lt; 202</code>인 이유는?</summary><div class="a">숫자 하나에 2번 반복하므로 00 ~ 99 100개에 200번, 99 → 00으로 돌아가는 모습을 보려고 2번을 더했습니다.</div></details>
+
+  <h2>연습 과제</h2>
+  <ol class="task">
+    <li>카운터를 3개로 늘려 <code>counter1000</code>(000 ~ 999)을 만들어 보세요. 100의 자리 clk는 무엇일까요?</li>
+    <li>시작 전에 <code>ttl7490(TEN, 0, 0, 0, 1)</code>을 호출하면 어디서부터 셀까요? 실행해 확인해 보세요.</li>
+  </ol>
+</section>
+
+<!-- ================= STEP 9 ================= -->
+<section class="step" id="step-9" data-n="9" data-title="60진 카운터" data-sub="counter60()" hidden>
+  <div class="eyebrow">Step 9</div>
+  <h1>출력을 R0로 되돌려 60진 카운터 만들기</h1>
+  <p class="lead">시계의 초와 분은 59 다음이 00입니다. 7490은 10진 카운터라 혼자서는 9까지 세므로, 10의 자리가 <b>6이 되는 순간</b>을 알아내 R0에 1을 넣어 곧바로 0으로 되돌립니다. 출력이 다시 입력으로 돌아오는 이런 연결을 <b>피드백</b>이라고 합니다.</p>
+  <ul class="goals"><li>AND로 특정 값 알아내기</li><li>출력 → R0 피드백</li><li>한 반복 안에서 호출 순서</li></ul>
+
+  <div class="sig">static int[][] counter60(int clk)   // 반환: {10의 자리 Q, 1의 자리 Q}</div>
+
+  <h2>6은 b2와 b1로 알 수 있다</h2>
+  <p>6은 2진수로 <code>0110</code>이라 b2와 b1이 모두 1입니다. 10의 자리는 0 ~ 6 사이만 오가므로, 이 범위에서 b2와 b1이 동시에 1인 값은 6뿐입니다. 그래서 비트 4개를 모두 비교할 필요 없이 <code>b2 &amp; b1</code>만으로 충분합니다.</p>
+  <div class="scroll">
+  <table class="data">
+    <thead><tr><th>10의 자리</th><th>b3 b2 b1 b0</th><th>b2 &amp; b1 → R0</th></tr></thead>
+    <tbody>
+      <tr><td>0</td><td>0000</td><td>0</td></tr>
+      <tr><td>1</td><td>0001</td><td>0</td></tr>
+      <tr><td>2</td><td>0010</td><td>0</td></tr>
+      <tr><td>3</td><td>0011</td><td>0</td></tr>
+      <tr><td>4</td><td>0100</td><td>0</td></tr>
+      <tr><td>5</td><td>0101</td><td>0</td></tr>
+      <tr class="hit"><td>6</td><td>0110</td><td>1 → 즉시 0으로 리셋</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h2>회로 연결</h2>
+  <div class="scroll">
+  <svg class="sch" viewBox="0 0 640 310" role="img" aria-label="10의 자리 7490의 b2와 b1이 AND 게이트를 거쳐 자기 R0 입력으로 되돌아가는 60진 카운터 회로도">
+    <!-- 10의 자리 -->
+    <rect class="box" x="160" y="60" width="150" height="100" rx="4"/>
+    <text class="ttl" x="222" y="110" text-anchor="middle">7490</text>
+    <text class="pin" x="222" y="128" text-anchor="middle">10의 자리</text>
+    <text class="pin" x="168" y="89">CLK</text>
+    <text class="pin" x="235" y="76" text-anchor="middle">R0</text>
+    <line class="w" x1="310" y1="75" x2="470" y2="75"/><line class="w" x1="310" y1="95" x2="470" y2="95"/><line class="w" x1="310" y1="115" x2="470" y2="115"/><line class="w" x1="310" y1="135" x2="470" y2="135"/>
+    <text class="pin" x="302" y="79" text-anchor="end">b3</text><text class="pin" x="302" y="99" text-anchor="end">b2</text><text class="pin" x="302" y="119" text-anchor="end">b1</text><text class="pin" x="302" y="139" text-anchor="end">b0</text>
+    <rect class="box" x="470" y="62" width="140" height="86" rx="4"/>
+    <text class="ttl" x="540" y="100" text-anchor="middle">7446 → FND</text><text class="pin" x="540" y="120" text-anchor="middle">10의 자리</text>
+    <!-- 1의 자리 -->
+    <rect class="box" x="160" y="195" width="150" height="100" rx="4"/>
+    <text class="ttl" x="222" y="245" text-anchor="middle">7490</text>
+    <text class="pin" x="222" y="263" text-anchor="middle">1의 자리</text>
+    <text class="pin" x="168" y="224">CLK</text>
+    <line class="w" x1="100" y1="220" x2="160" y2="220"/><text class="pin" x="96" y="224" text-anchor="end">i % 2</text>
+    <line class="w" x1="235" y1="183" x2="235" y2="195"/><text class="pin" x="244" y="192">0</text><text class="pin" x="235" y="211" text-anchor="middle">R0</text>
+    <line class="w" x1="310" y1="210" x2="470" y2="210"/><line class="w" x1="310" y1="230" x2="470" y2="230"/><line class="w" x1="310" y1="250" x2="470" y2="250"/><line class="w" x1="310" y1="270" x2="470" y2="270"/>
+    <text class="pin" x="302" y="214" text-anchor="end">b3</text><text class="pin" x="302" y="234" text-anchor="end">b2</text><text class="pin" x="302" y="254" text-anchor="end">b1</text><text class="pin" x="302" y="274" text-anchor="end">b0</text>
+    <rect class="box" x="470" y="197" width="140" height="86" rx="4"/>
+    <text class="ttl" x="540" y="235" text-anchor="middle">7446 → FND</text><text class="pin" x="540" y="255" text-anchor="middle">1의 자리</text>
+    <!-- 자리올림 (Step 8과 같음) -->
+    <path class="w" d="M330,210 V172 H40 V85 H160"/>
+    <circle class="dot dim" cx="330" cy="210" r="4"/>
+    <text class="pin" x="340" y="192">b3 → 10의 자리 CLK</text>
+    <!-- 리셋 피드백 -->
+    <path class="w hot" d="M345,95 V40 H365"/>
+    <path class="w hot" d="M325,115 V24 H365"/>
+    <path class="gate" d="M365,14 H380 A18,18 0 0 1 380,50 H365 Z"/>
+    <text class="pin" x="380" y="36" text-anchor="middle">&amp;</text>
+    <path class="w hot" d="M398,32 H420 V6 H235 V60"/>
+    <circle class="dot" cx="345" cy="95" r="4"/>
+    <circle class="dot" cx="325" cy="115" r="4"/>
+    <text class="hot-t" x="240" y="22">R0 = b2 &amp; b1</text>
+  </svg>
+  </div>
+  <p style="font-size:14px;color:var(--muted)">빨간 선이 이번에 추가된 피드백입니다. 점(●)이 찍힌 곳만 연결된 것입니다.</p>
+
+  <h2>한 반복 안에서 두 번 호출하기</h2>
+  <p>회로에서는 6이 되자마자 전기 신호가 R0로 돌아가 거의 동시에 0이 됩니다. 메서드로 이 모습을 만들려면 같은 반복 안에서 10의 자리를 <b>두 번</b> 호출합니다.</p>
+  <ol>
+    <li>첫 번째 호출: 평소처럼 clk를 넣어 셉니다. 5 → 6이 될 수 있습니다.</li>
+    <li>그 출력으로 <code>r0 = q10[2] &amp; q10[1]</code>을 계산합니다.</li>
+    <li>두 번째 호출: 같은 clk와 <code>r0</code>를 넣습니다. r0가 1이면 0으로 초기화되고, 0이면 clk가 그대로라 엣지가 없어 아무 일도 없습니다.</li>
+  </ol>
+
+  <div class="lab" id="lab9">
+    <div class="lab-h"><b>직접 해보기</b><span id="l9info">count = 00</span></div>
+    <div class="row" style="gap:8px">
+      <button class="btn primary" id="l9p1" type="button">펄스 1회</button>
+      <button class="btn" id="l9p10" type="button">펄스 10회</button>
+      <button class="btn" id="l9run" type="button">자동 실행</button>
+      <button class="btn" id="l9reset" type="button">처음부터</button>
+    </div>
+    <div class="row" style="margin-top:16px;align-items:flex-end;gap:24px">
+      <div class="fnd-row"><svg class="fnd" id="l9t" width="62" height="94" aria-label="10의 자리"></svg><svg class="fnd" id="l9o" width="62" height="94" aria-label="1의 자리"></svg></div>
+      <div class="col"><span class="lbl">10의 자리 Q · cnt[TEN]</span><div class="bits" id="l9tb"></div></div>
+      <div class="col"><span class="lbl">1의 자리 Q · cnt[ONE]</span><div class="bits" id="l9ob"></div></div>
+      <div class="col"><span class="lbl">r0 = b2 &amp; b1</span><span class="arr" id="l9r0">0</span></div>
+    </div>
+    <div class="lbl" style="margin-top:16px">10의 자리 clk = 1의 자리 b3 &nbsp;(● 하강 엣지, 숫자 = 올라간 10의 자리 값)</div>
+    <svg class="wave" id="l9wave" viewBox="0 0 640 70" aria-label="10의 자리 clk 파형"></svg>
+    <pre class="log" id="l9log"></pre>
+  </div>
+
+  <h2>코드</h2>
+  <div class="code" data-src="src9" data-cap="Step9.java"></div>
+
+  <h3>실행 결과 (59 → 00 부분)</h3>
+  <div class="code out" data-src="out9" data-cap="콘솔"></div>
+
+  <div class="note"><b>실제 회로에서는.</b> 74LS90은 R0(1)과 R0(2) 두 핀이 <b>모두 1일 때</b> 리셋되므로, b2와 b1을 두 핀에 바로 연결하면 AND 게이트가 따로 필요 없습니다. 또 6이 수십 나노초 동안 실제로 나타났다 사라지지만 너무 짧아 눈에는 보이지 않습니다.</div>
+
+  <h2>확인 문제</h2>
+  <details class="q"><summary>두 번째 호출 없이, <b>지난 반복</b>의 출력으로 r0를 계산해 한 번만 호출하면?</summary><div class="a">리셋이 한 박자 늦어 화면에 <b>58, 59, 60, 01</b>처럼 60이 보이고 00은 건너뜁니다.</div></details>
+  <details class="q"><summary>이 60진 카운터 다음에 분 카운터를 이으려면, 10의 자리의 어느 비트를 clk로 써야 할까요?</summary><div class="a">10의 자리는 0 ~ 5라 b3는 늘 0이어서 쓸 수 없습니다. <b>b2</b>는 4, 5에서 1이고 5 → 0에서 1 → 0으로 떨어지므로 분의 clk로 알맞습니다. (Main.java의 <code>ttl7490_S10.getOutput()[2]</code>)</div></details>
+  <details class="q"><summary><code>r0 = q10[2] &amp; q10[0]</code>으로 바꾸면 몇 진 카운터가 될까요?</summary><div class="a">b2와 b0가 모두 1인 첫 값은 5(0101)이므로 10의 자리가 0 ~ 4를 반복하는 <b>50진</b> 카운터가 됩니다.</div></details>
+
+  <h2>연습 과제</h2>
+  <ol class="task">
+    <li><code>counter24(int clk)</code>를 만들어 보세요. 10의 자리가 2이고 1의 자리가 4일 때 <b>두 카운터 모두</b> 0으로 리셋합니다. (10의 자리 b1 &amp; 1의 자리 b2)</li>
+    <li>카운터 4개(<code>cnt = new int[4]</code>)로 초 60진 → 분 60진을 이어 <code>MM:SS</code> 시계를 출력해 보세요.</li>
+  </ol>
+  <div class="note"><b>1부를 마치며.</b> 카운터가 늘어날수록 <code>cnt[id]</code>, <code>oldclk[id]</code>를 번호로 관리하기가 번거로워집니다. 시계에는 7490이 6개 필요합니다. 2부에서는 칩 하나를 <b>객체 하나</b>로 만들어 이 문제를 해결하고 시·분·초 디지털 시계를 완성합니다.</div>
+</section>
+
+<!-- ================= 2부 소개 ================= -->
+<section class="step" id="step-10" data-n="10" data-part="2" data-k="0" data-title="2부 소개" data-sub="why class?" hidden>
+  <div class="eyebrow">2부 · 클래스로 만들기</div>
+  <h1>칩 하나 = 객체 하나</h1>
+  <p class="lead">1부의 <code>ttl7490</code>은 이전 클럭을 기억해야 해서 메서드 밖에 static 변수를 두었고, 카운터가 늘어날 때마다 <code>cnt[id]</code>, <code>oldclk[id]</code> 배열과 번호를 직접 관리해야 했습니다. 시계에는 7490이 6개 필요합니다. 클래스로 만들면 <b>객체마다 자기 상태를 스스로 기억</b>하므로 번호 관리가 사라집니다.</p>
+
+  <h2>무엇이 달라지나</h2>
+  <div class="code" data-src="cmp10" data-cap="1부 메서드 vs 2부 클래스"></div>
+
+  <h2>칩과 클래스의 대응</h2>
+  <div class="scroll">
+  <table class="data">
+    <thead><tr><th>실제 칩</th><th>클래스에서</th><th>TTL7490 예</th></tr></thead>
+    <tbody>
+      <tr><td>데이터시트(설계도)</td><td>클래스</td><td><code>class TTL7490</code></td></tr>
+      <tr><td>브레드보드에 꽂은 칩 한 개</td><td>객체 (<code>new</code>)</td><td><code>new TTL7490()</code></td></tr>
+      <tr><td>칩 안의 기억 소자</td><td>필드 (<code>private</code>)</td><td><code>num</code>, <code>oldclk</code></td></tr>
+      <tr><td>전원을 켰을 때 상태</td><td>생성자</td><td><code>TTL7490(R0, R1, R2)</code></td></tr>
+      <tr><td>입력 핀</td><td>set 메서드</td><td><code>setClock()</code>, <code>reset()</code></td></tr>
+      <tr><td>출력 핀</td><td>get 메서드</td><td><code>getOutput()</code></td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h2>만들 클래스</h2>
+  <div class="uml-grid">
+    <div class="uml"><div class="nm">TTL7490<small>10진 카운터</small></div><div class="f">- <b>num</b> : int<br>- <b>oldclk</b> : int<br>- <b>output</b> : int[4]</div><div class="m">+ <b>setClock</b>(clk)<br>+ <b>reset</b>(R0, R1, R2)<br>+ <b>getOutput</b>() : int[]<br>+ <b>setNum</b>(n)</div></div>
+    <div class="uml"><div class="nm">TTL7446<small>BCD → 7세그먼트</small></div><div class="f">- <b>TABLE</b> : int[][] (static)<br>- <b>input</b> : int[4]<br>- <b>output</b> : int[7]</div><div class="m">+ <b>setInput</b>(int[])<br>+ <b>getOutput</b>() : int[]<br>+ <b>getNum</b>() : int</div></div>
+    <div class="uml"><div class="nm">FND<small>5×5 표시기</small></div><div class="f">- <b>input</b> : int[7]<br>- <b>seg</b> : char[5][5]<br>- <b>ch</b> : char</div><div class="m">+ <b>setInput</b>(int[])<br>+ <b>setChar</b>(c)<br>+ <b>dispFnd</b>()<br>+ <b>dispFnd</b>(line)</div></div>
+    <div class="uml"><div class="nm">DigitalClock<small>위 칩들을 가진 시계</small></div><div class="f">- <b>h10 … s1</b> : TTL7490 ×6<br>- <b>dec</b> : TTL7446[6]<br>- <b>fnd</b> : FND[6]<br>- <b>pm</b> : boolean</div><div class="m">+ <b>setTime</b>(h, m, s, pm)<br>+ <b>setClock</b>(clk)<br>+ <b>display</b>()<br>+ <b>toString</b>()</div></div>
+  </div>
+  <p style="font-size:14px;color:var(--muted)"><code>-</code>는 private(밖에서 못 씀), <code>+</code>는 public(밖에서 호출)입니다.</p>
+
+  <h2>2부 단계</h2>
+  <div class="scroll">
+  <table class="data">
+    <thead><tr><th>단계</th><th style="text-align:left">만드는 것</th><th style="text-align:left">파일</th></tr></thead>
+    <tbody>
+      <tr><td>1</td><td style="text-align:left">TTL7490 클래스</td><td style="text-align:left"><code>TTL7490.java</code>, <code>Test7490.java</code></td></tr>
+      <tr><td>2</td><td style="text-align:left">TTL7446 클래스</td><td style="text-align:left"><code>TTL7446.java</code>, <code>Test7446.java</code></td></tr>
+      <tr><td>3</td><td style="text-align:left">FND 클래스</td><td style="text-align:left"><code>FND.java</code>, <code>TestFND.java</code></td></tr>
+      <tr><td>4</td><td style="text-align:left">객체 연결: 100진 카운터</td><td style="text-align:left"><code>Counter100.java</code></td></tr>
+      <tr><td>5</td><td style="text-align:left">리셋 연결: 60진 초 카운터</td><td style="text-align:left"><code>Counter60.java</code></td></tr>
+      <tr><td>6</td><td style="text-align:left">카운터 4개: MM:SS</td><td style="text-align:left"><code>ClockMMSS.java</code></td></tr>
+      <tr><td>7</td><td style="text-align:left">DigitalClock 클래스로 완성</td><td style="text-align:left"><code>DigitalClock.java</code>, <code>ClockMain.java</code></td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h2>파일 구성과 실행</h2>
+  <p>클래스마다 파일을 하나씩 만들고 <b>한 폴더</b>에 둡니다. 같은 폴더에 있는 클래스는 import 없이 서로 사용할 수 있습니다.</p>
+  <div class="code out"><div class="cap"><span>classes 폴더에서</span></div><pre>javac -encoding UTF-8 *.java
+java ClockMain</pre></div>
+  <div class="note"><b>원본 폴더를 쓸 때 주의.</b> 원본의 <code>TTL4776.java</code> 파일 안에는 <code>class TTL7446</code>이 들어 있습니다. public이 아닌 클래스는 파일 이름이 달라도 컴파일되지만, 찾기 쉽도록 <code>TTL7446.java</code>로 맞추는 것이 좋습니다. 또 한 폴더에 같은 이름의 클래스가 두 번 있으면 <code>duplicate class</code> 오류가 나므로, 강좌 코드는 새 폴더에서 실행하세요.</div>
+</section>
+
+<!-- ================= 2부 1단계 : TTL7490 ================= -->
+<section class="step" id="step-11" data-n="11" data-part="2" data-k="1" data-title="TTL7490 클래스" data-sub="class TTL7490" hidden>
+  <div class="eyebrow">2부 · 1단계</div>
+  <h1>TTL7490 클래스: 스스로 기억하는 카운터</h1>
+  <p class="lead">1부 Step 6의 <code>ttl7490</code> 메서드를 클래스로 옮깁니다. 메서드 밖의 static 변수였던 <code>cnt</code>, <code>oldclk</code>가 <b>필드</b>가 되면서 객체마다 따로 생깁니다.</p>
+  <ul class="goals"><li>필드와 private</li><li>생성자와 this(…)</li><li>객체마다 따로 있는 상태</li></ul>
+
+  <div class="uml-grid" style="grid-template-columns:minmax(0,320px)">
+    <div class="uml"><div class="nm">TTL7490</div><div class="f">- <b>num</b> : int<br>- <b>oldclk</b> : int<br>- <b>output</b> : int[4]</div><div class="m">+ TTL7490()<br>+ TTL7490(R0, R1, R2)<br>- <b>cnvt</b>()<br>+ <b>setClock</b>(clk)<br>+ <b>reset</b>(R0, R1, R2)<br>+ <b>getOutput</b>() : int[]<br>+ <b>setNum</b>(n)<br>+ <b>getNum</b>() : int</div></div>
+  </div>
+
+  <h2>메서드에서 클래스로</h2>
+  <div class="scroll">
+  <table class="data">
+    <thead><tr><th>1부 (메서드)</th><th>2부 (클래스)</th><th>이유</th></tr></thead>
+    <tbody>
+      <tr><td><code>static int cnt</code></td><td><code>private int num</code></td><td>객체마다 따로 기억</td></tr>
+      <tr><td><code>static int oldclk</code></td><td><code>private int oldclk</code></td><td>밖에서 바꾸지 못하게 보호</td></tr>
+      <tr><td><code>ttl7490(clk, R0, R1, R2)</code> 하나</td><td><code>setClock(clk)</code> + <code>reset(R0, R1, R2)</code></td><td>핀 종류별로 메서드 분리</td></tr>
+      <tr><td><code>return cnvtDec2Bin(cnt)</code></td><td><code>output</code> 필드 + <code>getOutput()</code></td><td>출력 핀 값을 칩이 들고 있음</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h2>코드</h2>
+  <div class="code" data-src="c7490" data-cap="TTL7490.java" data-file="classes/TTL7490.java"></div>
+  <ul>
+    <li><b>private 필드</b>: <code>oldclk</code>를 밖에서 마음대로 바꾸면 엣지 검출이 망가집니다. 칩 내부는 핀(public 메서드)으로만 건드리게 막습니다.</li>
+    <li><b><code>this(1, 0, 0)</code></b>: 생성자 안에서 다른 생성자를 부릅니다. 초기화 코드를 한 곳에만 두기 위해서입니다.</li>
+    <li><b><code>cnvt()</code>는 private</b>: 값이 바뀔 때 칩 안에서 알아서 부르는 내부 동작이라 밖에 공개할 필요가 없습니다.</li>
+    <li><b><code>getOutput()</code>은 배열 자체를 돌려줍니다</b>: 한 번 받아 둔 배열도 카운트가 바뀌면 값이 함께 바뀝니다. 핀에 전선을 꽂아 둔 것과 같습니다.</li>
+  </ul>
+
+  <div class="lab" id="lab11">
+    <div class="lab-h"><b>직접 해보기</b><span>두 객체의 필드가 따로 움직이는지 확인하세요</span></div>
+    <div class="objs" id="l11objs"></div>
+    <pre class="log" id="l11log" style="margin-top:12px"></pre>
+  </div>
+
+  <h2>테스트</h2>
+  <div class="code" data-src="ct7490" data-cap="Test7490.java" data-file="classes/Test7490.java"></div>
+  <h3>실행 결과</h3>
+  <div class="code out" data-src="o7490" data-cap="콘솔"></div>
+  <p>a에만 클럭을 넣었으므로 b는 처음 값 2를 그대로 유지하고, b를 리셋해도 a는 영향을 받지 않습니다.</p>
+
+  <div class="note"><b>원본 TTL7490.java와 다른 점.</b> 필드를 <code>private</code>으로 바꾸고, 기본 생성자는 <code>this(1, 0, 0)</code>로 줄였습니다. <code>setNum</code>은 10 이상이 들어와도 0 ~ 9가 되도록 <code>% 10</code>을 붙였고, 값을 확인하는 <code>getNum()</code>을 추가했습니다.</div>
+
+  <h2>확인 문제</h2>
+  <details class="q"><summary><code>TTL7490 b = a;</code> 로 만들고 <code>b.setClock()</code>을 부르면 a는?</summary><div class="a">a도 바뀝니다. <code>new</code>를 쓰지 않았으므로 b는 새 칩이 아니라 <b>같은 객체</b>를 가리키는 또 하나의 이름입니다.</div></details>
+  <details class="q"><summary>1부에서는 리셋할 때 <code>oldclk = 0</code>을 했는데, 클래스의 <code>reset()</code>에는 없습니다. 괜찮을까요?</summary><div class="a">괜찮습니다. 1부에서는 한 번의 호출에 clk와 R이 함께 들어와, 리셋하는 동안 clk를 기록하지 못했기 때문에 맞춰 준 것입니다. 클래스에서는 clk 기록을 <code>setClock()</code>이 항상 따로 맡습니다.</div></details>
+  <details class="q"><summary>밖에서 <code>a.num = 5;</code> 라고 쓰면?</summary><div class="a"><code>num has private access in TTL7490</code> 컴파일 오류가 납니다. 값을 정하려면 <code>a.setNum(5)</code>를 써야 합니다.</div></details>
+
+  <h2>연습 과제</h2>
+  <ol class="task">
+    <li>9 → 0으로 넘어간 직후에만 1을 돌려주는 <code>int getCarry()</code>를 추가해 보세요.</li>
+    <li>현재 상태를 <code>"TTL7490[num=3, Q=0011]"</code>처럼 돌려주는 <code>toString()</code>을 만들고 <code>System.out.println(a)</code>로 출력해 보세요.</li>
+  </ol>
+</section>
+
+<!-- ================= 2부 2단계 : TTL7446 ================= -->
+<section class="step" id="step-12" data-n="12" data-part="2" data-k="2" data-title="TTL7446 클래스" data-sub="class TTL7446" hidden>
+  <div class="eyebrow">2부 · 2단계</div>
+  <h1>TTL7446 클래스: 표는 하나, 디코더는 여러 개</h1>
+  <p class="lead">1부 Step 2의 <code>ttl7446</code>을 클래스로 옮깁니다. 디코더는 이전 값을 기억할 필요가 없지만, 7490의 출력을 <b>입력 핀에 연결해 두고</b> 7세그먼트 출력을 들고 있는 칩으로 만들면 회로와 같은 모양으로 조립할 수 있습니다.</p>
+  <ul class="goals"><li>static final 상수</li><li>생성자 오버로딩</li><li>참조와 갱신 시점</li></ul>
+
+  <div class="uml-grid" style="grid-template-columns:minmax(0,320px)">
+    <div class="uml"><div class="nm">TTL7446</div><div class="f">- <b>TABLE</b> : int[][] <i>static final</i><br>- <b>input</b> : int[4]<br>- <b>output</b> : int[7]<br>- <b>num</b> : int</div><div class="m">+ TTL7446()<br>+ TTL7446(int[] in)<br>- <b>cnvt</b>()<br>+ <b>setInput</b>(int[] in)<br>+ <b>getOutput</b>() : int[]<br>+ <b>getNum</b>() : int</div></div>
+  </div>
+
+  <h2>진리표는 static final</h2>
+  <p>0 ~ 9의 세그먼트 표는 어느 7446 칩이든 똑같습니다. 1부에서는 메서드를 부를 때마다 <code>table</code>을 새로 만들었지만, 이제는 <code>static</code>으로 <b>클래스에 하나만</b> 두고 모든 객체가 함께 씁니다. <code>final</code>은 다른 표로 바꿔 끼우지 못하게 합니다.</p>
+
+  <h2>코드</h2>
+  <div class="code" data-src="c7446" data-cap="TTL7446.java" data-file="classes/TTL7446.java"></div>
+  <p><code>TABLE[num].clone()</code>으로 <b>복사본</b>을 돌려주는 이유: 원본 행을 그대로 주면, 받은 쪽에서 <code>output[0] = 0</code>처럼 값을 바꿀 때 static 표가 바뀌어 모든 디코더의 숫자 모양이 망가집니다.</p>
+
+  <h2>setInput을 다시 불러야 하는 이유</h2>
+  <p><code>input</code> 필드는 7490의 <code>output</code> 배열을 가리키므로 비트 값은 자동으로 바뀝니다. 하지만 <code>output</code>은 <code>cnvt()</code>가 실행될 때만 계산됩니다. 실제 7446은 입력이 바뀌면 곧바로 출력이 바뀌는 조합 회로지만, 프로그램에서는 <b>값이 바뀐 뒤 <code>setInput()</code>을 다시 불러야</b> 출력이 새로 계산됩니다.</p>
+
+  <h2>테스트</h2>
+  <div class="code" data-src="ct7446" data-cap="Test7446.java" data-file="classes/Test7446.java"></div>
+  <h3>실행 결과</h3>
+  <div class="code out" data-src="o7446" data-cap="콘솔"></div>
+  <p>마지막 두 줄을 보세요. 카운터는 0이 되었는데 디코더는 <code>setInput</code>을 부르기 전까지 9를 유지합니다.</p>
+
+  <div class="note"><b>원본 TTL4776.java와 다른 점.</b> 파일 이름을 클래스 이름과 같은 <code>TTL7446.java</code>로 바꿨습니다. 진리표를 <code>cnvt()</code> 안의 지역 변수에서 <code>static final</code> 필드로 옮겼고, 10 ~ 15가 들어오면 예외 대신 모든 세그먼트를 끄도록 했습니다.</div>
+
+  <h2>확인 문제</h2>
+  <details class="q"><summary><code>TABLE</code>에서 <code>static</code>을 빼면 어떻게 될까요?</summary><div class="a">동작은 같지만 7446 객체를 만들 때마다 같은 표가 하나씩 더 생깁니다. 시계에는 7446이 6개이므로 똑같은 표 6개가 메모리에 올라갑니다.</div></details>
+  <details class="q"><summary><code>new TTL7446()</code>으로 만든 직후 <code>getNum()</code>은?</summary><div class="a"><b>0</b>입니다. 기본 생성자가 <code>this(new int[4])</code>로 0000을 입력해 두기 때문입니다.</div></details>
+
+  <h2>연습 과제</h2>
+  <ol class="task">
+    <li><code>getOutput()</code> 안에서 <code>cnvt()</code>를 먼저 부르게 바꾸면 <code>setInput</code>을 다시 부르지 않아도 됩니다. 이렇게 했을 때의 장단점을 생각해 보세요.</li>
+    <li>16진수 A ~ F를 표시하는 <code>TTL7446Hex</code> 클래스를 만들어 보세요.</li>
+  </ol>
+</section>
+
+<!-- ================= 2부 3단계 : FND ================= -->
+<section class="step" id="step-13" data-n="13" data-part="2" data-k="3" data-title="FND 클래스" data-sub="class FND" hidden>
+  <div class="eyebrow">2부 · 3단계</div>
+  <h1>FND 클래스: 화면을 가진 객체</h1>
+  <p class="lead">1부 Step 3의 <code>makeFnd</code>와 <code>printFnd</code>를 합칩니다. 5×5 문자 배열 <code>seg</code>가 필드가 되어 FND 객체가 자기 화면을 들고 있고, 출력도 스스로 합니다.</p>
+  <ul class="goals"><li>메서드 오버로딩</li><li>줄 단위 가로 출력</li><li>객체 배열</li></ul>
+
+  <div class="uml-grid" style="grid-template-columns:minmax(0,320px)">
+    <div class="uml"><div class="nm">FND</div><div class="f">- <b>input</b> : int[7]<br>- <b>seg</b> : char[5][5]<br>- <b>ch</b> : char</div><div class="m">+ FND()<br>+ FND(char c)<br>+ FND(char c, int[] in)<br>- <b>clear</b>()<br>- <b>cnvt</b>()<br>+ <b>setChar</b>(char c)<br>+ <b>setInput</b>(int[] in)<br>+ <b>dispFnd</b>()<br>+ <b>dispFnd</b>(int line)</div></div>
+  </div>
+
+  <h2>코드</h2>
+  <div class="code" data-src="cfnd" data-cap="FND.java" data-file="classes/FND.java"></div>
+
+  <h2>dispFnd가 두 개인 이유</h2>
+  <p>이름은 같고 매개변수가 다른 메서드를 여러 개 두는 것을 <b>오버로딩</b>이라고 합니다.</p>
+  <ul>
+    <li><code>dispFnd()</code>: 5줄을 모두 출력합니다. FND 하나만 볼 때 씁니다.</li>
+    <li><code>dispFnd(int line)</code>: <code>line</code>번째 줄만 출력하고 줄을 바꾸지 않습니다. 콘솔은 위로 되돌아갈 수 없으므로, 여러 자리를 가로로 놓으려면 <b>줄마다</b> 모든 FND에게 그 줄을 출력시킵니다.</li>
+  </ul>
+
+  <div class="lab" id="lab13">
+    <div class="lab-h"><b>직접 해보기</b><span>dispFnd(line)이 한 줄씩 쌓이는 모습</span></div>
+    <div class="row">
+      <div class="col"><label class="lbl" for="l13digits">숫자 (최대 6자리)</label><input class="digits" id="l13digits" value="2026" maxlength="6" inputmode="numeric"></div>
+      <div class="col"><label class="lbl" for="l13ch">setChar</label><input class="ch" id="l13ch" value="#" maxlength="1"></div>
+      <div class="col"><span class="lbl">출력</span><div class="row" style="gap:8px"><button class="btn primary" id="l13next" type="button">다음 line</button><button class="btn" id="l13all" type="button">전체</button><button class="btn" id="l13clear" type="button">지우기</button></div></div>
+    </div>
+    <div class="row" style="margin-top:16px;align-items:flex-start;gap:20px">
+      <div class="col"><span class="lbl">각 FND 객체의 seg (현재 line 강조)</span><pre class="screen" id="l13seg"></pre></div>
+      <div class="col"><span class="lbl" id="l13code">콘솔</span><pre class="console" id="l13out"></pre></div>
+    </div>
+  </div>
+
+  <h2>테스트</h2>
+  <p>숫자 모양을 만들려면 7490 → 7446 → FND를 거쳐야 하므로, 1 ~ 2단계에서 만든 클래스를 함께 씁니다.</p>
+  <div class="code" data-src="ctfnd" data-cap="TestFND.java" data-file="classes/TestFND.java"></div>
+  <h3>실행 결과</h3>
+  <div class="code out" data-src="ofnd" data-cap="콘솔"></div>
+
+  <div class="note"><b>원본 FND.java와 다른 점.</b> 원본의 <code>setChar()</code>는 문자만 바꾸고 화면을 다시 그리지 않아서, 다음 <code>setInput()</code> 전까지 모양이 그대로였습니다. 여기서는 <code>cnvt()</code>를 불러 바로 반영되게 했습니다.</div>
+
+  <h2>확인 문제</h2>
+  <details class="q"><summary><code>FND[] fnds = new FND[5];</code> 바로 다음에 <code>fnds[0].dispFnd();</code> 를 부르면?</summary><div class="a"><code>NullPointerException</code>이 발생합니다. 객체 배열은 객체를 담을 <b>칸</b>만 만들고, 각 칸은 <code>null</code>입니다. <code>fnds[k] = new FND()</code>로 객체를 넣어야 합니다.</div></details>
+  <details class="q"><summary><code>dispFnd(int line)</code> 끝에서 공백 하나를 출력하는 이유는?</summary><div class="a">가로로 붙였을 때 자리와 자리 사이를 띄우기 위해서입니다. 없으면 <code>##########</code>처럼 두 숫자가 붙어 보입니다.</div></details>
+
+  <h2>연습 과제</h2>
+  <ol class="task">
+    <li>모든 세그먼트를 켜는 점검용 메서드 <code>void test()</code>를 추가해 보세요.</li>
+    <li>FND 배열을 받아 가로로 출력하는 <code>static void dispAll(FND[] fnds)</code>를 만들어 보세요.</li>
+  </ol>
+</section>
+
+<!-- ================= 2부 4단계 : 100진 ================= -->
+<section class="step" id="step-14" data-n="14" data-part="2" data-k="4" data-title="객체 연결: 100진" data-sub="Counter100" hidden>
+  <div class="eyebrow">2부 · 4단계</div>
+  <h1>객체를 전선으로 연결하기: 100진 카운터</h1>
+  <p class="lead">세 클래스가 완성되었으니 이제 조립입니다. 한 자리에 칩 세트(7490, 7446, FND) 하나씩, 두 자리면 객체 6개를 만들고 1부 Step 8처럼 1의 자리 b3를 10의 자리 clk에 연결합니다.</p>
+  <ul class="goals"><li>객체를 매개변수로 넘기기</li><li>호출 순서 = 신호 흐름</li><li>1부와 비교</li></ul>
+
+  <h2>객체 연결도</h2>
+  <div class="scroll">
+    <div class="flow" style="width:max-content">
+      <div class="pipe" style="flex-wrap:nowrap">
+        <div class="n"><small>외부</small><b>i % 2</b></div><span class="ar">→</span>
+        <div class="n m"><small>TTL7490</small><b>c1</b></div><span class="ar">→</span>
+        <div class="n m"><small>TTL7446</small><b>d1</b></div><span class="ar">→</span>
+        <div class="n m"><small>FND</small><b>f1</b></div>
+      </div>
+      <div class="pipe" style="flex-wrap:nowrap">
+        <div class="n" style="border-color:var(--led)"><small>c1.getOutput()[3]</small><b>b3</b></div><span class="ar">→</span>
+        <div class="n m"><small>TTL7490</small><b>c10</b></div><span class="ar">→</span>
+        <div class="n m"><small>TTL7446</small><b>d10</b></div><span class="ar">→</span>
+        <div class="n m"><small>FND</small><b>f10</b></div>
+      </div>
+    </div>
+  </div>
+
+  <h2>코드</h2>
+  <div class="code" data-src="c100" data-cap="Counter100.java" data-file="classes/Counter100.java"></div>
+  <p><code>wire(c, d, f)</code>는 객체 세 개를 받아 7490 → 7446 → FND 순서로 값을 흘려보냅니다. 메서드에 객체를 넘기면 복사본이 아니라 <b>그 객체</b>가 전달되므로, 메서드 안에서 <code>setInput</code>한 결과가 밖의 d, f에 그대로 남습니다.</p>
+
+  <h2>1부 Step 8과 비교</h2>
+  <div class="scroll">
+  <table class="data">
+    <thead><tr><th></th><th>1부 (메서드)</th><th>2부 (클래스)</th></tr></thead>
+    <tbody>
+      <tr><td>카운터 상태</td><td><code>cnt[ONE]</code>, <code>oldclk[TEN]</code></td><td>각 객체의 필드</td></tr>
+      <tr><td>자리올림 연결</td><td><code>ttl7490(TEN, q1[3], 0, 0, 0)</code></td><td><code>c10.setClock(c1.getOutput()[3])</code></td></tr>
+      <tr><td>자리 하나 추가</td><td>배열 크기, 번호 상수 수정</td><td><code>new</code> 세 줄</td></tr>
+      <tr><td>번호 실수</td><td>다른 카운터 값이 조용히 바뀜</td><td>변수 이름이 달라 드러남</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h3>실행 결과 (09, 10 … 99, 00 부분)</h3>
+  <div class="code out" data-src="o100" data-cap="콘솔"></div>
+
+  <h2>확인 문제</h2>
+  <details class="q"><summary>반복문에서 <code>wire()</code>를 <code>setClock()</code>보다 먼저 부르면?</summary><div class="a">FND에는 이번 클럭이 반영되기 <b>전</b> 값이 들어가므로 화면이 한 박자씩 늦게 보입니다. 신호가 흐르는 순서(카운트 → 디코드 → 표시)대로 호출해야 합니다.</div></details>
+  <details class="q"><summary><code>wire(c1, d10, f10)</code>이라고 잘못 쓰면?</summary><div class="a">10의 자리 FND에 1의 자리 숫자가 표시되어 <code>00, 11, 22 …</code>처럼 보입니다. 메서드 이름이 아니라 <b>어느 객체를 넘기느냐</b>가 연결을 결정합니다.</div></details>
+
+  <h2>연습 과제</h2>
+  <ol class="task">
+    <li>칩 세트를 하나 더 만들어 000 ~ 999를 세어 보세요.</li>
+    <li>칩을 <code>TTL7490[] c = new TTL7490[3]</code>처럼 배열로 만들고, 자리올림을 for문으로 연결해 보세요.</li>
+  </ol>
+</section>
+
+<!-- ================= 2부 5단계 : 60진 ================= -->
+<section class="step" id="step-15" data-n="15" data-part="2" data-k="5" data-title="리셋 연결: 60진" data-sub="Counter60" hidden>
+  <div class="eyebrow">2부 · 5단계</div>
+  <h1>리셋 핀 연결하기: 60진 초 카운터</h1>
+  <p class="lead">1부 Step 9에서는 리셋을 위해 같은 메서드를 한 반복에 두 번 불러야 했습니다. 클래스에서는 clk 핀(<code>setClock</code>)과 리셋 핀(<code>reset</code>)이 따로 있으므로, 회로도에 그린 연결을 <b>한 줄에 하나씩</b> 그대로 옮기면 됩니다.</p>
+  <ul class="goals"><li>출력 → reset 피드백</li><li>setNum으로 시작 값 정하기</li><li>호출 순서와 순간값</li></ul>
+
+  <div class="code" data-src="cmp15" data-cap="1부 counter60 vs 2부"></div>
+
+  <h2>코드</h2>
+  <div class="code" data-src="c60" data-cap="Counter60.java" data-file="classes/Counter60.java"></div>
+  <ul>
+    <li><code>s10.reset(q[2] &amp; q[1], 0, 0)</code>는 매 반복 호출됩니다. 10의 자리가 6이 아니면 R0 = 0이라 아무 변화가 없고, 6이 되는 순간에만 0이 됩니다.</li>
+    <li><code>setNum(5)</code>로 50초부터 시작해 59 → 00을 빨리 확인합니다.</li>
+  </ul>
+
+  <div class="lab" id="lab15">
+    <div class="lab-h"><b>직접 해보기</b><span id="l15time"></span></div>
+    <div class="row" style="gap:8px" id="l15ctl"></div>
+    <div class="clockface" id="l15face"></div>
+    <pre class="log" id="l15log" style="margin-top:12px"></pre>
+    <pre class="console" id="l15out" style="margin-top:12px"></pre>
+  </div>
+
+  <h3>실행 결과 (58초 ~ 00초 부분)</h3>
+  <div class="code out" data-src="o60" data-cap="콘솔"></div>
+
+  <h2>확인 문제</h2>
+  <details class="q"><summary><code>s10.reset(…)</code>을 <code>s10.setClock(…)</code>보다 <b>먼저</b> 부르면?</summary><div class="a">리셋이 지난 반복의 값(5)을 보고 판단하므로, 6이 된 뒤 한 반복 동안 남아 화면에 <b>59, 60, 01</b>처럼 보입니다. 1부 Step 9 확인 문제와 같은 현상입니다.</div></details>
+  <details class="q"><summary>30진 카운터(00 ~ 29)를 만들려면 R0에 무엇을 넣어야 할까요?</summary><div class="a">3 = <code>0011</code>이므로 <code>q[1] &amp; q[0]</code>입니다. 0 ~ 3 범위에서 b1과 b0이 모두 1인 값은 3뿐입니다.</div></details>
+
+  <h2>연습 과제</h2>
+  <ol class="task">
+    <li>시작 값을 매개변수로 받아 칩 두 개의 <code>setNum</code>을 한 번에 부르는 <code>static void setSec(TTL7490 s10, TTL7490 s1, int sec)</code>를 만들어 보세요.</li>
+  </ol>
+</section>
+
+<!-- ================= 2부 6단계 : MM:SS ================= -->
+<section class="step" id="step-16" data-n="16" data-part="2" data-k="6" data-title="카운터 4개: MM:SS" data-sub="ClockMMSS" hidden>
+  <div class="eyebrow">2부 · 6단계</div>
+  <h1>60진 카운터 두 개를 이어 MM:SS 만들기</h1>
+  <p class="lead">초가 59 → 00으로 넘어갈 때 분이 하나 올라가야 합니다. 초 10의 자리는 0 ~ 5만 오가므로 1부에서 쓰던 b3는 항상 0입니다. 이번에는 <b>b2</b>를 분의 클럭으로 씁니다.</p>
+  <ul class="goals"><li>분의 클럭 = 초 10의 자리 b2</li><li>칩 12개 조립</li><li>콜론 출력</li></ul>
+
+  <h2>왜 b2일까?</h2>
+  <div class="scroll">
+  <table class="data">
+    <thead><tr><th>초 10의 자리</th><th>b3 b2 b1 b0</th><th>b2 변화</th><th>분</th></tr></thead>
+    <tbody>
+      <tr><td>3 → 4</td><td>0011 → 0100</td><td>0 → 1 (상승)</td><td>유지</td></tr>
+      <tr><td>4 → 5</td><td>0100 → 0101</td><td>1 → 1</td><td>유지</td></tr>
+      <tr class="hit"><td>5 → (6) → 0</td><td>0101 → 0000</td><td>1 → 0 (하강)</td><td>+1</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>원본 <code>Main.java</code>의 <code>ttl7490_M1.setClock(ttl7490_S10.getOutput()[2])</code>가 바로 이 연결입니다.</p>
+
+  <h2>연결도</h2>
+  <div class="scroll">
+    <div class="pipe" style="flex-wrap:nowrap;width:max-content">
+      <div class="n"><small>외부</small><b>i % 2</b></div><span class="ar">→</span>
+      <div class="n m"><small>초 1</small><b>s1</b></div><span class="ar">b3 →</span>
+      <div class="n m"><small>초 10 · reset(b2&amp;b1)</small><b>s10</b></div><span class="ar">b2 →</span>
+      <div class="n m"><small>분 1</small><b>m1</b></div><span class="ar">b3 →</span>
+      <div class="n m"><small>분 10 · reset(b2&amp;b1)</small><b>m10</b></div>
+    </div>
+  </div>
+
+  <h2>코드</h2>
+  <div class="code" data-src="cmmss" data-cap="ClockMMSS.java" data-file="classes/ClockMMSS.java"></div>
+  <p>반복문 안의 호출 순서는 신호가 흐르는 순서(초 1 → 초 10 → 분 1 → 분 10)와 같아야 합니다. 앞 칩의 출력이 바뀐 뒤에 다음 칩의 <code>setClock</code>을 불러야 같은 반복 안에서 자리올림이 이어집니다.</p>
+
+  <div class="lab" id="lab16">
+    <div class="lab-h"><b>직접 해보기</b><span id="l16time"></span></div>
+    <div class="row" style="gap:8px" id="l16ctl"></div>
+    <div class="clockface" id="l16face"></div>
+    <pre class="log" id="l16log" style="margin-top:12px"></pre>
+    <pre class="console" id="l16out" style="margin-top:12px"></pre>
+  </div>
+
+  <h3>실행 결과 (59:59 → 00:01 부분)</h3>
+  <div class="code out" data-src="ommss" data-cap="콘솔"></div>
+
+  <div class="note"><b>main이 길어졌습니다.</b> 칩 변수 12개와 연결 코드가 모두 main 안에 있습니다. 시까지 더하면 18개가 됩니다. 다음 단계에서는 이 칩들을 <b>필드로 가진 시계 클래스</b>를 만들어 main을 몇 줄로 줄입니다.</div>
+
+  <h2>확인 문제</h2>
+  <details class="q"><summary><code>m1.setClock(s10.getOutput()[3])</code>으로 연결하면?</summary><div class="a">초 10의 자리 b3는 0 ~ 5에서 늘 0이라 하강 엣지가 생기지 않습니다. <b>분이 영원히 올라가지 않습니다.</b></div></details>
+  <details class="q"><summary>콜론 <code>@</code>를 1번, 3번 줄에만 찍는 이유는?</summary><div class="a">5줄 가운데 위아래로 점 두 개를 찍어 <code>:</code> 모양을 만들기 위해서입니다. 나머지 줄에는 같은 폭의 공백 두 칸을 출력해 자리가 어긋나지 않게 합니다.</div></details>
+
+  <h2>연습 과제</h2>
+  <ol class="task">
+    <li>시 카운터 두 개를 더해 24시간제 <code>HH:MM:SS</code>를 만들어 보세요. (23 → 00: 시 10의 자리 b1 &amp; 시 1의 자리 b2)</li>
+  </ol>
+</section>
+
+<!-- ================= 2부 7단계 : DigitalClock ================= -->
+<section class="step" id="step-17" data-n="17" data-part="2" data-k="7" data-title="DigitalClock 완성" data-sub="class DigitalClock" hidden>
+  <div class="eyebrow">2부 · 7단계</div>
+  <h1>DigitalClock 클래스로 시계 완성</h1>
+  <p class="lead">칩 18개를 필드로 가진 <code>DigitalClock</code> 클래스를 만듭니다. 객체가 다른 객체들을 부품으로 갖는 구조를 <b>조합(composition)</b>이라고 합니다. 연결은 클래스 안에 숨기고, 밖에서는 <code>setTime</code>, <code>setClock</code>, <code>display</code>만 부르면 됩니다. 시는 원본 <code>Main.java</code>처럼 12시간제와 AM/PM으로 만듭니다.</p>
+  <ul class="goals"><li>객체를 필드로 가진 클래스</li><li>13시 → 01시 리셋</li><li>AM/PM 전환과 toString</li></ul>
+
+  <div class="uml-grid">
+    <div class="uml"><div class="nm">DigitalClock</div><div class="f">- <b>h10, h1, m10, m1, s10, s1</b> : TTL7490<br>- <b>dec</b> : TTL7446[6]<br>- <b>fnd</b> : FND[6]<br>- <b>pm</b> : boolean<br>- <b>was11</b> : boolean</div><div class="m">+ DigitalClock()<br>+ <b>setTime</b>(h, m, s, isPm)<br>+ <b>setClock</b>(clk)<br>- <b>checkAmPm</b>()<br>- <b>update</b>()<br>+ <b>display</b>()<br>+ <b>toString</b>() : String</div></div>
+  </div>
+
+  <h2>시 카운터: 1 ~ 12</h2>
+  <p>시계의 시는 12 다음이 01입니다. 13이 되는 순간을 찾아 10의 자리는 R0로 0, 1의 자리는 <b>R1로 1</b>을 만듭니다. 7490에 R1이 있는 이유가 여기 있습니다.</p>
+  <div class="scroll">
+  <table class="data">
+    <thead><tr><th>시</th><th>10의 자리</th><th>1의 자리</th><th>h10 b0 &amp; h1 b1 &amp; h1 b0</th></tr></thead>
+    <tbody>
+      <tr><td>03</td><td>0000</td><td>0011</td><td>0</td></tr>
+      <tr><td>11</td><td>0001</td><td>0001</td><td>0</td></tr>
+      <tr><td>12</td><td>0001</td><td>0010</td><td>0</td></tr>
+      <tr class="hit"><td>13</td><td>0001</td><td>0011</td><td>1 → 01시로 리셋</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>생성자에서 <code>h10 = new TTL7490(0, 1, 0)</code>, <code>h1 = new TTL7490(0, 0, 1)</code>로 <b>12시</b>에서 시작하게 한 것도 R1, R2를 활용한 것입니다.</p>
+
+  <h2>AM/PM 전환</h2>
+  <p>11시 → 12시로 넘어가는 순간 AM과 PM이 바뀝니다. 단순히 "12시이면 바꾼다"로 하면 12:00 ~ 12:59 동안 매초 바뀌어 버리므로, <code>was11</code> 필드에 11시를 지나왔는지 기억해 두고 12시가 되는 <b>처음 한 번만</b> 바꿉니다. 원본의 <code>chk</code> 변수와 같은 역할입니다.</p>
+
+  <h2>코드</h2>
+  <div class="code" data-src="cclock" data-cap="DigitalClock.java" data-file="classes/DigitalClock.java"></div>
+  <ul>
+    <li><b>필드 초기화</b>: <code>private TTL7490 s1 = new TTL7490();</code>처럼 선언과 함께 객체를 만들면, 시계 객체가 생길 때 칩도 함께 생깁니다.</li>
+    <li><b><code>update()</code></b>: 1부 Step 4의 <code>dispNum</code>처럼 여러 단계를 한 번에 연결합니다. 칩 6개를 지역 배열 <code>cnt</code>에 담아 for문으로 처리합니다.</li>
+    <li><b><code>toString()</code></b>: <code>System.out.println(clock)</code>을 하면 자동으로 불립니다. <code>@Override</code>는 Object 클래스의 메서드를 다시 정의한다는 표시입니다.</li>
+  </ul>
+
+  <div class="code" data-src="cmain" data-cap="ClockMain.java" data-file="classes/ClockMain.java"></div>
+  <p>시계 객체 두 개는 칩 18개씩을 따로 가지므로 서로 영향을 주지 않습니다.</p>
+
+  <div class="lab" id="lab17">
+    <div class="lab-h"><b>직접 해보기</b><span id="l17time"></span></div>
+    <div class="row" style="gap:8px" id="l17ctl"></div>
+    <div class="clockface" id="l17face"></div>
+    <pre class="log" id="l17log" style="margin-top:12px"></pre>
+    <pre class="console" id="l17out" style="margin-top:12px"></pre>
+  </div>
+
+  <h3>실행 결과</h3>
+  <div class="code out" data-src="omain" data-cap="콘솔"></div>
+  <div class="note"><b>확인한 내용.</b> 이 클래스를 자정부터 24시간(86,400초) 동안 돌리며 매초 실제 시각과 비교해 모두 일치하는 것을 확인했습니다. 13시 → 01시 리셋과 AM/PM 전환도 포함됩니다.</div>
+
+  <div class="note"><b>원본 Main.java와 다른 점.</b> main의 지역 변수였던 칩들을 <code>DigitalClock</code>의 private 필드로 옮기고, 연결 코드를 <code>setClock()</code>, 출력 코드를 <code>display()</code>로 나눴습니다. <code>apm</code>은 <code>pm</code>, <code>chk</code>는 <code>was11</code>로 이름을 바꿨습니다.</div>
+
+  <h2>확인 문제</h2>
+  <details class="q"><summary>13시 리셋에서 <code>h1.reset(0, 1, 0)</code> 대신 <code>h1.reset(1, 0, 0)</code>을 쓰면?</summary><div class="a">12 다음이 <b>00시</b>가 됩니다. 12시간제 시계에는 0시가 없으므로 R1로 1을 만들어야 합니다.</div></details>
+  <details class="q"><summary><code>was11</code> 없이 "12시이면 <code>pm = !pm</code>"으로 하면?</summary><div class="a">12:00:00 ~ 12:59:59 동안 <code>setClock</code>이 불릴 때마다 AM/PM이 번갈아 바뀌어 깜빡입니다.</div></details>
+  <details class="q"><summary>밖에서 <code>clock.s1.setNum(5)</code>를 호출할 수 있을까요?</summary><div class="a">없습니다. <code>s1</code>은 private이라 컴파일 오류가 납니다. 시간은 <code>setTime()</code>으로만 바꾸게 해서, 칩 사이 연결이 어긋나지 않도록 보호합니다.</div></details>
+
+  <h2>연습 과제</h2>
+  <ol class="task">
+    <li><code>Thread.sleep(500)</code>을 넣어 실제 시간처럼 1초마다 움직이는 <code>run</code>을 만들어 보세요. (main에 <code>throws InterruptedException</code> 필요)</li>
+    <li>24시간제 <code>DigitalClock24</code> 클래스를 만들어 보세요.</li>
+    <li>알람 시각을 저장하는 <code>setAlarm(h, m, isPm)</code>과, 그 시각이 되면 <code>true</code>를 돌려주는 <code>isAlarm()</code>을 추가해 보세요.</li>
+  </ol>
+  <div class="note"><b>강좌를 마쳤습니다.</b> 1부에서 메서드로 만든 변환 로직이 2부에서 칩 클래스 안으로 들어갔고, 칩 객체를 조합해 시계를 완성했습니다. 같은 칩 클래스로 타이머, 스톱워치, 주사위 같은 다른 회로도 만들어 보세요.</div>
+</section>
+    </div>
+  </main>
+</div>
+
+<!-- ============ 코드 / 출력 원문 (StepN.java 에서 실행 확인) ============ -->
+<script type="text/plain" id="src1">public class Step1 {
+
+    // [Step 1] 10진수 -> 4비트 2진수 배열
+    // out[0] = 2^0 자리(LSB), out[3] = 2^3 자리(MSB)
+    static int[] cnvtDec2Bin(int num) {
+        int[] out = new int[4];
+
+        for (int i = 0; i < 4; i++) {
+            out[i] = num % 2;   // 나머지 = 현재 자리의 비트
+            num = num / 2;      // 몫으로 다음 자리 계산
+        }
+
+        return out;
+    }
+
+    // 같은 기능을 비트 연산으로 구현한 버전
+    static int[] cnvtDec2BinBit(int num) {
+        int[] out = new int[4];
+
+        for (int i = 0; i < 4; i++) {
+            out[i] = (num & 0x01);  // 맨 오른쪽 비트만 꺼냄
+            num >>= 1;              // 오른쪽으로 한 칸 이동
+        }
+
+        return out;
+    }
+
+    // 사람이 읽기 쉽게 MSB부터 출력
+    static void printBin(int[] bin) {
+        for (int i = 3; i >= 0; i--) {
+            System.out.print(bin[i]);
+        }
+    }
+
+    public static void main(String[] args) {
+        for (int n = 0; n < 10; n++) {
+            int[] bin = cnvtDec2Bin(n);
+
+            System.out.print(n + " -> ");
+            printBin(bin);
+            System.out.println("   배열: {" + bin[0] + "," + bin[1] + "," + bin[2] + "," + bin[3] + "}");
+        }
+    }
+}</script>
+<script type="text/plain" id="out1">0 -> 0000   배열: {0,0,0,0}
+1 -> 0001   배열: {1,0,0,0}
+2 -> 0010   배열: {0,1,0,0}
+3 -> 0011   배열: {1,1,0,0}
+4 -> 0100   배열: {0,0,1,0}
+5 -> 0101   배열: {1,0,1,0}
+6 -> 0110   배열: {0,1,1,0}
+7 -> 0111   배열: {1,1,1,0}
+8 -> 1000   배열: {0,0,0,1}
+9 -> 1001   배열: {1,0,0,1}</script>
+<script type="text/plain" id="src2">public class Step2 {
+
+    static int[] cnvtDec2Bin(int num) {      // Step 1
+        int[] out = new int[4];
+        for (int i = 0; i < 4; i++) {
+            out[i] = num % 2;
+            num = num / 2;
+        }
+        return out;
+    }
+
+    // [Step 2] 4비트 배열 -> FND 7비트 배열 {a, b, c, d, e, f, g}
+    // 1 = 세그먼트 켜짐
+    static int[] ttl7446(int[] bin) {
+        int[][] table = {
+            //a b c d e f g
+            {1,1,1,1,1,1,0},  // 0
+            {0,1,1,0,0,0,0},  // 1
+            {1,1,0,1,1,0,1},  // 2
+            {1,1,1,1,0,0,1},  // 3
+            {0,1,1,0,0,1,1},  // 4
+            {1,0,1,1,0,1,1},  // 5
+            {1,0,1,1,1,1,1},  // 6
+            {1,1,1,0,0,1,0},  // 7
+            {1,1,1,1,1,1,1},  // 8
+            {1,1,1,1,0,1,1}   // 9
+        };
+
+        // 4비트 -> 10진수 (가중치 8 4 2 1)
+        int num = bin[3] * 8 + bin[2] * 4 + bin[1] * 2 + bin[0];
+
+        // 10 ~ 15는 표에 없으므로 모두 끈다
+        if (num > 9) return new int[7];
+
+        return table[num];
+    }
+
+    static void printArray(int[] arr) {
+        System.out.print("{");
+        for (int i = 0; i < arr.length; i++) {
+            System.out.print(arr[i]);
+            if (i < arr.length - 1) System.out.print(",");
+        }
+        System.out.print("}");
+    }
+
+    public static void main(String[] args) {
+        for (int n = 0; n < 10; n++) {
+            int[] bin = cnvtDec2Bin(n);
+            int[] seg = ttl7446(bin);
+
+            System.out.print(n + " : bin=");
+            printArray(bin);
+            System.out.print("  seg=");
+            printArray(seg);
+            System.out.println();
+        }
+    }
+}</script>
+<script type="text/plain" id="out2">0 : bin={0,0,0,0}  seg={1,1,1,1,1,1,0}
+1 : bin={1,0,0,0}  seg={0,1,1,0,0,0,0}
+2 : bin={0,1,0,0}  seg={1,1,0,1,1,0,1}
+3 : bin={1,1,0,0}  seg={1,1,1,1,0,0,1}
+4 : bin={0,0,1,0}  seg={0,1,1,0,0,1,1}
+5 : bin={1,0,1,0}  seg={1,0,1,1,0,1,1}
+6 : bin={0,1,1,0}  seg={1,0,1,1,1,1,1}
+7 : bin={1,1,1,0}  seg={1,1,1,0,0,1,0}
+8 : bin={0,0,0,1}  seg={1,1,1,1,1,1,1}
+9 : bin={1,0,0,1}  seg={1,1,1,1,0,1,1}</script>
+<script type="text/plain" id="src3">public class Step3 {
+
+    // [Step 3] 7비트 세그먼트 데이터 -> 5x5 문자 배열
+    static char[][] makeFnd(int[] seg) {
+        char[][] fnd = new char[5][5];
+
+        // 1) 공백으로 초기화
+        for (int i = 0; i < 5; i++)
+            for (int j = 0; j < 5; j++)
+                fnd[i][j] = ' ';
+
+        // 2) 켜진 세그먼트 위치에 '#' 채우기
+        if (seg[0] == 1) for (int i = 0; i < 5; i++) fnd[0][i]   = '#';  // a : 윗줄
+        if (seg[1] == 1) for (int i = 0; i < 3; i++) fnd[i][4]   = '#';  // b : 오른쪽 위
+        if (seg[2] == 1) for (int i = 0; i < 3; i++) fnd[i+2][4] = '#';  // c : 오른쪽 아래
+        if (seg[3] == 1) for (int i = 0; i < 5; i++) fnd[4][i]   = '#';  // d : 아랫줄
+        if (seg[4] == 1) for (int i = 0; i < 3; i++) fnd[i+2][0] = '#';  // e : 왼쪽 아래
+        if (seg[5] == 1) for (int i = 0; i < 3; i++) fnd[i][0]   = '#';  // f : 왼쪽 위
+        if (seg[6] == 1) for (int i = 0; i < 5; i++) fnd[2][i]   = '#';  // g : 가운데
+
+        return fnd;
+    }
+
+    // 5x5 문자 배열을 콘솔에 출력
+    static void printFnd(char[][] fnd) {
+        for (int i = 0; i < 5; i++) {
+            for (int j = 0; j < 5; j++) {
+                System.out.print(fnd[i][j]);
+            }
+            System.out.println();
+        }
+        System.out.println();
+    }
+
+    public static void main(String[] args) {
+        // 0 ~ 9 의 세그먼트 데이터를 직접 넣어서 모양 확인
+        int[][] segData = {
+            {1,1,1,1,1,1,0}, {0,1,1,0,0,0,0}, {1,1,0,1,1,0,1},
+            {1,1,1,1,0,0,1}, {0,1,1,0,0,1,1}, {1,0,1,1,0,1,1},
+            {1,0,1,1,1,1,1}, {1,1,1,0,0,1,0}, {1,1,1,1,1,1,1},
+            {1,1,1,1,0,1,1}
+        };
+
+        for (int n = 0; n < 10; n++) {
+            System.out.println("[" + n + "]");
+            printFnd(makeFnd(segData[n]));
+        }
+    }
+}</script>
+<script type="text/plain" id="out3">[0]
+#####
+#   #
+#   #
+#   #
+#####
+
+[1]
+    #
+    #
+    #
+    #
+    #
+
+[2]
+#####
+    #
+#####
+#
+#####
+
+... ([3] ~ [9] 생략)</script>
+<script type="text/plain" id="src4">public class Step4 {
+
+    // cnvtDec2Bin()        : Step 1 과 동일
+    // ttl7446()            : Step 2 와 동일
+    // makeFnd(), printFnd(): Step 3 과 동일
+    //   (전체 코드는 steps/Step4.java 참고)
+
+    // [Step 4] 1 ~ 3단계 메서드를 연결
+    //   10진수 -> cnvtDec2Bin -> ttl7446 -> makeFnd -> printFnd
+    static void dispNum(int n) {
+        int[] bin    = cnvtDec2Bin(n);   // Step 1
+        int[] seg    = ttl7446(bin);     // Step 2
+        char[][] fnd = makeFnd(seg);     // Step 3
+        printFnd(fnd);                   // Step 3
+    }
+
+    public static void main(String[] args) {
+        for (int n = 0; n < 10; n++) {
+            dispNum(n);
+        }
+    }
+}</script>
+<script type="text/plain" id="src4b">static void dispNum(int n) {
+    printFnd(makeFnd(ttl7446(cnvtDec2Bin(n))));   // 안쪽부터 실행
+}</script>
+<script type="text/plain" id="out4">#####
+#   #
+#   #
+#   #
+#####
+
+    #
+    #
+    #
+    #
+    #
+
+#####
+    #
+#####
+#
+#####
+
+... (3 ~ 9 생략)</script>
+<script type="text/plain" id="loopdiag">for row = 0 ~ 4 :                       ← 바깥: 줄
+    for k = 0 ~ 3 :                     ← 가운데: 자리(천·백·십·일)
+        fnds[k][row][0 ~ 4] 출력         ← 안쪽: 칸
+        "  " 출력
+    줄바꿈
+
+row 0 →  #####  #####  #####  #####
+row 1 →      #  #   #      #  #
+row 2 →  #####  #   #  #####  #####
+row 3 →  #      #   #  #      #   #
+row 4 →  #####  #####  #####  #####
+          k=0    k=1    k=2    k=3</script>
+<script type="text/plain" id="src5">public class Step5 {
+
+    // cnvtDec2Bin(), ttl7446(), makeFnd() : Step 1 ~ 3 과 동일
+
+    // [Step 5-1] 한 자리(digit) = Step 1 ~ 3 을 묶은 메서드
+    static char[][] digit(int n) {
+        return makeFnd(ttl7446(cnvtDec2Bin(n)));
+    }
+
+    // [Step 5-2] 0 ~ 9999 -> 자릿수 4개 {천, 백, 십, 일}
+    static int[] splitDigits(int num) {
+        int[] d = new int[4];
+        d[0] = num / 1000 % 10;   // 천의 자리
+        d[1] = num / 100  % 10;   // 백의 자리
+        d[2] = num / 10   % 10;   // 십의 자리
+        d[3] = num        % 10;   // 일의 자리
+        return d;
+    }
+
+    // [Step 5-3] 여러 개의 FND를 가로로 나란히 출력
+    //   바깥 for = 줄(row), 가운데 for = 자리(k), 안쪽 for = 칸(col)
+    static void printFnds(char[][][] fnds) {
+        for (int row = 0; row < 5; row++) {
+            for (int k = 0; k < fnds.length; k++) {
+                for (int col = 0; col < 5; col++) {
+                    System.out.print(fnds[k][row][col]);
+                }
+                System.out.print("  ");   // 자리 사이 간격
+            }
+            System.out.println();
+        }
+        System.out.println();
+    }
+
+    // [Step 5-4] 0 ~ 9999 를 4자리 FND로 표시
+    static void dispNum4(int num) {
+        int[] d = splitDigits(num);
+        char[][][] fnds = new char[4][][];
+
+        for (int k = 0; k < 4; k++) {
+            fnds[k] = digit(d[k]);
+        }
+
+        printFnds(fnds);
+    }
+
+    public static void main(String[] args) {
+        for (int n = 0; n <= 9999; n++) {
+            dispNum4(n);
+        }
+    }
+}</script>
+<script type="text/plain" id="out5">#####  #####  #####  #####
+#   #  #   #  #   #  #   #
+#   #  #   #  #   #  #   #
+#   #  #   #  #   #  #   #
+#####  #####  #####  #####
+
+#####  #####  #####      #
+#   #  #   #  #   #      #
+#   #  #   #  #   #      #
+#   #  #   #  #   #      #
+#####  #####  #####      #
+
+#####  #####  #####  #####
+#   #  #   #  #   #      #
+#   #  #   #  #   #  #####
+#   #  #   #  #   #  #
+#####  #####  #####  #####
+
+... (0003 ~ 9998 생략, 총 60,000줄)
+
+#####  #####  #####  #####
+#   #  #   #  #   #  #   #
+#####  #####  #####  #####
+    #      #      #      #
+#####  #####  #####  #####</script>
+<script type="text/plain" id="src6">public class Step6 {
+
+    static int cnt = 0;      // 현재 카운트 값 (0 ~ 9)
+    static int oldclk = 0;   // 직전 clk 값 (엣지 검출용)
+
+    // cnvtDec2Bin() : Step 1 과 동일
+
+    // [Step 6] 10진 카운터 TTL 7490
+    //   R0 = 1 -> 0으로 초기화
+    //   R1 = 1 -> 1로 초기화
+    //   R2 = 1 -> 2로 초기화
+    //   clk 가 1 -> 0 으로 바뀔 때(하강 엣지) 카운트 업
+    static int[] ttl7490(int clk, int R0, int R1, int R2) {
+        if (R0 == 1) {
+            oldclk = 0;
+            cnt = 0;
+        }
+        else if (R1 == 1) {
+            oldclk = 0;
+            cnt = 1;
+        }
+        else if (R2 == 1) {
+            oldclk = 0;
+            cnt = 2;
+        }
+        else {
+            if (clk == 0 && oldclk == 1) {   // 하강 엣지
+                if (++cnt == 10) cnt = 0;    // 9 다음은 0
+            }
+            oldclk = clk;                    // 현재 값을 기억
+        }
+
+        return cnvtDec2Bin(cnt);
+    }
+
+    static void printBin(int[] bin) {
+        for (int i = 3; i >= 0; i--) System.out.print(bin[i]);
+    }
+
+    // 입력을 넣고 결과를 한 줄로 출력하는 테스트 도우미
+    static void test(int clk, int R0, int R1, int R2) {
+        int before = oldclk;
+        int[] q = ttl7490(clk, R0, R1, R2);
+
+        System.out.print("clk=" + clk + " R0=" + R0 + " R1=" + R1 + " R2=" + R2);
+        System.out.print("  (oldclk=" + before + ")  -> cnt=" + cnt + "  Q=");
+        printBin(q);
+        System.out.println();
+    }
+
+    public static void main(String[] args) {
+        test(0, 1, 0, 0);   // R0 : 0으로 초기화
+        test(1, 0, 0, 0);   // 0 -> 1 : 상승 엣지, 변화 없음
+        test(0, 0, 0, 0);   // 1 -> 0 : 하강 엣지, 카운트 업
+        test(0, 0, 0, 0);   // 0 -> 0 : 변화 없음
+        test(1, 0, 0, 0);
+        test(0, 0, 0, 0);   // 하강 엣지, 카운트 업
+        test(0, 0, 1, 0);   // R1 : 1로 초기화
+        test(0, 0, 0, 1);   // R2 : 2로 초기화
+        test(1, 0, 0, 0);
+        test(0, 0, 0, 0);   // 하강 엣지, 카운트 업
+    }
+}</script>
+<script type="text/plain" id="out6">clk=0 R0=1 R1=0 R2=0  (oldclk=0)  -> cnt=0  Q=0000
+clk=1 R0=0 R1=0 R2=0  (oldclk=0)  -> cnt=0  Q=0000
+clk=0 R0=0 R1=0 R2=0  (oldclk=1)  -> cnt=1  Q=0001
+clk=0 R0=0 R1=0 R2=0  (oldclk=0)  -> cnt=1  Q=0001
+clk=1 R0=0 R1=0 R2=0  (oldclk=0)  -> cnt=1  Q=0001
+clk=0 R0=0 R1=0 R2=0  (oldclk=1)  -> cnt=2  Q=0010
+clk=0 R0=0 R1=1 R2=0  (oldclk=0)  -> cnt=1  Q=0001
+clk=0 R0=0 R1=0 R2=1  (oldclk=0)  -> cnt=2  Q=0010
+clk=1 R0=0 R1=0 R2=0  (oldclk=0)  -> cnt=2  Q=0010
+clk=0 R0=0 R1=0 R2=0  (oldclk=1)  -> cnt=3  Q=0011</script>
+<script type="text/plain" id="src7">public class Step7 {
+
+    static int cnt = 0;
+    static int oldclk = 0;
+
+    // cnvtDec2Bin()        : Step 1
+    // ttl7446()            : Step 2
+    // makeFnd(), printFnd(): Step 3
+    // ttl7490()            : Step 6
+
+    public static void main(String[] args) {
+        ttl7490(0, 1, 0, 0);                // 시작 전에 0으로 초기화
+
+        for (int i = 0; i < 20; i++) {
+            int clk = i % 2;                // 0,1,0,1,... 클럭 생성
+            int[] q = ttl7490(clk, 0, 0, 0);
+
+            if (clk == 0) {                 // clk가 0일 때만 표시
+                System.out.println("i=" + i + "  count=" + cnt);
+                printFnd(makeFnd(ttl7446(q)));   // 7490 -> 7446 -> FND
+            }
+        }
+    }
+}</script>
+<script type="text/plain" id="out7">i=0  count=0
+#####
+#   #
+#   #
+#   #
+#####
+
+i=2  count=1
+    #
+    #
+    #
+    #
+    #
+
+i=4  count=2
+#####
+    #
+#####
+#
+#####
+
+... (i=6 ~ i=18 : count 3 ~ 9 생략)</script>
+<script type="text/plain" id="src8a">// Step 6 : 카운터 1개
+static int cnt = 0;
+static int oldclk = 0;
+static int[] ttl7490(int clk, int R0, int R1, int R2) { ... cnt ... oldclk ... }
+
+// Step 8 : 카운터 여러 개 -> 배열 + 카운터 번호(id)
+static final int ONE = 0;   // 1의 자리
+static final int TEN = 1;   // 10의 자리
+
+static int[] cnt    = new int[2];
+static int[] oldclk = new int[2];
+static int[] ttl7490(int id, int clk, int R0, int R1, int R2) { ... cnt[id] ... oldclk[id] ... }</script>
+<script type="text/plain" id="src8">public class Step8 {
+
+    static final int ONE = 0;   // 1의 자리 카운터 번호
+    static final int TEN = 1;   // 10의 자리 카운터 번호
+
+    static int[] cnt    = new int[2];   // 카운터마다 따로 기억
+    static int[] oldclk = new int[2];
+
+    // cnvtDec2Bin() : Step 1,  ttl7446() : Step 2
+    // makeFnd()     : Step 3,  printFnds() : Step 5
+
+    // [Step 8-1] 카운터 번호(id)를 함께 받는 ttl7490
+    static int[] ttl7490(int id, int clk, int R0, int R1, int R2) {
+        if (R0 == 1)      { oldclk[id] = 0; cnt[id] = 0; }
+        else if (R1 == 1) { oldclk[id] = 0; cnt[id] = 1; }
+        else if (R2 == 1) { oldclk[id] = 0; cnt[id] = 2; }
+        else {
+            if (clk == 0 && oldclk[id] == 1) {
+                if (++cnt[id] == 10) cnt[id] = 0;
+            }
+            oldclk[id] = clk;
+        }
+        return cnvtDec2Bin(cnt[id]);
+    }
+
+    // [Step 8-2] 100진 카운터 (00 ~ 99)
+    //   반환: {10의 자리 Q, 1의 자리 Q}
+    static int[][] counter100(int clk) {
+        int[] q1  = ttl7490(ONE, clk,   0, 0, 0);   // 1의 자리
+        int[] q10 = ttl7490(TEN, q1[3], 0, 0, 0);   // 10의 자리 clk = 1의 자리 b3
+
+        return new int[][] { q10, q1 };
+    }
+
+    // [Step 8-3] 여러 자리의 Q를 FND로 가로 출력
+    static void dispCounter(int[][] q) {
+        char[][][] fnds = new char[q.length][][];
+
+        for (int k = 0; k < q.length; k++) {
+            fnds[k] = makeFnd(ttl7446(q[k]));
+        }
+
+        printFnds(fnds);
+    }
+
+    public static void main(String[] args) {
+        ttl7490(ONE, 0, 1, 0, 0);          // 두 카운터 모두 0으로 초기화
+        ttl7490(TEN, 0, 1, 0, 0);
+
+        for (int i = 0; i < 202; i++) {
+            int clk = i % 2;
+            int[][] q = counter100(clk);
+
+            if (clk == 0) {
+                System.out.println("i=" + i + "  count=" + cnt[TEN] + cnt[ONE]);
+                dispCounter(q);
+            }
+        }
+    }
+}</script>
+<script type="text/plain" id="out8">... (count=00 ~ 08 생략)
+
+i=18  count=09
+#####  #####
+#   #  #   #
+#   #  #####
+#   #      #
+#####  #####
+
+i=20  count=10
+    #  #####
+    #  #   #
+    #  #   #
+    #  #   #
+    #  #####
+
+... (count=11 ~ 98 생략)
+
+i=198  count=99
+#####  #####
+#   #  #   #
+#####  #####
+    #      #
+#####  #####
+
+i=200  count=00
+#####  #####
+#   #  #   #
+#   #  #   #
+#   #  #   #
+#####  #####</script>
+<script type="text/plain" id="src9">public class Step9 {
+
+    // ONE, TEN, cnt[], oldclk[]          : Step 8 과 동일
+    // ttl7490(id, ...), dispCounter()     : Step 8 과 동일
+    // cnvtDec2Bin, ttl7446, makeFnd, printFnds
+
+    // [Step 9] 60진 카운터 (00 ~ 59)
+    //   10의 자리가 6(0110)이 되면 b2 & b1 = 1 -> R0 = 1 -> 즉시 0
+    //   반환: {10의 자리 Q, 1의 자리 Q}
+    static int[][] counter60(int clk) {
+        int[] q1  = ttl7490(ONE, clk,   0, 0, 0);    // 1의 자리
+        int[] q10 = ttl7490(TEN, q1[3], 0, 0, 0);    // 10의 자리 clk = 1의 자리 b3
+
+        int r0 = q10[2] & q10[1];                    // 6 = 0110 -> b2, b1 이 모두 1
+        q10 = ttl7490(TEN, q1[3], r0, 0, 0);         // 출력을 R0로 되돌려 연결
+
+        return new int[][] { q10, q1 };
+    }
+
+    public static void main(String[] args) {
+        ttl7490(ONE, 0, 1, 0, 0);          // 두 카운터 모두 0으로 초기화
+        ttl7490(TEN, 0, 1, 0, 0);
+
+        for (int i = 0; i < 122; i++) {
+            int clk = i % 2;
+            int[][] q = counter60(clk);
+
+            if (clk == 0) {
+                System.out.println("i=" + i + "  count=" + cnt[TEN] + cnt[ONE]);
+                dispCounter(q);
+            }
+        }
+    }
+}</script>
+<script type="text/plain" id="cmp10">// ---- 1부 : 메서드 + static 배열 ----
+static final int S1 = 0, S10 = 1, M1 = 2, M10 = 3, H1 = 4, H10 = 5;
+static int[] cnt    = new int[6];      // 카운터 6개의 값
+static int[] oldclk = new int[6];      // 카운터 6개의 이전 클럭
+
+int[] qs1  = ttl7490(S1,  clk,    0, 0, 0);
+int[] qs10 = ttl7490(S10, qs1[3], 0, 0, 0);
+//                   ^^^ 번호를 잘못 쓰면 다른 카운터의 값이 조용히 바뀜
+
+// ---- 2부 : 클래스 + 객체 ----
+TTL7490 s1  = new TTL7490();           // 칩마다 num, oldclk 을 스스로 가짐
+TTL7490 s10 = new TTL7490();
+
+s1.setClock(clk);
+s10.setClock(s1.getOutput()[3]);       // "s1 의 b3 를 s10 의 clk 에" 그대로 읽힘</script>
+<script type="text/plain" id="cmp15">// ---- 1부 Step 9 : 같은 메서드를 두 번 호출 ----
+int[] q10 = ttl7490(TEN, q1[3], 0, 0, 0);      // 1) 카운트
+int r0 = q10[2] & q10[1];
+q10 = ttl7490(TEN, q1[3], r0, 0, 0);           // 2) 같은 clk 로 다시 호출해 리셋
+
+// ---- 2부 : 핀마다 메서드가 따로 ----
+s10.setClock(s1.getOutput()[3]);               // clk 핀
+s10.reset(s10.getOutput()[2] & s10.getOutput()[1], 0, 0);   // R0 핀</script>
+<script type="text/plain" id="c7490">// TTL 7490 : 10진 카운터 칩
+class TTL7490 {
+
+    // ---- 필드 : 칩이 기억하는 상태 ----
+    private int num;                     // 현재 카운트 값 (0 ~ 9)
+    private int oldclk;                  // 직전 clk 값 (엣지 검출용)
+    private int[] output = new int[4];   // 출력 핀 b0 ~ b3
+
+    // ---- 생성자 : 전원을 켰을 때의 상태 ----
+    TTL7490() {
+        this(1, 0, 0);                   // 기본은 0으로 초기화
+    }
+
+    TTL7490(int R0, int R1, int R2) {
+        oldclk = 0;
+        reset(R0, R1, R2);
+    }
+
+    // num -> 4비트 출력 (1부 Step 1 의 cnvtDec2Bin)
+    private void cnvt() {
+        int n = num;
+        for (int i = 0; i < 4; i++) {
+            output[i] = n % 2;
+            n = n / 2;
+        }
+    }
+
+    // clk 입력 핀 : 1 -> 0 으로 바뀔 때 카운트 업
+    public void setClock(int clk) {
+        if (clk == 0 && oldclk == 1) {
+            if (++num == 10) num = 0;
+            cnvt();
+        }
+        oldclk = clk;
+    }
+
+    // 리셋 입력 핀 : R0 -> 0, R1 -> 1, R2 -> 2
+    public void reset(int R0, int R1, int R2) {
+        if (R0 == 1)      num = 0;
+        else if (R1 == 1) num = 1;
+        else if (R2 == 1) num = 2;
+        cnvt();
+    }
+
+    // 출력 핀 b0 ~ b3
+    public int[] getOutput() {
+        return output;
+    }
+
+    // 원하는 값으로 맞추기 (시계의 시간 설정용)
+    public void setNum(int n) {
+        num = n % 10;
+        cnvt();
+    }
+
+    public int getNum() {
+        return num;
+    }
+}</script>
+<script type="text/plain" id="c7446">// TTL 7446 : BCD -> 7세그먼트 디코더 칩
+class TTL7446 {
+
+    // 진리표 {a,b,c,d,e,f,g} : 모든 7446 객체가 함께 쓰므로 static
+    private static final int[][] TABLE = {
+        {1,1,1,1,1,1,0},  // 0
+        {0,1,1,0,0,0,0},  // 1
+        {1,1,0,1,1,0,1},  // 2
+        {1,1,1,1,0,0,1},  // 3
+        {0,1,1,0,0,1,1},  // 4
+        {1,0,1,1,0,1,1},  // 5
+        {1,0,1,1,1,1,1},  // 6
+        {1,1,1,0,0,1,0},  // 7
+        {1,1,1,1,1,1,1},  // 8
+        {1,1,1,1,0,1,1}   // 9
+    };
+
+    // ---- 필드 ----
+    private int[] input;                 // 입력 핀 b0 ~ b3
+    private int[] output = new int[7];   // 출력 핀 a ~ g
+    private int num;                     // 입력을 10진수로 읽은 값
+
+    // ---- 생성자 ----
+    TTL7446() {
+        this(new int[4]);                // 입력 0000
+    }
+
+    TTL7446(int[] in) {
+        setInput(in);
+    }
+
+    // 입력 4비트 -> 7세그먼트 출력 (1부 Step 2 의 ttl7446)
+    private void cnvt() {
+        num = input[3] * 8 + input[2] * 4 + input[1] * 2 + input[0];
+
+        if (num > 9) output = new int[7];       // 10 ~ 15 는 모두 끔
+        else         output = TABLE[num].clone(); // 표 원본은 지킨다
+    }
+
+    // 입력 핀에 신호 연결
+    public void setInput(int[] in) {
+        input = in;
+        cnvt();
+    }
+
+    // 출력 핀 a ~ g
+    public int[] getOutput() {
+        return output;
+    }
+
+    public int getNum() {
+        return num;
+    }
+}</script>
+<script type="text/plain" id="cfnd">// FND : 7세그먼트 표시기를 5x5 문자로 흉내
+class FND {
+
+    // ---- 필드 ----
+    private int[] input = new int[7];        // 입력 핀 a ~ g
+    private char[][] seg = new char[5][5];   // 화면
+    private char ch;                         // 켜진 칸에 찍을 문자
+
+    // ---- 생성자 (오버로딩) ----
+    FND() {
+        this('#');
+    }
+
+    FND(char c) {
+        ch = c;
+        cnvt();
+    }
+
+    FND(char c, int[] in) {
+        ch = c;
+        setInput(in);
+    }
+
+    private void clear() {
+        for (int i = 0; i < 5; i++)
+            for (int j = 0; j < 5; j++)
+                seg[i][j] = ' ';
+    }
+
+    // 입력 a ~ g -> 5x5 화면 (1부 Step 3 의 makeFnd)
+    private void cnvt() {
+        clear();
+
+        if (input[0] == 1) for (int i = 0; i < 5; i++) seg[0][i]   = ch;  // a
+        if (input[1] == 1) for (int i = 0; i < 3; i++) seg[i][4]   = ch;  // b
+        if (input[2] == 1) for (int i = 0; i < 3; i++) seg[i+2][4] = ch;  // c
+        if (input[3] == 1) for (int i = 0; i < 5; i++) seg[4][i]   = ch;  // d
+        if (input[4] == 1) for (int i = 0; i < 3; i++) seg[i+2][0] = ch;  // e
+        if (input[5] == 1) for (int i = 0; i < 3; i++) seg[i][0]   = ch;  // f
+        if (input[6] == 1) for (int i = 0; i < 5; i++) seg[2][i]   = ch;  // g
+    }
+
+    public void setChar(char c) {
+        ch = c;
+        cnvt();                              // 문자가 바뀌면 화면도 다시 그림
+    }
+
+    public void setInput(int[] in) {
+        input = in;
+        cnvt();
+    }
+
+    // 한 자리 전체 출력 (세로 5줄)
+    public void dispFnd() {
+        for (int i = 0; i < 5; i++) {
+            for (int j = 0; j < 5; j++) {
+                System.out.print(seg[i][j]);
+            }
+            System.out.println();
+        }
+        System.out.println();
+    }
+
+    // line 번째 줄만 출력 (여러 자리를 가로로 이어 붙일 때)
+    public void dispFnd(int line) {
+        for (int j = 0; j < 5; j++) {
+            System.out.print(seg[line][j]);
+        }
+        System.out.print(" ");
+    }
+}</script>
+<script type="text/plain" id="ct7490">public class Test7490 {
+
+    static void printBin(int[] q) {
+        for (int i = 3; i >= 0; i--) System.out.print(q[i]);
+    }
+
+    public static void main(String[] args) {
+        TTL7490 a = new TTL7490();           // 0 에서 시작
+        TTL7490 b = new TTL7490(0, 0, 1);    // R2 -> 2 에서 시작
+
+        for (int i = 0; i < 8; i++) {
+            int clk = i % 2;
+            a.setClock(clk);                 // a 에만 클럭을 넣는다
+
+            if (clk == 0) {
+                System.out.print("i=" + i + "  a=" + a.getNum() + " (");
+                printBin(a.getOutput());
+                System.out.println(")   b=" + b.getNum());
+            }
+        }
+
+        b.reset(0, 1, 0);                    // b 만 1로 초기화
+        System.out.println("b.reset(0,1,0)  ->  a=" + a.getNum() + ", b=" + b.getNum());
+    }
+}</script>
+<script type="text/plain" id="ct7446">public class Test7446 {
+
+    static void printArray(int[] arr) {
+        System.out.print("{");
+        for (int i = 0; i < arr.length; i++) {
+            System.out.print(arr[i]);
+            if (i < arr.length - 1) System.out.print(",");
+        }
+        System.out.print("}");
+    }
+
+    public static void main(String[] args) {
+        TTL7490 counter = new TTL7490();
+        TTL7446 decoder = new TTL7446();
+
+        for (int i = 0; i < 20; i++) {
+            counter.setClock(i % 2);
+
+            if (i % 2 == 0) {
+                decoder.setInput(counter.getOutput());   // 7490 출력 -> 7446 입력
+                System.out.print("num=" + decoder.getNum() + "  seg=");
+                printArray(decoder.getOutput());
+                System.out.println();
+            }
+        }
+
+        // setInput 을 부르지 않으면?
+        counter.setClock(1);
+        counter.setClock(0);                             // 9 -> 0
+        System.out.println("counter=" + counter.getNum() + ", decoder=" + decoder.getNum() + "  (setInput 전)");
+        decoder.setInput(counter.getOutput());
+        System.out.println("counter=" + counter.getNum() + ", decoder=" + decoder.getNum() + "  (setInput 후)");
+    }
+}</script>
+<script type="text/plain" id="ctfnd">public class TestFND {
+
+    // 숫자 n 을 표시하는 FND 객체 만들기 (7490 -> 7446 -> FND)
+    static FND makeDigit(int n, char c) {
+        TTL7490 counter = new TTL7490();
+        counter.setNum(n);
+
+        TTL7446 decoder = new TTL7446(counter.getOutput());
+        return new FND(c, decoder.getOutput());
+    }
+
+    public static void main(String[] args) {
+        // 1) 한 자리 세로 출력
+        FND seven = makeDigit(7, '#');
+        seven.dispFnd();
+
+        // 2) 문자만 바꾸기
+        seven.setChar('*');
+        seven.dispFnd();
+
+        // 3) 여러 자리 가로 출력 : 줄(line) 단위로
+        FND[] fnds = new FND[5];
+        for (int k = 0; k < 5; k++) {
+            fnds[k] = makeDigit(k * 2, '@');     // 0 2 4 6 8
+        }
+
+        for (int line = 0; line < 5; line++) {
+            for (int k = 0; k < fnds.length; k++) {
+                fnds[k].dispFnd(line);
+            }
+            System.out.println();
+        }
+    }
+}</script>
+<script type="text/plain" id="c100">public class Counter100 {
+
+    // 7490 -> 7446 -> FND 전선 연결 (값이 바뀐 뒤 호출)
+    static void wire(TTL7490 c, TTL7446 d, FND f) {
+        d.setInput(c.getOutput());
+        f.setInput(d.getOutput());
+    }
+
+    public static void main(String[] args) {
+        TTL7490 c1  = new TTL7490();     // 1의 자리 칩 세트
+        TTL7446 d1  = new TTL7446();
+        FND     f1  = new FND();
+
+        TTL7490 c10 = new TTL7490();     // 10의 자리 칩 세트
+        TTL7446 d10 = new TTL7446();
+        FND     f10 = new FND();
+
+        for (int i = 0; i < 202; i++) {
+            c1.setClock(i % 2);                  // 1의 자리 : 외부 클럭
+            c10.setClock(c1.getOutput()[3]);     // 10의 자리 : 1의 자리 b3
+
+            if (i % 2 == 0) {
+                wire(c10, d10, f10);
+                wire(c1, d1, f1);
+
+                for (int line = 0; line < 5; line++) {
+                    f10.dispFnd(line);
+                    f1.dispFnd(line);
+                    System.out.println();
+                }
+                System.out.println();
+            }
+        }
+    }
+}</script>
+<script type="text/plain" id="c60">public class Counter60 {
+
+    static void wire(TTL7490 c, TTL7446 d, FND f) {
+        d.setInput(c.getOutput());
+        f.setInput(d.getOutput());
+    }
+
+    public static void main(String[] args) {
+        TTL7490 s1  = new TTL7490();   TTL7446 d1  = new TTL7446();   FND f1  = new FND();
+        TTL7490 s10 = new TTL7490();   TTL7446 d10 = new TTL7446();   FND f10 = new FND();
+
+        s10.setNum(5);                                   // 50초부터 시작
+        s1.setNum(0);
+
+        for (int i = 0; i < 24; i++) {
+            s1.setClock(i % 2);
+            s10.setClock(s1.getOutput()[3]);             // 자리올림
+
+            int[] q = s10.getOutput();
+            s10.reset(q[2] & q[1], 0, 0);                // 6 이면 R0 = 1 -> 0
+
+            if (i % 2 == 0) {
+                wire(s10, d10, f10);
+                wire(s1, d1, f1);
+
+                System.out.println("[" + s10.getNum() + s1.getNum() + "초]");
+                for (int line = 0; line < 5; line++) {
+                    f10.dispFnd(line);
+                    f1.dispFnd(line);
+                    System.out.println();
+                }
+                System.out.println();
+            }
+        }
+    }
+}</script>
+<script type="text/plain" id="cmmss">public class ClockMMSS {
+
+    static void wire(TTL7490 c, TTL7446 d, FND f) {
+        d.setInput(c.getOutput());
+        f.setInput(d.getOutput());
+    }
+
+    public static void main(String[] args) {
+        // 분 10 | 분 1 | 초 10 | 초 1
+        TTL7490 m10 = new TTL7490(), m1 = new TTL7490(), s10 = new TTL7490(), s1 = new TTL7490();
+        TTL7446 dm10 = new TTL7446(), dm1 = new TTL7446(), ds10 = new TTL7446(), ds1 = new TTL7446();
+        FND     fm10 = new FND(),     fm1 = new FND(),     fs10 = new FND(),     fs1 = new FND();
+
+        m10.setNum(5);  m1.setNum(9);                    // 59:50 부터 시작
+        s10.setNum(5);  s1.setNum(0);
+
+        for (int i = 0; i < 24; i++) {
+            // ---- 초 : 60진 ----
+            s1.setClock(i % 2);
+            s10.setClock(s1.getOutput()[3]);
+            s10.reset(s10.getOutput()[2] & s10.getOutput()[1], 0, 0);
+
+            // ---- 분 : 60진, 클럭 = 초 10의 자리 b2 ----
+            m1.setClock(s10.getOutput()[2]);
+            m10.setClock(m1.getOutput()[3]);
+            m10.reset(m10.getOutput()[2] & m10.getOutput()[1], 0, 0);
+
+            if (i % 2 == 0) {
+                wire(m10, dm10, fm10);  wire(m1, dm1, fm1);
+                wire(s10, ds10, fs10);  wire(s1, ds1, fs1);
+
+                for (int line = 0; line < 5; line++) {
+                    fm10.dispFnd(line);
+                    fm1.dispFnd(line);
+                    System.out.print((line == 1 || line == 3) ? "@ " : "  ");   // 콜론
+                    fs10.dispFnd(line);
+                    fs1.dispFnd(line);
+                    System.out.println();
+                }
+                System.out.println();
+            }
+        }
+    }
+}</script>
+<script type="text/plain" id="cclock">// 디지털 시계 : 칩 객체들을 필드로 가진 클래스 (12시간제, AM/PM)
+class DigitalClock {
+
+    // ---- 카운터 칩 6개 ----
+    private TTL7490 h10 = new TTL7490(0, 1, 0);   // 1  -> 12:00:00 에서 시작
+    private TTL7490 h1  = new TTL7490(0, 0, 1);   // 2
+    private TTL7490 m10 = new TTL7490();
+    private TTL7490 m1  = new TTL7490();
+    private TTL7490 s10 = new TTL7490();
+    private TTL7490 s1  = new TTL7490();
+
+    // ---- 디코더와 표시기 6개씩 (순서 : 시10, 시1, 분10, 분1, 초10, 초1) ----
+    private TTL7446[] dec = new TTL7446[6];
+    private FND[]     fnd = new FND[6];
+
+    private boolean pm = false;      // false = AM, true = PM
+    private boolean was11 = false;   // 11시를 지나왔는지 (AM/PM 전환용)
+
+    DigitalClock() {
+        for (int k = 0; k < 6; k++) {
+            dec[k] = new TTL7446();
+            fnd[k] = new FND();
+        }
+        update();
+    }
+
+    // 시간 맞추기 (객체를 만든 직후, 클럭을 넣기 전에 호출)
+    public void setTime(int h, int m, int s, boolean isPm) {
+        h10.setNum(h / 10);  h1.setNum(h % 10);
+        m10.setNum(m / 10);  m1.setNum(m % 10);
+        s10.setNum(s / 10);  s1.setNum(s % 10);
+        pm = isPm;
+        update();
+    }
+
+    // 1초 클럭 입력 : clk 가 1 -> 0 이 될 때 1초 증가
+    public void setClock(int clk) {
+        // 초 : 60진
+        s1.setClock(clk);
+        s10.setClock(s1.getOutput()[3]);
+        s10.reset(s10.getOutput()[2] & s10.getOutput()[1], 0, 0);
+
+        // 분 : 60진, 클럭 = 초 10의 자리 b2
+        m1.setClock(s10.getOutput()[2]);
+        m10.setClock(m1.getOutput()[3]);
+        m10.reset(m10.getOutput()[2] & m10.getOutput()[1], 0, 0);
+
+        // 시 : 1 ~ 12, 클럭 = 분 10의 자리 b2
+        h1.setClock(m10.getOutput()[2]);
+        h10.setClock(h1.getOutput()[3]);
+        if ((h10.getOutput()[0] & h1.getOutput()[1] & h1.getOutput()[0]) == 1) {   // 13
+            h10.reset(1, 0, 0);          // 10의 자리 -> 0
+            h1.reset(0, 1, 0);           // 1의 자리  -> 1   => 01시
+        }
+
+        checkAmPm();
+        update();
+    }
+
+    // 11시 -> 12시로 넘어가는 순간 AM/PM 전환
+    private void checkAmPm() {
+        int[] qh10 = h10.getOutput();
+        int[] qh1  = h1.getOutput();
+
+        if (qh10[0] == 1 && qh1[0] == 1) {                 // 11시
+            was11 = true;
+        }
+        else if (qh10[0] == 1 && qh1[1] == 1 && was11) {   // 12시 (11시 다음)
+            was11 = false;
+            pm = !pm;
+        }
+    }
+
+    // 모든 칩 연결 : 7490 -> 7446 -> FND
+    private void update() {
+        TTL7490[] cnt = { h10, h1, m10, m1, s10, s1 };
+        for (int k = 0; k < 6; k++) {
+            dec[k].setInput(cnt[k].getOutput());
+            fnd[k].setInput(dec[k].getOutput());
+        }
+    }
+
+    // 콘솔에 FND 6자리 출력
+    public void display() {
+        for (int line = 0; line < 5; line++) {
+            // AM 이면 위쪽(1번 줄), PM 이면 아래쪽(3번 줄)에 @@ 표시
+            if      (line == 1 && !pm) System.out.print("@@ ");
+            else if (line == 3 &&  pm) System.out.print("@@ ");
+            else                       System.out.print("   ");
+
+            for (int k = 0; k < 6; k++) {
+                fnd[k].dispFnd(line);
+                if (k == 1 || k == 3) {                      // 시:분, 분:초 사이
+                    System.out.print((line == 1 || line == 3) ? "@ " : "  ");
+                }
+            }
+            System.out.println();
+        }
+        System.out.println();
+    }
+
+    // "11:59:58 AM" 형태의 문자열
+    @Override
+    public String toString() {
+        return "" + h10.getNum() + h1.getNum() + ":" + m10.getNum() + m1.getNum()
+                + ":" + s10.getNum() + s1.getNum() + (pm ? " PM" : " AM");
+    }
+}</script>
+<script type="text/plain" id="cmain">public class ClockMain {
+
+    // 시계에 seconds 초 만큼 클럭을 넣으며 출력
+    static void run(DigitalClock clock, int seconds) {
+        for (int i = 0; i < seconds * 2; i++) {
+            clock.setClock(i % 2);
+
+            if (i % 2 == 0) {
+                System.out.println(clock);       // toString() 자동 호출
+                clock.display();
+            }
+        }
+    }
+
+    public static void main(String[] args) {
+        DigitalClock morning = new DigitalClock();
+        morning.setTime(11, 59, 58, false);      // 오전 11:59:58
+
+        DigitalClock lunch = new DigitalClock();
+        lunch.setTime(12, 59, 58, true);         // 오후 12:59:58
+
+        run(morning, 4);                         // -> 12:00:01 PM
+        run(lunch, 4);                           // -> 01:00:01 PM
+    }
+}</script>
+<script type="text/plain" id="o7490">i=0  a=0 (0000)   b=2
+i=2  a=1 (0001)   b=2
+i=4  a=2 (0010)   b=2
+i=6  a=3 (0011)   b=2
+b.reset(0,1,0)  ->  a=3, b=1</script>
+<script type="text/plain" id="o7446">num=0  seg={1,1,1,1,1,1,0}
+num=1  seg={0,1,1,0,0,0,0}
+num=2  seg={1,1,0,1,1,0,1}
+num=3  seg={1,1,1,1,0,0,1}
+num=4  seg={0,1,1,0,0,1,1}
+num=5  seg={1,0,1,1,0,1,1}
+num=6  seg={1,0,1,1,1,1,1}
+num=7  seg={1,1,1,0,0,1,0}
+num=8  seg={1,1,1,1,1,1,1}
+num=9  seg={1,1,1,1,0,1,1}
+counter=0, decoder=9  (setInput 전)
+counter=0, decoder=0  (setInput 후)</script>
+<script type="text/plain" id="ofnd">#####
+#   #
+#   #
+    #
+    #
+
+*****
+*   *
+*   *
+    *
+    *
+
+@@@@@ @@@@@ @   @ @@@@@ @@@@@ 
+@   @     @ @   @ @     @   @ 
+@   @ @@@@@ @@@@@ @@@@@ @@@@@ 
+@   @ @         @ @   @ @   @ 
+@@@@@ @@@@@     @ @@@@@ @@@@@ </script>
+<script type="text/plain" id="o100">... (00 ~ 08 생략)
+
+##### ##### 
+#   # #   # 
+#   # ##### 
+#   #     # 
+##### ##### 
+
+    # ##### 
+    # #   # 
+    # #   # 
+    # #   # 
+    # ##### 
+
+... (11 ~ 98 생략)
+
+##### ##### 
+#   # #   # 
+##### ##### 
+    #     # 
+##### ##### 
+
+##### ##### 
+#   # #   # 
+#   # #   # 
+#   # #   # 
+##### ##### </script>
+<script type="text/plain" id="o60">... ([50초] ~ [57초] 생략)
+
+[58초]
+##### ##### 
+#     #   # 
+##### ##### 
+    # #   # 
+##### ##### 
+
+[59초]
+##### ##### 
+#     #   # 
+##### ##### 
+    #     # 
+##### ##### 
+
+[00초]
+##### ##### 
+#   # #   # 
+#   # #   # 
+#   # #   # 
+##### ##### 
+
+... ([01초] 생략)</script>
+<script type="text/plain" id="ommss">... (59:50 ~ 59:58 생략)
+
+##### #####   ##### ##### 
+#     #   # @ #     #   # 
+##### #####   ##### ##### 
+    #     # @     #     # 
+##### #####   ##### ##### 
+
+##### #####   ##### ##### 
+#   # #   # @ #   # #   # 
+#   # #   #   #   # #   # 
+#   # #   # @ #   # #   # 
+##### #####   ##### ##### 
+
+##### #####   #####     # 
+#   # #   # @ #   #     # 
+#   # #   #   #   #     # 
+#   # #   # @ #   #     # 
+##### #####   #####     # </script>
+<script type="text/plain" id="omain">11:59:58 AM
+       #     #   ##### #####   ##### ##### 
+@@     #     # @ #     #   # @ #     #   # 
+       #     #   ##### #####   ##### ##### 
+       #     # @     #     # @     # #   # 
+       #     #   ##### #####   ##### ##### 
+
+11:59:59 AM
+       #     #   ##### #####   ##### ##### 
+@@     #     # @ #     #   # @ #     #   # 
+       #     #   ##### #####   ##### ##### 
+       #     # @     #     # @     #     # 
+       #     #   ##### #####   ##### ##### 
+
+12:00:00 PM
+       # #####   ##### #####   ##### ##### 
+       #     # @ #   # #   # @ #   # #   # 
+       # #####   #   # #   #   #   # #   # 
+@@     # #     @ #   # #   # @ #   # #   # 
+       # #####   ##### #####   ##### ##### 
+
+12:00:01 PM
+       # #####   ##### #####   #####     # 
+       #     # @ #   # #   # @ #   #     # 
+       # #####   #   # #   #   #   #     # 
+@@     # #     @ #   # #   # @ #   #     # 
+       # #####   ##### #####   #####     # 
+
+12:59:58 PM
+       # #####   ##### #####   ##### ##### 
+       #     # @ #     #   # @ #     #   # 
+       # #####   ##### #####   ##### ##### 
+@@     # #     @     #     # @     # #   # 
+       # #####   ##### #####   ##### ##### 
+
+12:59:59 PM
+       # #####   ##### #####   ##### ##### 
+       #     # @ #     #   # @ #     #   # 
+       # #####   ##### #####   ##### ##### 
+@@     # #     @     #     # @     #     # 
+       # #####   ##### #####   ##### ##### 
+
+01:00:00 PM
+   #####     #   ##### #####   ##### ##### 
+   #   #     # @ #   # #   # @ #   # #   # 
+   #   #     #   #   # #   #   #   # #   # 
+@@ #   #     # @ #   # #   # @ #   # #   # 
+   #####     #   ##### #####   ##### ##### 
+
+01:00:01 PM
+   #####     #   ##### #####   #####     # 
+   #   #     # @ #   # #   # @ #   #     # 
+   #   #     #   #   # #   #   #   #     # 
+@@ #   #     # @ #   # #   # @ #   #     # 
+   #####     #   ##### #####   #####     # </script>
+<script type="text/plain" id="out9">... (count=00 ~ 58 생략)
+
+i=118  count=59
+#####  #####
+#      #   #
+#####  #####
+    #      #
+#####  #####
+
+i=120  count=00
+#####  #####
+#   #  #   #
+#   #  #   #
+#   #  #   #
+#####  #####</script>
+<script>window.Prism = window.Prism || {}; window.Prism.manual = true;</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-java.min.js"></script>
+<script>
+/* ================= 공통: Java 메서드와 같은 로직 ================= */
+const TABLE = [
+  [1,1,1,1,1,1,0],[0,1,1,0,0,0,0],[1,1,0,1,1,0,1],[1,1,1,1,0,0,1],[0,1,1,0,0,1,1],
+  [1,0,1,1,0,1,1],[1,0,1,1,1,1,1],[1,1,1,0,0,1,0],[1,1,1,1,1,1,1],[1,1,1,1,0,1,1]
+];
+const SEG_NAMES = ["a","b","c","d","e","f","g"];
+const $ = (id) => document.getElementById(id);
+const el = (tag, attrs = {}, html) => { const e = document.createElement(tag); for (const k in attrs) e.setAttribute(k, attrs[k]); if (html != null) e.innerHTML = html; return e; };
+
+function cnvtDec2Bin(num){ const out = []; for (let i = 0; i < 4; i++){ out[i] = num % 2; num = Math.floor(num / 2); } return out; }
+function ttl7446(bin){ const n = bin[3]*8 + bin[2]*4 + bin[1]*2 + bin[0]; return n > 9 ? [0,0,0,0,0,0,0] : TABLE[n].slice(); }
+function makeFnd(seg){
+  const f = Array.from({length:5}, () => Array(5).fill(" "));
+  if (seg[0]) for (let i=0;i<5;i++) f[0][i]="#";
+  if (seg[1]) for (let i=0;i<3;i++) f[i][4]="#";
+  if (seg[2]) for (let i=0;i<3;i++) f[i+2][4]="#";
+  if (seg[3]) for (let i=0;i<5;i++) f[4][i]="#";
+  if (seg[4]) for (let i=0;i<3;i++) f[i+2][0]="#";
+  if (seg[5]) for (let i=0;i<3;i++) f[i][0]="#";
+  if (seg[6]) for (let i=0;i<5;i++) f[2][i]="#";
+  return f;
+}
+// makeFnd가 칠하는 칸 목록 (세그먼트별)
+function segCells(s){
+  const c = [];
+  if (s===0) for (let i=0;i<5;i++) c.push([0,i]);
+  if (s===1) for (let i=0;i<3;i++) c.push([i,4]);
+  if (s===2) for (let i=0;i<3;i++) c.push([i+2,4]);
+  if (s===3) for (let i=0;i<5;i++) c.push([4,i]);
+  if (s===4) for (let i=0;i<3;i++) c.push([i+2,0]);
+  if (s===5) for (let i=0;i<3;i++) c.push([i,0]);
+  if (s===6) for (let i=0;i<5;i++) c.push([2,i]);
+  return c;
+}
+const fndText = (f) => f.map(r => r.join("")).join("\n");
+const fndsText = (fs) => [0,1,2,3,4].map(r => fs.map(f => f[r].join("") + "  ").join("")).join("\n");
+const arrText = (a) => "{" + a.join(",") + "}";
+
+/* ================= SVG 7-세그먼트 ================= */
+const SVGNS = "http://www.w3.org/2000/svg";
+function segPoints(i){
+  const L=12, R=48, T=8, M=46, B=84, g=2, h=4;
+  const H = (cy) => [[L+g,cy],[L+g+h,cy-h],[R-g-h,cy-h],[R-g,cy],[R-g-h,cy+h],[L+g+h,cy+h]];
+  const V = (cx,y1,y2) => [[cx,y1+g],[cx+h,y1+g+h],[cx+h,y2-g-h],[cx,y2-g],[cx-h,y2-g-h],[cx-h,y1+g+h]];
+  const p = [H(T), V(R,T,M), V(R,M,B), H(B), V(L,M,B), V(L,T,M), H(M)][i];
+  return p.map(q => q.join(",")).join(" ");
+}
+function initFnd(svg){
+  if (svg._segs) return svg;
+  const labels = svg.dataset.labels === "1";
+  svg.setAttribute("viewBox", labels ? "-14 -12 88 110" : "0 0 60 92");
+  svg._segs = [];
+  for (let i=0;i<7;i++){
+    const p = document.createElementNS(SVGNS, "polygon");
+    p.setAttribute("points", segPoints(i)); p.setAttribute("class", "s");
+    svg.appendChild(p); svg._segs.push(p);
+  }
+  if (labels){
+    const pos = [[30,-2],[60,31],[60,69],[30,103],[0,69],[0,31],[30,40]];
+    pos.forEach(([x,y],i) => { const t = document.createElementNS(SVGNS,"text"); t.setAttribute("x",x); t.setAttribute("y",y); t.setAttribute("text-anchor","middle"); t.setAttribute("class","lab-t"); t.textContent = SEG_NAMES[i]; svg.appendChild(t); });
+  }
+  return svg;
+}
+function renderFnd(svg, seg){ initFnd(svg); svg._segs.forEach((p,i) => p.classList.toggle("lit", !!seg[i])); }
+const digitSvg = (w, h) => { const s = document.createElementNS(SVGNS,"svg"); s.setAttribute("class","fnd"); s.setAttribute("width",w); s.setAttribute("height",h); s.setAttribute("aria-hidden","true"); return s; };
+
+/* ================= 저장 (브라우저에만, 실패해도 동작) ================= */
+const store = {
+  get(){ try { return JSON.parse(localStorage.getItem("fndcourse.done") || "[]"); } catch(e){ return []; } },
+  set(v){ try { localStorage.setItem("fndcourse.done", JSON.stringify(v)); } catch(e){} }
+};
+
+/* ================= 단계 이동 ================= */
+const sections = [...document.querySelectorAll("section.step")];
+const STOPPERS = [];
+let done = new Set(store.get());
+
+function buildNav(){
+  const nav = $("stepNav");
+  let lastPart = null;
+  sections.forEach((sec) => {
+    const n = +sec.dataset.n;
+    const part = sec.dataset.part || "1";
+    if (part !== lastPart){ nav.appendChild(el("li", {class:"grp", role:"presentation"}, part === "1" ? "1부 · 메서드로 만들기" : "2부 · 클래스로 만들기")); lastPart = part; }
+    const k = sec.dataset.k != null ? +sec.dataset.k : n;   // 아이콘에 표시할 숫자 (부마다 0부터)
+    const li = el("li"); const b = el("button", {type:"button", "data-go": n});
+    const svg = digitSvg(18, 28); renderFnd(svg, TABLE[k % 10]);
+    const t = el("span", {class:"t"}, `${sec.dataset.title}<small>${sec.dataset.sub}</small>`);
+    b.append(svg, t, el("span", {class:"ok", "aria-hidden":"true"}));
+    b.addEventListener("click", () => go(n));
+    li.appendChild(b); nav.appendChild(li);
+
+    // 단계 하단: 완료 체크 + 이전/다음
+    const foot = el("div", {class:"foot"});
+    const lab = el("label"); const cb = el("input", {type:"checkbox", id:`done-${n}`});
+    cb.checked = done.has(n);
+    cb.addEventListener("change", () => { cb.checked ? done.add(n) : done.delete(n); store.set([...done]); syncNav(); });
+    lab.append(cb, document.createTextNode(sec.dataset.k === "0" || n === 0 ? "소개를 읽었어요" : "이 단계를 마쳤어요"));
+    const navb = el("div", {class:"nav"});
+    if (n > 0){ const p = el("button", {class:"btn", type:"button"}, "← 이전"); p.onclick = () => go(n-1); navb.appendChild(p); }
+    if (n < sections.length-1){ const x = el("button", {class:"btn primary", type:"button"}, `다음: ${sections[n+1].dataset.title} →`); x.onclick = () => { done.add(n); store.set([...done]); cb.checked = true; syncNav(); go(n+1); }; navb.appendChild(x); }
+    foot.append(lab, navb); sec.appendChild(foot);
+  });
+}
+function syncNav(){
+  document.querySelectorAll("#stepNav button").forEach(b => b.parentElement.classList.toggle("done", done.has(+b.dataset.go)));
+  $("progTxt").textContent = `${done.size} / ${sections.length} 완료`;
+  $("progBar").style.width = (done.size / sections.length * 100) + "%";
+}
+// scrollIntoView는 바깥 페이지까지 스크롤하므로, 목록 영역만 직접 스크롤
+function revealInNav(b){
+  for (const box of [$("stepNav"), document.querySelector(".side")]){
+    if (box.scrollWidth > box.clientWidth){
+      const l = b.getBoundingClientRect().left - box.getBoundingClientRect().left + box.scrollLeft;
+      if (l < box.scrollLeft || l + b.offsetWidth > box.scrollLeft + box.clientWidth) box.scrollLeft = l - 16;
+    }
+    if (box.scrollHeight > box.clientHeight){
+      const bt = b.getBoundingClientRect().top - box.getBoundingClientRect().top + box.scrollTop;
+      if (bt < box.scrollTop || bt + b.offsetHeight > box.scrollTop + box.clientHeight) box.scrollTop = bt - 16;
+    }
+  }
+}
+function go(n, push = true){
+  n = Math.max(0, Math.min(sections.length-1, n|0));
+  STOPPERS.forEach(f => f());              // 다른 단계로 가면 자동 실행 중인 실습 정지
+  sections.forEach((s,i) => s.hidden = i !== n);
+  document.querySelectorAll("#stepNav button").forEach(b => { if (+b.dataset.go === n) { b.setAttribute("aria-current","step"); revealInNav(b); } else b.removeAttribute("aria-current"); });
+  if (push && location.hash !== `#step-${n}`) history.replaceState(null, "", `#step-${n}`);
+  window.scrollTo(0, 0);
+}
+window.addEventListener("hashchange", () => { const m = location.hash.match(/step-(\d+)/); if (m) go(+m[1], false); });
+
+/* ================= 코드 블록 ================= */
+function buildCode(){
+  document.querySelectorAll(".code[data-src]").forEach(box => {
+    const src = $(box.dataset.src); if (!src) return;
+    const text = src.textContent.replace(/^\n/, "");
+    const isOut = box.classList.contains("out") || box.dataset.src === "loopdiag";
+    const cap = el("div", {class:"cap"});
+    const name = el("span"); name.textContent = box.dataset.cap || "";
+    const right = el("span", {style:"display:flex;gap:6px;align-items:center"});
+    const m = box.dataset.src.match(/^src(\d+)$/);
+    const file = box.dataset.file || (m ? `steps/Step${m[1]}.java` : null);
+    if (file) { const a = el("a", {href:file, target:"_blank", rel:"noopener", style:"color:inherit;font-size:12px"}, "전체 파일"); right.appendChild(a); }
+    if (!isOut){
+      const btn = el("button", {type:"button"}, "복사");
+      btn.onclick = async () => { try { await navigator.clipboard.writeText(text); btn.textContent = "복사됨"; } catch(e){ btn.textContent = "직접 선택해 복사하세요"; } setTimeout(() => btn.textContent = "복사", 1600); };
+      right.appendChild(btn);
+    }
+    cap.append(name, right);
+    const pre = el("pre"); const code = el("code", isOut ? {} : {class:"language-java"}); code.textContent = text;
+    pre.appendChild(code); box.append(cap, pre);
+    if (!isOut && window.Prism && Prism.highlightElement) { try { Prism.highlightElement(code); } catch(e){} }
+  });
+}
+</script>
+<script>
+/* ---------- 비트 박스 ---------- */
+function bitBoxes(container, bin, clickable, onToggle, taps = []){
+  container.innerHTML = "";
+  for (let i = 3; i >= 0; i--){
+    const b = el(clickable ? "button" : "div", clickable ? {type:"button", class:"bit", "aria-label":`bin[${i}] 바꾸기`} : {class:"bit"});
+    b.classList.toggle("one", bin[i] === 1);
+    b.classList.toggle("tap", taps.includes(i));
+    b.innerHTML = `<span class="v">${bin[i]}</span><span class="w">[${i}]·${1<<i}</span>`;
+    if (clickable) b.onclick = () => onToggle(i);
+    container.appendChild(b);
+  }
+}
+
+/* ---------- Lab 1 : cnvtDec2Bin ---------- */
+function lab1(){
+  const inp = $("l1num");
+  const draw = () => {
+    let v = Math.max(0, Math.min(15, parseInt(inp.value, 10) || 0));
+    const bin = cnvtDec2Bin(v);
+    bitBoxes($("l1bits"), bin, false);
+    let rows = `<thead><tr><th>i</th><th>num</th><th>num % 2 → out[i]</th><th>num / 2</th></tr></thead><tbody>`;
+    let n = v;
+    for (let i = 0; i < 4; i++){ rows += `<tr><td>${i}</td><td>${n}</td><td><b>${n % 2}</b></td><td>${Math.floor(n/2)}</td></tr>`; n = Math.floor(n/2); }
+    $("l1tbl").innerHTML = rows + "</tbody>";
+    $("l1arr").textContent = `cnvtDec2Bin(${v}) = ${arrText(bin)}`;
+  };
+  inp.addEventListener("input", draw); draw();
+}
+
+/* ---------- Lab 2 : ttl7446 ---------- */
+function lab2(){
+  const bin = [0,1,1,0];
+  let head = "<thead><tr><th>num</th>" + SEG_NAMES.map(s => `<th>${s}</th>`).join("") + "</tr></thead><tbody>";
+  TABLE.forEach((r,n) => head += `<tr data-n="${n}"><td>${n}</td>${r.map(x => `<td>${x}</td>`).join("")}</tr>`);
+  head += `<tr data-n="x"><td>10~15</td><td colspan="7">new int[7] → 모두 0</td></tr></tbody>`;
+  $("l2tbl").innerHTML = head;
+  const draw = () => {
+    const n = bin[3]*8 + bin[2]*4 + bin[1]*2 + bin[0];
+    const seg = ttl7446(bin);
+    bitBoxes($("l2bits"), bin, true, (i) => { bin[i] ^= 1; draw(); });
+    $("l2calc").textContent = `${bin[3]}×8 + ${bin[2]}×4 + ${bin[1]}×2 + ${bin[0]} = ${n}`;
+    $("l2arr").textContent = arrText(seg);
+    renderFnd($("l2fnd"), seg);
+    $("l2tbl").querySelectorAll("tbody tr").forEach(tr => tr.classList.toggle("hit", tr.dataset.n === (n > 9 ? "x" : String(n))));
+  };
+  draw();
+}
+
+/* ---------- Lab 3 : makeFnd ---------- */
+function lab3(){
+  const seg = TABLE[2].slice();
+  const grid = $("l3grid"); const cells = [];
+  grid.appendChild(el("span", {class:"ix"}));
+  for (let j=0;j<5;j++) grid.appendChild(el("span", {class:"ix"}, j));
+  for (let i=0;i<5;i++){ cells[i] = []; grid.appendChild(el("span", {class:"ix"}, i)); for (let j=0;j<5;j++){ const c = el("span", {class:"c"}); cells[i][j] = c; grid.appendChild(c); } }
+  const hl = (s) => { cells.flat().forEach(c => c.classList.remove("hl")); if (s != null) segCells(s).forEach(([r,c]) => cells[r][c].classList.add("hl")); };
+  const btns = SEG_NAMES.map((name, s) => {
+    const b = el("button", {type:"button", class:"btn", "aria-pressed":"false"}, `${name}<small style="opacity:.7"> [${s}]</small>`);
+    b.onclick = () => { seg[s] ^= 1; draw(); };
+    b.onmouseenter = b.onfocus = () => hl(s);
+    b.onmouseleave = b.onblur = () => hl(null);
+    $("l3segs").appendChild(b); return b;
+  });
+  for (let n=0;n<10;n++){ const b = el("button", {type:"button", class:"btn"}, n); b.onclick = () => { TABLE[n].forEach((v,i) => seg[i] = v); draw(); }; $("l3nums").appendChild(b); }
+  const draw = () => {
+    const f = makeFnd(seg);
+    btns.forEach((b,i) => { b.classList.toggle("on", !!seg[i]); b.setAttribute("aria-pressed", seg[i] ? "true" : "false"); });
+    for (let i=0;i<5;i++) for (let j=0;j<5;j++){ cells[i][j].textContent = f[i][j] === "#" ? "#" : ""; cells[i][j].classList.toggle("on", f[i][j] === "#"); }
+    $("l3out").textContent = fndText(f);
+  };
+  draw();
+}
+
+/* ---------- Lab 4 : dispNum ---------- */
+function lab4(){
+  const pipe = $("l4pipe");
+  const nums = [];
+  const draw = (n) => {
+    nums.forEach((b,i) => b.classList.toggle("on", i === n));
+    const bin = cnvtDec2Bin(n), seg = ttl7446(bin), f = makeFnd(seg);
+    pipe.innerHTML =
+      `<div class="n"><small>n</small><b>${n}</b></div><span class="ar">→</span>` +
+      `<div class="n m"><small>Step 1</small><b>cnvtDec2Bin</b></div><span class="ar">→</span>` +
+      `<div class="n"><small>int[] bin</small><b>${arrText(bin)}</b></div><span class="ar">→</span>` +
+      `<div class="n m"><small>Step 2</small><b>ttl7446</b></div><span class="ar">→</span>` +
+      `<div class="n"><small>int[] seg</small><b>${arrText(seg)}</b></div><span class="ar">→</span>` +
+      `<div class="n m"><small>Step 3</small><b>makeFnd → printFnd</b></div>`;
+    $("l4out").textContent = fndText(f);
+  };
+  for (let n=0;n<10;n++){ const b = el("button", {type:"button", class:"btn"}, n); b.onclick = () => draw(n); nums.push(b); $("l4nums").appendChild(b); }
+  draw(7);
+}
+
+/* ---------- Lab 5 : dispNum4 ---------- */
+function lab5(){
+  const inp = $("l5num"); const svgs = [];
+  for (let k=0;k<4;k++){ const s = digitSvg(56, 86); svgs.push(s); $("l5fnds").appendChild(s); }
+  let timer = null;
+  const draw = () => {
+    const v = Math.max(0, Math.min(9999, parseInt(inp.value, 10) || 0));
+    const d = [Math.floor(v/1000)%10, Math.floor(v/100)%10, Math.floor(v/10)%10, v%10];
+    $("l5split").textContent = arrText(d);
+    const fs = d.map(x => makeFnd(ttl7446(cnvtDec2Bin(x))));
+    d.forEach((x,k) => renderFnd(svgs[k], ttl7446(cnvtDec2Bin(x))));
+    $("l5out").textContent = fndsText(fs);
+  };
+  const stop = () => { clearInterval(timer); timer = null; $("l5play").textContent = "재생"; };
+  $("l5play").onclick = () => {
+    if (timer) return stop();
+    $("l5play").textContent = "정지";
+    timer = setInterval(() => { let v = (parseInt(inp.value,10) || 0) + 1; if (v > 9999) v = 0; inp.value = v; draw(); }, 70);
+  };
+  $("l5reset").onclick = () => { stop(); inp.value = 0; draw(); };
+  inp.addEventListener("input", draw); draw();
+}
+
+/* ---------- 파형 그리기 (Lab 6, 7 공용) ---------- */
+function drawWave(svg, hist, slots = 24){
+  const W = 640, hi = 12, lo = 48, sw = (W - 24) / slots;
+  const h = hist.slice(-slots);
+  let d = "", x = 24, s = "";
+  s += `<text x="2" y="${hi+4}">1</text><text x="2" y="${lo+4}">0</text><line class="ax" x1="20" y1="62" x2="${W}" y2="62"/>`;
+  h.forEach((p, i) => {
+    const y = p.clk ? hi : lo;
+    d += (i === 0 ? `M${x},${y}` : ` L${x},${y}`) + ` L${x+sw},${y}`;
+    if (p.up) s += `<circle class="fe" cx="${x}" cy="${(hi+lo)/2}" r="4"/>`;
+    if (p.mark) s += `<text x="${x+2}" y="68">${p.mark}</text>`;
+    x += sw;
+  });
+  svg.innerHTML = s + (d ? `<path class="ln" d="${d}"/>` : "");
+}
+
+/* ---------- Lab 6 : ttl7490 ---------- */
+function lab6(){
+  const st = { cnt:0, oldclk:0, clk:0, R:[0,0,0] };
+  const hist = [];
+  const log = $("l6log");
+  function ttl7490(clk, R0, R1, R2){
+    let up = false;
+    if (R0 === 1){ st.oldclk = 0; st.cnt = 0; }
+    else if (R1 === 1){ st.oldclk = 0; st.cnt = 1; }
+    else if (R2 === 1){ st.oldclk = 0; st.cnt = 2; }
+    else { if (clk === 0 && st.oldclk === 1){ if (++st.cnt === 10) st.cnt = 0; up = true; } st.oldclk = clk; }
+    return { q: cnvtDec2Bin(st.cnt), up };
+  }
+  const call = () => {
+    const before = st.oldclk;
+    const { q, up } = ttl7490(st.clk, ...st.R);
+    hist.push({ clk: st.clk, up });
+    const line = el("div");
+    line.textContent = `ttl7490(${st.clk}, ${st.R.join(", ")})  oldclk=${before} → cnt=${st.cnt}  Q=${q.slice().reverse().join("")}` + (up ? "   ← 하강 엣지, 카운트 업" : st.R.some(Boolean) ? "   ← 초기화" : "");
+    if (up) line.className = "up";
+    log.appendChild(line); log.scrollTop = log.scrollHeight;
+    draw(q);
+  };
+  const draw = (q) => {
+    $("l6clk").innerHTML = `clk = <b>${st.clk}</b>`;
+    ["l6r0","l6r1","l6r2"].forEach((id,i) => { $(id).classList.toggle("on", !!st.R[i]); $(id).setAttribute("aria-pressed", st.R[i] ? "true" : "false"); });
+    $("l6state").textContent = `cnt = ${st.cnt}, oldclk = ${st.oldclk}`;
+    bitBoxes($("l6bits"), q, false);
+    renderFnd($("l6fnd"), ttl7446(q));
+    drawWave($("l6wave"), hist);
+  };
+  $("l6clk").onclick = () => { st.clk ^= 1; call(); };
+  ["l6r0","l6r1","l6r2"].forEach((id,i) => $(id).onclick = () => { st.R[i] ^= 1; call(); });
+  $("l6pulse").onclick = () => { if (st.clk === 0){ st.clk = 1; call(); } st.clk = 0; call(); };
+  draw(cnvtDec2Bin(0));
+}
+
+/* ---------- Lab 7 : for문 카운트 ---------- */
+function lab7(){
+  const st = { cnt:0, oldclk:0, i:-1 };
+  let hist = [], timer = null;
+  const log = $("l7log");
+  const fnd = $("l7fnd");
+  const reset = () => {
+    stop(); st.cnt = 0; st.oldclk = 0; st.i = -1; hist = [];
+    log.innerHTML = ""; const l = el("div"); l.textContent = "ttl7490(0, 1, 0, 0);   // 0으로 초기화"; log.appendChild(l);
+    $("l7info").textContent = "i = -"; $("l7now").textContent = "ttl7490(0, 1, 0, 0)";
+    $("l7step").disabled = false; $("l7run").disabled = false;
+    renderFnd(fnd, TABLE[0]); drawWave($("l7wave"), hist, 20);
+  };
+  const step = () => {
+    if (st.i >= 19) return;
+    st.i++;
+    const clk = st.i % 2, before = st.oldclk;
+    let up = false;
+    if (clk === 0 && st.oldclk === 1){ if (++st.cnt === 10) st.cnt = 0; up = true; }
+    st.oldclk = clk;
+    hist.push({ clk, up, mark: clk === 0 ? String(st.cnt) : "" });
+    const l = el("div");
+    l.textContent = `i=${String(st.i).padStart(2)}  clk=${clk}  (oldclk=${before})` + (up ? `  하강 엣지 → cnt=${st.cnt}` : `  cnt=${st.cnt}`) + (clk === 0 ? "   ▶ printFnd" : "");
+    if (up) l.className = "up";
+    log.appendChild(l); log.scrollTop = log.scrollHeight;
+    $("l7info").textContent = `i = ${st.i}, clk = ${clk}, count = ${st.cnt}`;
+    $("l7now").textContent = `ttl7490(${clk}, 0, 0, 0)` + (clk === 0 ? "  → 출력" : "  → 출력 안 함");
+    if (clk === 0) renderFnd(fnd, ttl7446(cnvtDec2Bin(st.cnt)));
+    drawWave($("l7wave"), hist, 20);
+    if (st.i >= 19){ stop(); $("l7step").disabled = true; $("l7run").disabled = true; const e = el("div"); e.textContent = "for문 종료 (i < 20)"; log.appendChild(e); log.scrollTop = log.scrollHeight; }
+  };
+  function stop(){ clearInterval(timer); timer = null; $("l7run").textContent = "자동 실행"; }
+  $("l7step").onclick = () => { stop(); step(); };
+  $("l7run").onclick = () => { if (timer) return stop(); $("l7run").textContent = "정지"; step(); timer = setInterval(step, 450); };
+  $("l7reset").onclick = reset;
+  reset();
+}
+
+/* ---------- Lab 8, 9 : 100진 / 60진 카운터 ---------- */
+function counterLab(p, mod60){
+  const ONE = 0, TEN = 1;
+  const st = { cnt:[0,0], old:[0,0], i:0 };   // i=0 은 이미 실행된 상태 (변화 없음)
+  let hist = [], timer = null;
+  const log = $(`${p}log`);
+
+  function ttl7490(id, clk, R0){
+    let up = false;
+    if (R0 === 1){ st.old[id] = 0; st.cnt[id] = 0; }
+    else { if (clk === 0 && st.old[id] === 1){ if (++st.cnt[id] === 10) st.cnt[id] = 0; up = true; } st.old[id] = clk; }
+    return { q: cnvtDec2Bin(st.cnt[id]), up };
+  }
+  // Java 의 for 반복 1회 = counter100(clk) 또는 counter60(clk) 1회
+  function iterate(){
+    st.i++;
+    const clk = st.i % 2;
+    const one = ttl7490(ONE, clk, 0);
+    const ten = ttl7490(TEN, one.q[3], 0);
+    let reset = false;
+    if (mod60){
+      const r0 = ten.q[2] & ten.q[1];
+      if (r0){ ttl7490(TEN, one.q[3], 1); reset = true; }
+    }
+    return { clk, b3: one.q[3], tenUp: ten.up, reset };
+  }
+  const addLog = (text, cls) => {
+    const l = el("div"); l.textContent = text; if (cls) l.className = cls;
+    log.appendChild(l);
+    while (log.childNodes.length > 200) log.removeChild(log.firstChild);
+    log.scrollTop = log.scrollHeight;
+  };
+  // 펄스 1회 = clk 1 → 0 (반복 2회)
+  function pulse(){
+    const before = `${st.cnt[TEN]}${st.cnt[ONE]}`;
+    iterate();
+    const r = iterate();
+    const after = `${st.cnt[TEN]}${st.cnt[ONE]}`;
+    hist.push({ clk: r.b3, up: r.tenUp, mark: r.tenUp ? String(st.cnt[TEN]) : "" });
+    if (r.reset) addLog(`i=${st.i}  ${before} → 60 : b2&b1=1 → R0=1 → ${after}`, "rst");
+    else if (r.tenUp) addLog(`i=${st.i}  ${before} → ${after} : 1의 자리 b3 1→0 → 10의 자리 +1`, "up");
+    else addLog(`i=${st.i}  ${before} → ${after}`);
+    draw();
+  }
+  function draw(){
+    const qt = cnvtDec2Bin(st.cnt[TEN]), qo = cnvtDec2Bin(st.cnt[ONE]);
+    renderFnd($(`${p}t`), ttl7446(qt));
+    renderFnd($(`${p}o`), ttl7446(qo));
+    bitBoxes($(`${p}tb`), qt, false, null, mod60 ? [2,1] : []);
+    bitBoxes($(`${p}ob`), qo, false, null, [3]);
+    $(`${p}info`).textContent = `count = ${st.cnt[TEN]}${st.cnt[ONE]}`;
+    if (mod60) $(`${p}r0`).textContent = `${qt[2]} & ${qt[1]} = ${qt[2] & qt[1]}`;
+    drawWave($(`${p}wave`), hist, 30);
+  }
+  function stop(){ clearInterval(timer); timer = null; $(`${p}run`).textContent = "자동 실행"; }
+  function reset(){
+    stop(); st.cnt = [0,0]; st.old = [0,0]; st.i = 0; hist = [];
+    log.innerHTML = "";
+    addLog(`ttl7490(ONE, 0, 1, 0, 0);  ttl7490(TEN, 0, 1, 0, 0);   // 0으로 초기화`);
+    draw();
+  }
+  $(`${p}p1`).onclick = () => { stop(); pulse(); };
+  $(`${p}p10`).onclick = () => { stop(); for (let k = 0; k < 10; k++) pulse(); };
+  $(`${p}run`).onclick = () => { if (timer) return stop(); $(`${p}run`).textContent = "정지"; pulse(); timer = setInterval(pulse, 300); };
+  $(`${p}reset`).onclick = reset;
+  reset();
+}
+
+/* ================= 2부 : Java 클래스와 같은 구조의 JS 클래스 ================= */
+class JTTL7490 {
+  constructor(R0 = 1, R1 = 0, R2 = 0){ this.num = 0; this.oldclk = 0; this.output = [0,0,0,0]; this.reset(R0, R1, R2); }
+  cnvt(){ let n = this.num; for (let i = 0; i < 4; i++){ this.output[i] = n % 2; n = Math.floor(n / 2); } }
+  setClock(clk){ let up = false; if (clk === 0 && this.oldclk === 1){ if (++this.num === 10) this.num = 0; this.cnvt(); up = true; } this.oldclk = clk; return up; }
+  reset(R0, R1, R2){ if (R0 === 1) this.num = 0; else if (R1 === 1) this.num = 1; else if (R2 === 1) this.num = 2; this.cnvt(); }
+  getOutput(){ return this.output; }
+  setNum(n){ this.num = n % 10; this.cnvt(); }
+  getNum(){ return this.num; }
+}
+
+/* ---------- 2부 1단계 : 객체 두 개 ---------- */
+function lab11(){
+  const log = $("l11log");
+  const addLog = (t) => { const l = el("div"); l.textContent = t; log.appendChild(l); while (log.childNodes.length > 120) log.removeChild(log.firstChild); log.scrollTop = log.scrollHeight; };
+  const defs = [
+    { name:"a", ctor:"new TTL7490()", make: () => new JTTL7490() },
+    { name:"b", ctor:"new TTL7490(0, 0, 1)", make: () => new JTTL7490(0, 0, 1) }
+  ];
+  defs.forEach(d => {
+    const chip = d.make(); let clk = 0;
+    const box = el("div", {class:"obj"});
+    box.appendChild(el("h4", {}, `TTL7490 ${d.name} = ${d.ctor};`));
+    const row = el("div", {class:"row", style:"align-items:flex-end;gap:12px"});
+    const svg = digitSvg(44, 68); const fields = el("div", {class:"fields"});
+    row.append(svg, fields); box.appendChild(row);
+    const btns = el("div", {class:"row"});
+    const bClk = el("button", {type:"button", class:"btn primary"});
+    const bPulse = el("button", {type:"button", class:"btn"}, `펄스 1회`);
+    const bR0 = el("button", {type:"button", class:"btn"}, `${d.name}.reset(1,0,0)`);
+    btns.append(bClk, bPulse, bR0); box.appendChild(btns);
+    const draw = (flash) => {
+      bClk.textContent = `${d.name}.setClock(${clk ^ 1})`;
+      fields.innerHTML = `<span>num</span> = ${chip.getNum()}<br><span>oldclk</span> = ${chip.oldclk}<br><span>output</span> = {${chip.getOutput().join(",")}}`;
+      renderFnd(svg, ttl7446(chip.getOutput()));
+      if (flash){ fields.classList.remove("flash"); void fields.offsetWidth; fields.classList.add("flash"); }
+    };
+    const clock = (v) => { clk = v; const before = chip.getNum(); const up = chip.setClock(v); addLog(`${d.name}.setClock(${v})  oldclk→${v}` + (up ? `  하강 엣지: num ${before} → ${chip.getNum()}` : "")); draw(true); };
+    bClk.onclick = () => clock(clk ^ 1);
+    bPulse.onclick = () => { if (clk === 0) clock(1); clock(0); };
+    bR0.onclick = () => { chip.reset(1, 0, 0); addLog(`${d.name}.reset(1, 0, 0)  num → 0`); draw(true); };
+    draw(false);
+    $("l11objs").appendChild(box);
+  });
+  addLog("두 객체를 만들었습니다. a와 b의 버튼을 번갈아 눌러 보세요.");
+}
+
+/* ---------- 2부 3단계 : dispFnd(line) ---------- */
+function lab13(){
+  const inDigits = $("l13digits"), inCh = $("l13ch");
+  let line = 0, out = "";
+  const grids = () => {
+    const ds = (inDigits.value.replace(/\D/g, "") || "0").slice(0, 6).split("").map(Number);
+    const ch = inCh.value || "#";
+    return ds.map(n => makeFnd(TABLE[n]).map(r => r.map(c => c === "#" ? ch : c)));
+  };
+  const drawSeg = () => {
+    const gs = grids();
+    const rows = [0,1,2,3,4].map(r => {
+      const text = gs.map(g => g[r].join("") + " ").join("");
+      return r === line && line < 5 ? `<span class="cur">${text.replace(/</g,"&lt;")}</span>` : text.replace(/</g,"&lt;");
+    });
+    $("l13seg").innerHTML = rows.join("\n");
+    $("l13code").textContent = line < 5 ? `다음: line = ${line} 에서 fnds[k].dispFnd(${line}) 를 ${gs.length}번, println()` : "for문 종료";
+    $("l13out").textContent = out || " ";
+    $("l13next").disabled = line >= 5; $("l13all").disabled = line >= 5;
+  };
+  const next = () => { if (line >= 5) return; out += grids().map(g => g[line].join("") + " ").join("") + "\n"; line++; drawSeg(); };
+  const clear = () => { line = 0; out = ""; drawSeg(); };
+  $("l13next").onclick = next;
+  $("l13all").onclick = () => { while (line < 5) next(); };
+  $("l13clear").onclick = clear;
+  inDigits.addEventListener("input", clear); inCh.addEventListener("input", clear);
+  clear(); next(); next();
+}
+
+/* ---------- 2부 5·6·7단계 : 시계 실습 ---------- */
+function clockLab(p, mode){
+  const H = mode === "hhmmss", M = mode !== "ss";
+  const presets = mode === "ss" ? [["50초", 0,0,50,false], ["00초", 0,0,0,false]]
+               : mode === "mmss" ? [["59:50", 0,59,50,false], ["09:55", 0,9,55,false], ["00:00", 0,0,0,false]]
+               : [["11:59:50 AM", 11,59,50,false], ["12:59:50 PM", 12,59,50,true], ["09:59:55 PM", 9,59,55,true], ["11:59:55 PM", 11,59,55,true]];
+  let c, timer = null, clkLevel = 0;
+  const log = $(`${p}log`);
+  const addLog = (t, cls) => { const l = el("div"); l.textContent = t; if (cls) l.className = cls; log.appendChild(l); while (log.childNodes.length > 150) log.removeChild(log.firstChild); log.scrollTop = log.scrollHeight; };
+
+  // DigitalClock 과 같은 연결
+  function build(h, m, s, pm){
+    c = { h10:new JTTL7490(0,1,0), h1:new JTTL7490(0,0,1), m10:new JTTL7490(), m1:new JTTL7490(), s10:new JTTL7490(), s1:new JTTL7490(), pm:false, was11:false };
+    c.h10.setNum(Math.floor(h/10)); c.h1.setNum(h%10); c.m10.setNum(Math.floor(m/10)); c.m1.setNum(m%10); c.s10.setNum(Math.floor(s/10)); c.s1.setNum(s%10); c.pm = pm;
+    clkLevel = 0;
+  }
+  function setClock(clk){
+    const ev = [];
+    c.s1.setClock(clk);
+    c.s10.setClock(c.s1.getOutput()[3]);
+    if (c.s10.getOutput()[2] & c.s10.getOutput()[1]){ c.s10.reset(1,0,0); ev.push(["s10 = 6 → reset(1,0,0) → 0", "rst"]); }
+    if (!M) return ev;
+    if (c.m1.setClock(c.s10.getOutput()[2])) ev.push([`m1.setClock(s10 b2 1→0) → 분 1의 자리 ${c.m1.getNum()}`, "up"]);
+    c.m10.setClock(c.m1.getOutput()[3]);
+    if (c.m10.getOutput()[2] & c.m10.getOutput()[1]){ c.m10.reset(1,0,0); ev.push(["m10 = 6 → reset(1,0,0) → 0", "rst"]); }
+    if (!H) return ev;
+    if (c.h1.setClock(c.m10.getOutput()[2])) ev.push([`h1.setClock(m10 b2 1→0) → 시 ${c.h10.getNum()}${c.h1.getNum()}`, "up"]);
+    c.h10.setClock(c.h1.getOutput()[3]);
+    if ((c.h10.getOutput()[0] & c.h1.getOutput()[1] & c.h1.getOutput()[0]) === 1){ c.h10.reset(1,0,0); c.h1.reset(0,1,0); ev.push(["13시 → h10.reset(1,0,0), h1.reset(0,1,0) → 01시", "rst"]); }
+    const q10 = c.h10.getOutput(), q1 = c.h1.getOutput();
+    if (q10[0] === 1 && q1[0] === 1) c.was11 = true;
+    else if (q10[0] === 1 && q1[1] === 1 && c.was11){ c.was11 = false; c.pm = !c.pm; ev.push([`11시 → 12시 : ${c.pm ? "AM → PM" : "PM → AM"}`, "up"]); }
+    return ev;
+  }
+  const chips = () => H ? [c.h10,c.h1,c.m10,c.m1,c.s10,c.s1] : M ? [c.m10,c.m1,c.s10,c.s1] : [c.s10,c.s1];
+  const timeText = () => { const n = chips().map(x => x.getNum()); return H ? `${n[0]}${n[1]}:${n[2]}${n[3]}:${n[4]}${n[5]} ${c.pm ? "PM" : "AM"}` : M ? `${n[0]}${n[1]}:${n[2]}${n[3]}` : `${n[0]}${n[1]}초`; };
+
+  // 화면 : FND + 콜론 + AM/PM
+  const face = $(`${p}face`); const svgs = []; let ampm = null;
+  if (H){ ampm = el("span", {class:"ampm"}, "<b>AM</b><b>PM</b>"); face.appendChild(ampm); }
+  const count = H ? 6 : M ? 4 : 2;
+  for (let k = 0; k < count; k++){
+    const s = digitSvg(48, 74); svgs.push(s); face.appendChild(s);
+    if (k < count - 1 && k % 2 === 1) face.appendChild(el("span", {class:"colon"}, "<i></i><i></i>"));
+    else if (k < count - 1) face.appendChild(el("span", {class:"gap"}));
+  }
+  function draw(){
+    chips().forEach((x, k) => renderFnd(svgs[k], ttl7446(x.getOutput())));
+    if (ampm){ ampm.children[0].classList.toggle("on", !c.pm); ampm.children[1].classList.toggle("on", c.pm); }
+    $(`${p}time`).textContent = `${timeText()}  · clk = ${clkLevel}`;
+    // display() 와 같은 콘솔 출력
+    const gs = chips().map(x => makeFnd(ttl7446(x.getOutput())));
+    const lines = [];
+    for (let line = 0; line < 5; line++){
+      let s = "";
+      if (H) s += (line === 1 && !c.pm) || (line === 3 && c.pm) ? "@@ " : "   ";
+      gs.forEach((g, k) => { s += g[line].join("") + " "; if (M && (k === 1 || (H && k === 3))) s += (line === 1 || line === 3) ? "@ " : "  "; });
+      lines.push(s);
+    }
+    $(`${p}out`).textContent = lines.join("\n");
+  }
+  function second(){
+    const before = timeText();
+    clkLevel = 1; setClock(1);
+    clkLevel = 0; const ev = setClock(0);
+    if (ev.length){ addLog(`${before} → ${timeText()}`); ev.forEach(([t, cls]) => addLog("   " + t, cls)); }
+    draw();
+  }
+  const stop = () => { clearInterval(timer); timer = null; bRun.textContent = "시작"; };
+  STOPPERS.push(stop);
+
+  const ctl = $(`${p}ctl`);
+  const bRun = el("button", {type:"button", class:"btn primary"}, "시작");
+  const bSec = el("button", {type:"button", class:"btn"}, "1초 (setClock 1 → 0)");
+  const speed = el("select", {id:`${p}speed`, "aria-label":"속도"}, `<option value="1000">1배속</option><option value="100" selected>10배속</option><option value="10">100배속</option>`);
+  ctl.append(bRun, bSec, speed);
+  presets.forEach(([label, h, m, s, pm]) => {
+    const b = el("button", {type:"button", class:"btn"}, label);
+    b.onclick = () => { stop(); build(h, m, s, pm); log.innerHTML = ""; addLog(`new 로 시계를 새로 만들고 ${label} 으로 설정`); draw(); };
+    ctl.appendChild(b);
+  });
+  const start = () => { timer = setInterval(second, +speed.value); bRun.textContent = "정지"; };
+  bRun.onclick = () => timer ? stop() : start();
+  bSec.onclick = () => { stop(); second(); };
+  speed.onchange = () => { if (timer){ clearInterval(timer); start(); } };
+
+  const [label, h, m, s, pm] = presets[0];
+  build(h, m, s, pm); addLog(`${label} 에서 시작합니다. "시작" 또는 "1초"를 눌러 보세요.`); draw();
+}
+
+/* ================= 시작 ================= */
+document.querySelectorAll("svg.fnd[data-digit]").forEach(s => renderFnd(s, TABLE[+s.dataset.digit]));
+buildCode();
+buildNav();
+[lab1, lab2, lab3, lab4, lab5, lab6, lab7, () => counterLab("l8", false), () => counterLab("l9", true), lab11, lab13, () => clockLab("l15", "ss"), () => clockLab("l16", "mmss"), () => clockLab("l17", "hhmmss")].forEach(f => { try { f(); } catch(e){ console.error(e); } });
+syncNav();
+const start = location.hash.match(/step-(\d+)/);
+go(start ? +start[1] : 0, false);
+</script>
