@@ -281,6 +281,8 @@ details.q .a{padding:10px 14px 12px;font-size:15px}
   .steps .t small{display:none}
 }
 @media (max-width:640px){
+  .card .bar{flex-wrap:wrap;row-gap:6px}
+  .card .bar .hint{display:none}
   .side{max-height:none;position:sticky;top:env(safe-area-inset-top,0px);z-index:5;height:auto;border-right:0;border-bottom:1px solid var(--rule);padding:10px 16px}
   .brand{display:none}
   .steps{flex-direction:row;overflow-x:auto;gap:4px}
@@ -354,7 +356,7 @@ details.q .a{padding:10px 14px 12px;font-size:15px}
     <ul style="margin:8px 0 0">
       <li>코드를 고친 뒤 <b>▶ 실행</b>(또는 <kbd>Ctrl</kbd> + <kbd>Enter</kbd>)을 누르면 결과가 새로 나옵니다. 고치기만 하고 실행하지 않으면 결과 칸이 흐려지며 알려 줍니다.</li>
       <li>파일이 여러 개인 단계는 에디터 위쪽 <b>탭</b>으로 오갑니다. <code>TTL7490.java</code>처럼 <i>함께 컴파일</i>이라고 적힌 파일을 고치면 그 클래스를 쓰는 프로그램에 바로 반영됩니다.</li>
-      <li>가운데 코드 상자의 <b>에디터에서 열기</b>를 누르면 그 파일이 아래 에디터에 올라옵니다. <b>되돌리기</b>는 원래 코드로 돌립니다.</li>
+      <li>가운데 코드 상자에서도 바로 <b>▶ 실행</b>할 수 있습니다. <code>TTL7490.java</code>처럼 main 이 없는 클래스는 <b>▶ 함께 실행</b>이 되어, 그 클래스를 쓰는 이 단계의 프로그램이 실행됩니다. <b>에디터에서 열기</b>는 실행하지 않고 파일만 아래 에디터로 올립니다. <b>되돌리기</b>는 원래 코드로 돌립니다.</li>
       <li>칸 사이의 선을 <b>끌어서</b> 결과 칸의 너비와 에디터 높이를 바꿀 수 있습니다.</li>
     </ul>
     Java를 설치하지 않아도 되도록 브라우저 안의 작은 Java 해석기가 돌립니다. 이 강좌의 16개 프로그램은 모두 실제 JDK 17의 <code>javac</code> · <code>java</code> 결과와 한 글자까지 같은지 대조했습니다.</div>
@@ -4642,8 +4644,10 @@ function buildCards(){
     const sp = el("span", { class: "sp" }); bar.appendChild(sp);
     if (box.dataset.file){ const a = el("a", { href: box.dataset.file, target: "_blank", rel: "noopener", style: "color:inherit;font-size:12px" }); a.textContent = "전체 파일"; bar.appendChild(a); }
     const copy = el("button", { type: "button" }); copy.textContent = "복사";
-    const open = el("button", { type: "button", class: "run" }); open.textContent = "에디터에서 열기";
-    bar.append(copy, open);
+    const open = el("button", { type: "button" }); open.textContent = "에디터에서 열기";
+    const runIt = el("button", { type: "button", class: "run", title: isMain ? "이 프로그램을 실행합니다 (Ctrl + Enter)" : "이 클래스를 쓰는 이 단계의 프로그램을 실행합니다" });
+    runIt.textContent = isMain ? "▶ 실행" : "▶ 함께 실행";
+    bar.append(copy, open, runIt);
 
     const pre = el("pre"); const code = el("code", { class: "language-java" });
     pre.appendChild(code); paint(code, f.text); f.views.push(code);
@@ -4656,11 +4660,21 @@ function buildCards(){
       catch(e){ copy.textContent = "직접 선택해 복사하세요"; }
       setTimeout(() => copy.textContent = "복사", 1600);
     };
-    open.onclick = () => {
+    const progOfCard = () => {
       const sec = card.closest("section.step");
-      const runnerId = [...PROGRAMS.values()].filter(p => p.step === +sec.dataset.n)[0];
-      if (runnerId) openProgram(runnerId, name);
+      return [...PROGRAMS.values()].filter(p => p.step === +sec.dataset.n)[0];
+    };
+    open.onclick = () => {
+      const prog = progOfCard();
+      if (prog) openProgram(prog, name);
       if (window.innerWidth <= 1100) $("edPane").scrollIntoView({ block: "nearest" });
+    };
+    runIt.onclick = () => {
+      const prog = progOfCard();
+      if (!prog) return;
+      openProgram(prog, name);
+      runCurrent();
+      if (window.innerWidth <= 1100) $("consPane").scrollIntoView({ block: "nearest" });
     };
   });
 }
