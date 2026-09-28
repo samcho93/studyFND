@@ -3,13 +3,27 @@
 디지털 시계 속 숫자가 **카운터(7490) → 디코더(7446) → FND** 순서로 만들어지는 과정을 Java로 따라 만드는 단계별 강좌입니다.
 
 - **1부 · 메서드로 만들기**: 각 칩의 동작을 `static` 메서드 하나씩으로 구현하고 서로 연결합니다.
-- **2부 · 클래스로 만들기**: 이전 클럭을 기억해야 하는 7490의 불편함을 클래스로 해결하고, 칩 객체를 조합해 12시간제 디지털 시계를 완성합니다.
+- **2부 · 클래스로 만들기**: 이전 클럭을 기억해야 하는 7490의 불편함을 클래스로 해결하고, 칩 객체를 조합해 12시간제 디지털 시계(`Main.java`)를 완성합니다.
 
 ## 강좌 보기
 
-`index.html`을 브라우저로 열면 됩니다. 단계마다 설명, 직접 해보는 실습, 전체 코드, 실제 실행 결과, 확인 문제, 연습 과제가 있습니다.
+`index.html`을 브라우저로 열면 됩니다. 파일 하나로 되어 있어 Java도, 웹 서버도 필요 없습니다.
 
 GitHub Pages를 켜면(Settings → Pages → `main` 브랜치, `/ (root)`) 웹에서 바로 볼 수 있습니다.
+
+### 페이지 안에서 코드를 고쳐 실행할 수 있습니다
+
+강좌의 코드 상자는 모두 편집기입니다. 코드를 고치고 **▶ 실행**(또는 `Ctrl` + `Enter`)을 누르면 **오른쪽 칸에 실행 결과**가 나옵니다. 화면이 좁으면 결과가 코드 아래에 표시됩니다.
+
+- 페이지 안에 이 강좌의 Java 문법만 해석하는 작은 **Java 실행기**(약 1,300줄, `index.html`에 함께 들어 있음)가 있습니다. 브라우저에서 바로 해석·실행하므로 JDK 설치가 필요 없습니다.
+- 2부처럼 파일이 여러 개인 프로그램은 클래스 파일과 **함께 컴파일**됩니다. `TTL7490.java`를 고치면 그 클래스를 쓰는 뒤 단계의 실행 결과에도 반영됩니다.
+- 실행 결과가 낡으면(코드를 고친 뒤 아직 실행하지 않았으면) 결과 칸이 흐려지고 *코드가 바뀜 — 다시 실행* 으로 표시됩니다.
+- **되돌리기**를 누르면 원래 코드로 돌아갑니다. 편집 내용은 저장되지 않으므로 새로 고치면 처음 상태가 됩니다.
+- 지원하는 문법: 클래스 · 필드 · 생성자 · 메서드(오버로딩) · static · final, `int` · `char` · `boolean` · `String` · 배열(3차원까지), `if` · `for` · `while` · `do` · `break` · `continue`, 사칙 · 비트 · 삼항 · 형변환 연산자, `System.out.print/println/printf`, `Math` · `Integer` · 배열 `length` · `clone()`.
+  지원하지 않는 것: 상속, 인터페이스, 제네릭, `try`/`catch`, `switch`, 실수 연산, 스레드, 파일 입출력.
+- 끝나지 않는 반복문이나 너무 많은 출력은 실행기가 스스로 멈추고 알려 줍니다(4초 · 16만 자).
+
+실행기가 진짜 Java와 같은 결과를 내는지는, 이 저장소의 **16개 프로그램 전부**를 JDK 17의 `javac` · `java`로 돌린 출력과 한 글자까지 대조해 확인했습니다.
 
 ## 강좌 구성
 
@@ -21,7 +35,7 @@ GitHub Pages를 켜면(Settings → Pages → `main` 브랜치, `/ (root)`) 웹�
 | 2 | 4비트 → FND 7비트 배열 | `int[] ttl7446(int[])` | `Step2.java` |
 | 3 | 7비트 → 5×5 문자 배열, 콘솔 출력 | `makeFnd`, `printFnd` | `Step3.java` |
 | 4 | 1 ~ 3 연결, 0 ~ 9 출력 | `dispNum(int)` | `Step4.java` |
-| 5 | 4자리 FND, 0 ~ 9999 출력 | `dispNum4(int)` | `Step5.java` |
+| 5 | 4자리 FND | `dispNum4(int)` | `Step5.java` |
 | 6 | 10진 카운터 (clk 1 → 0에서 카운트, R0/R1/R2 초기화) | `ttl7490(clk, R0, R1, R2)` | `Step6.java` |
 | 7 | for문으로 클럭을 넣어 0 ~ 9 카운트 | `main` | `Step7.java` |
 | 8 | 1의 자리 b3 → 10의 자리 clk, 100진 카운터 | `counter100(int)` | `Step8.java` |
@@ -32,18 +46,20 @@ GitHub Pages를 켜면(Settings → Pages → `main` 브랜치, `/ (root)`) 웹�
 | 단계 | 내용 | 파일 |
 |---|---|---|
 | 1 | `TTL7490` 클래스: 상태를 필드로 기억하는 카운터 | `TTL7490.java`, `Test7490.java` |
-| 2 | `TTL7446` 클래스: static final 진리표 | `TTL7446.java`, `Test7446.java` |
+| 2 | `TTL7446` 클래스: BCD → 7세그먼트 디코더 | `TTL7446.java`, `Test7446.java` |
 | 3 | `FND` 클래스: `dispFnd()` / `dispFnd(line)` 오버로딩 | `FND.java`, `TestFND.java` |
 | 4 | 객체 연결: 100진 카운터 | `Counter100.java` |
 | 5 | 리셋 연결: 60진 초 카운터 | `Counter60.java` |
 | 6 | 카운터 4개: MM:SS | `ClockMMSS.java` |
-| 7 | `DigitalClock` 클래스: 12시간제, AM/PM | `DigitalClock.java`, `ClockMain.java` |
+| 7 | 칩 18개 조립: 12시간제 시계, AM/PM | `Main.java` |
+
+`TTL7490.java`, `TTL7446.java`, `FND.java`, `Main.java`는 강좌를 만든 원본 코드 그대로입니다. 나머지(`Test*.java`, `Counter*.java`, `ClockMMSS.java`)는 각 단계를 확인하려고 강좌에서 만든 프로그램입니다.
 
 ## 폴더 구조
 
 ```
 .
-├── index.html          강좌 페이지
+├── index.html          강좌 페이지 (Java 실행기 포함, 파일 하나로 동작)
 ├── steps/              1부 예제 (파일 하나로 실행)
 │   ├── Step1.java
 │   └── ... Step9.java
@@ -51,12 +67,11 @@ GitHub Pages를 켜면(Settings → Pages → `main` 브랜치, `/ (root)`) 웹�
     ├── TTL7490.java
     ├── TTL7446.java
     ├── FND.java
-    ├── DigitalClock.java
-    ├── ClockMain.java
+    ├── Main.java       12시간제 디지털 시계
     └── ... 테스트 프로그램
 ```
 
-## 실행 방법
+## 내 컴퓨터에서 실행하기
 
 JDK 17에서 컴파일과 실행을 확인했습니다.
 
@@ -73,7 +88,7 @@ java Step7
 ```bash
 cd classes
 javac -encoding UTF-8 *.java
-java ClockMain
+java Main
 ```
 
 `Test7490`, `Test7446`, `TestFND`, `Counter100`, `Counter60`, `ClockMMSS`도 같은 방식으로 실행할 수 있습니다.
@@ -82,4 +97,4 @@ java ClockMain
 
 - 7446은 이해하기 쉽도록 **1 = 세그먼트 켜짐**으로 통일했습니다. 실제 74LS46/47은 0일 때 켜지는 Active-Low 칩입니다.
 - 7490의 R0/R1/R2(각각 0/1/2로 초기화)는 시계 회로를 만들기 쉽도록 단순화한 모델입니다. 실제 74LS90은 R0(1)·R0(2), R9(1)·R9(2) 핀 쌍을 사용합니다.
-- `DigitalClock`은 자정부터 24시간(86,400초) 동안 매초 실제 시각과 비교해 13시 → 01시 리셋과 AM/PM 전환까지 모두 일치하는 것을 확인했습니다.
+- `Main.java`는 12:59:30에서 시작해 51초를 출력하므로, 12:59:59 → 01:00:00 리셋을 볼 수 있습니다. 파일 위쪽의 `static` 메서드들은 1부의 메서드 버전으로, 비교할 수 있도록 남겨 둔 것입니다.

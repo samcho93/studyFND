@@ -14,8 +14,11 @@ public class TestFND {
         FND seven = makeDigit(7, '#');
         seven.dispFnd();
 
-        // 2) 문자만 바꾸기
+        // 2) 문자 바꾸기 : setChar 는 화면을 다시 그리지 않는다 (cnvt 를 부르지 않음)
         seven.setChar('*');
+        seven.dispFnd();                     // 아직 '#' 그대로
+
+        seven.setInput(seven.input);         // 입력을 다시 넣으면 그때 '*' 로 그려진다
         seven.dispFnd();
 
         // 3) 여러 자리 가로 출력 : 줄(line) 단위로

@@ -1,5 +1,9 @@
 public class Counter60 {
 
+    static int val(int[] q) {
+        return q[3] * 8 + q[2] * 4 + q[1] * 2 + q[0];
+    }
+
     static void wire(TTL7490 c, TTL7446 d, FND f) {
         d.setInput(c.getOutput());
         f.setInput(d.getOutput());
@@ -23,7 +27,7 @@ public class Counter60 {
                 wire(s10, d10, f10);
                 wire(s1, d1, f1);
 
-                System.out.println("[" + s10.getNum() + s1.getNum() + "초]");
+                System.out.println("[" + val(s10.getOutput()) + val(s1.getOutput()) + "초]");
                 for (int line = 0; line < 5; line++) {
                     f10.dispFnd(line);
                     f1.dispFnd(line);

@@ -91,6 +91,47 @@ table.data tr.hit td{background:var(--pcb-soft);font-weight:600}
 .token.function{color:var(--tok-fn)}
 .token.operator,.token.punctuation{color:#AEBBC8}
 
+/* ---------- 코드 실행기 ---------- */
+.runner{margin:16px 0;display:grid;grid-template-columns:minmax(0,1fr);gap:12px;align-items:start}
+.srcfile{margin:16px 0}
+.pane{background:var(--term);border:1px solid var(--term-rule);border-radius:var(--radius);min-width:0;overflow:hidden}
+.pane .cap{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:6px 10px;border-bottom:1px solid var(--term-rule);font-family:var(--font-mono);font-size:12px;color:var(--term-dim)}
+.pane .cap .nm{color:var(--term-ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pane .cap .tools{display:flex;gap:6px;align-items:center;flex:none}
+.pane .cap a{color:inherit;font-size:12px;text-decoration:none;border-bottom:1px dotted var(--term-rule)}
+.pane .cap button{all:unset;cursor:pointer;color:var(--term-ink);font-size:12px;padding:2px 9px;border:1px solid var(--term-rule);border-radius:4px;white-space:nowrap}
+.pane .cap button:hover{border-color:var(--pcb)}
+.pane .cap button:focus-visible{outline:2px solid var(--pcb);outline-offset:1px}
+.pane .cap button.run{background:var(--pcb);border-color:var(--pcb);color:#fff;font-weight:600}
+.pane .cap button.run[disabled]{opacity:.55;cursor:default}
+.pane .cap .meta{color:var(--term-dim);font-size:11.5px;white-space:nowrap}
+
+.ed{position:relative;max-height:min(58vh,440px);overflow:hidden}
+.ed pre,.ed textarea{margin:0;padding:12px 14px;font-family:var(--font-mono);font-size:13px;line-height:1.55;tab-size:4;white-space:pre;border:0}
+.ed pre{overflow:hidden;color:var(--term-ink);min-height:100%}
+.ed pre code{background:none;padding:0;font-size:inherit;color:inherit}
+.ed textarea{position:absolute;inset:0;width:100%;height:100%;overflow:auto;background:transparent;color:transparent;caret-color:var(--term-ink);resize:none;outline:none;display:block}
+.ed textarea::selection{background:rgba(61,181,171,.35);color:transparent}
+.ed textarea:focus-visible{outline:2px solid var(--pcb);outline-offset:-2px}
+.srcfile .ed{max-height:min(52vh,380px)}
+
+.out-pane pre{margin:0;padding:12px 14px;max-height:min(58vh,440px);overflow:auto;color:var(--term-ink);font-family:var(--font-mono);font-size:12.5px;line-height:1.5;white-space:pre;tab-size:4}
+.out-pane.stale pre{opacity:.45}
+.out-pane.stale .meta{color:var(--tok-str)}
+.out-pane .err{color:#FF9BA6}
+.out-pane .dim{color:var(--term-dim)}
+.runner-note{font-family:var(--font-mono);font-size:12px;color:var(--term-dim);padding:10px 12px;border-top:1px solid var(--term-rule)}
+
+@media (min-width:1300px){
+  .runner{grid-template-columns:minmax(0,1.02fr) minmax(0,.98fr);
+    width:min(1180px, calc(100vw - clamp(200px,24vw,272px) - 2*clamp(16px,5vw,64px)));
+    margin-left:50%;transform:translateX(-50%)}
+}
+@media (max-width:640px){
+  .ed,.out-pane pre{max-height:320px}
+  .pane .cap{flex-wrap:wrap}
+}
+
 /* ---------- lab (interactive) ---------- */
 .lab{background:var(--surface);border:1px solid var(--rule);border-radius:10px;padding:20px;margin:18px 0}
 .lab-h{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap;margin-bottom:14px}
@@ -275,7 +316,7 @@ details.q .a{padding:10px 14px 12px;font-size:15px}
       <tr><td>7</td><td style="text-align:left">for문으로 클럭을 넣어 0 ~ 9 카운트</td><td style="text-align:left"><code>main</code></td></tr>
       <tr><td>8</td><td style="text-align:left">7490 두 개를 이어 100진 카운터 (00 ~ 99)</td><td style="text-align:left"><code>int[][] counter100(int)</code></td></tr>
       <tr><td>9</td><td style="text-align:left">출력을 R0로 되돌려 60진 카운터 (00 ~ 59)</td><td style="text-align:left"><code>int[][] counter60(int)</code></td></tr>
-      <tr><td>2부</td><td style="text-align:left">칩을 클래스로 만들고 디지털 시계 완성 (7단계)</td><td style="text-align:left"><code>TTL7490</code>, <code>TTL7446</code>, <code>FND</code>, <code>DigitalClock</code></td></tr>
+      <tr><td>2부</td><td style="text-align:left">칩을 클래스로 만들고 디지털 시계 완성 (7단계)</td><td style="text-align:left"><code>TTL7490</code>, <code>TTL7446</code>, <code>FND</code>, <code>Main</code></td></tr>
     </tbody>
   </table>
   </div>
@@ -286,7 +327,8 @@ details.q .a{padding:10px 14px 12px;font-size:15px}
     <li>각 단계의 코드는 <code>StepN.java</code> 하나로 완결되어 있어 복사해서 바로 실행할 수 있습니다.</li>
     <li>모든 메서드는 <code>static</code>입니다. 클래스로 나누는 작업은 다음 강좌에서 다룹니다.</li>
   </ul>
-  <div class="code out"><div class="cap"><span>실행 방법</span></div><pre>javac -encoding UTF-8 Step1.java
+  <div class="note"><b>페이지 안에서 바로 실행됩니다.</b> 이 강좌의 코드 상자는 모두 <b>고쳐서 실행</b>할 수 있습니다. 코드를 바꾸고 <b>▶ 실행</b>(또는 <kbd>Ctrl</kbd> + <kbd>Enter</kbd>)을 누르면 오른쪽에 결과가 나옵니다. 브라우저 안에 들어 있는 작은 Java 해석기가 돌리는 것이라 Java를 설치하지 않아도 되고, 이 강좌의 16개 프로그램은 모두 실제 JDK 17의 <code>javac</code> · <code>java</code> 결과와 한 글자까지 같은지 대조했습니다.</div>
+  <div class="code out"><div class="cap"><span>내 컴퓨터에서 실행하려면</span></div><pre>javac -encoding UTF-8 Step1.java
 java Step1</pre></div>
 </section>
 
@@ -315,11 +357,9 @@ java Step1</pre></div>
   <div class="note"><b>배열 순서에 주의하세요.</b> <code>out[0]</code>에는 가장 낮은 자리(2⁰), <code>out[3]</code>에는 가장 높은 자리(2³)가 들어갑니다. 그래서 6(<code>0110</code>)을 배열 그대로 출력하면 <code>{0,1,1,0}</code>, 5(<code>0101</code>)는 <code>{1,0,1,0}</code>처럼 <b>거꾸로</b> 보입니다. 7490 칩의 출력 핀 Q<sub>A</sub>~Q<sub>D</sub> 순서와 같습니다.</div>
 
   <h2>코드</h2>
-  <div class="code" data-src="src1" data-cap="Step1.java"></div>
+  <div class="runner" data-src="src1" data-name="Step1.java" data-file="steps/Step1.java" data-main="Step1"></div>
   <p><code>cnvtDec2BinBit</code>은 같은 일을 비트 연산으로 합니다. <code>num &amp; 0x01</code>은 맨 오른쪽 비트만 남기고, <code>num &gt;&gt;= 1</code>은 한 칸 오른쪽으로 밀어 다음 비트를 꺼낼 준비를 합니다. 결과는 두 메서드가 같습니다.</p>
 
-  <h3>실행 결과</h3>
-  <div class="code out" data-src="out1" data-cap="콘솔"></div>
 
   <h2>확인 문제</h2>
   <details class="q"><summary>cnvtDec2Bin(9)가 반환하는 배열은?</summary><div class="a"><code>{1,0,0,1}</code> — 9 = 8 + 1 이므로 out[0]과 out[3]이 1입니다.</div></details>
@@ -365,11 +405,9 @@ java Step1</pre></div>
   <div class="note"><b>실제 7446과의 차이.</b> 실제 74LS46/47은 출력이 <b>0일 때</b> 세그먼트가 켜지는 Active-Low 칩(Common Anode FND용)입니다. 이 강좌에서는 이해하기 쉽도록 <b>1 = 켜짐</b>으로 통일했습니다. (Active-High인 7448과 같은 동작)</div>
 
   <h2>코드</h2>
-  <div class="code" data-src="src2" data-cap="Step2.java"></div>
+  <div class="runner" data-src="src2" data-name="Step2.java" data-file="steps/Step2.java" data-main="Step2"></div>
   <p>참고 코드의 원래 버전은 <code>return table[num];</code>만 있어서 10 ~ 15가 들어오면 <code>ArrayIndexOutOfBoundsException</code>이 발생합니다. 여기서는 <code>if (num &gt; 9) return new int[7];</code>로 모든 세그먼트를 끄도록 막았습니다. <code>new int[7]</code>은 0으로 채워진 배열입니다.</p>
 
-  <h3>실행 결과</h3>
-  <div class="code out" data-src="out2" data-cap="콘솔"></div>
 
   <h2>확인 문제</h2>
   <details class="q"><summary>bin = {0,1,1,0} 일 때 num은?</summary><div class="a">0×8 + 1×4 + 1×2 + 0×1 = <b>6</b> 입니다. bin[3]이 MSB라는 점을 기억하세요.</div></details>
@@ -420,11 +458,9 @@ java Step1</pre></div>
   </div>
 
   <h2>코드</h2>
-  <div class="code" data-src="src3" data-cap="Step3.java"></div>
-  <p>초기화를 빠뜨리면 <code>char</code> 배열의 기본값 <code>' '</code>이 출력되어 콘솔에 따라 네모나 이상한 문자가 보입니다. 그래서 먼저 공백으로 채웁니다.</p>
+  <div class="runner" data-src="src3" data-name="Step3.java" data-file="steps/Step3.java" data-main="Step3"></div>
+  <p>초기화를 빠뜨리면 <code>char</code> 배열의 기본값 <code>'\0'</code>이 출력되어 콘솔에 따라 네모나 이상한 문자가 보입니다. 그래서 먼저 공백으로 채웁니다.</p>
 
-  <h3>실행 결과 (앞부분)</h3>
-  <div class="code out" data-src="out3" data-cap="콘솔"></div>
 
   <h2>확인 문제</h2>
   <details class="q"><summary>seg = {0,0,0,0,0,0,1} 이면 어떤 모양일까요?</summary><div class="a">가운데 줄(행 2)만 <code>#####</code>인 "−" 모양입니다.</div></details>
@@ -457,12 +493,10 @@ java Step1</pre></div>
 
   <h2>코드</h2>
   <p>Step 1 ~ 3의 메서드는 그대로 복사해 두고, <code>dispNum</code>만 새로 추가합니다.</p>
-  <div class="code" data-src="src4" data-cap="Step4.java"></div>
+  <div class="runner" data-src="src4" data-name="Step4.java" data-file="steps/Step4.java" data-main="Step4"></div>
   <p>중간 변수 없이 한 줄로 쓸 수도 있습니다. 다만 처음에는 위처럼 변수에 담아 두어야 디버깅할 때 값을 확인하기 쉽습니다.</p>
   <div class="code" data-src="src4b" data-cap="한 줄 버전"></div>
 
-  <h3>실행 결과 (앞부분)</h3>
-  <div class="code out" data-src="out4" data-cap="콘솔"></div>
 
   <h2>확인 문제</h2>
   <details class="q"><summary>dispNum(12)를 호출하면?</summary><div class="a">cnvtDec2Bin(12) = {0,0,1,1} → num = 12 → Step 2의 범위 검사에 걸려 {0,0,0,0,0,0,0} → 빈 5×5가 출력됩니다.</div></details>
@@ -502,12 +536,10 @@ java Step1</pre></div>
   </div>
 
   <h2>코드</h2>
-  <div class="code" data-src="src5" data-cap="Step5.java"></div>
+  <div class="runner" data-src="src5" data-name="Step5.java" data-file="steps/Step5.java" data-main="Step5"></div>
   <p><code>char[][][] fnds = new char[4][][];</code>는 "5×5 배열 4개를 담을 칸"만 만듭니다. 실제 5×5 배열은 <code>digit()</code>이 만들어 반환하므로 뒤의 크기는 비워 둡니다.</p>
 
-  <h3>실행 결과 (처음 3개와 마지막)</h3>
-  <div class="code out" data-src="out5" data-cap="콘솔"></div>
-  <div class="note"><b>출력량 주의.</b> 0 ~ 9999를 모두 찍으면 60,000줄이 나옵니다. 먼저 <code>n &lt;= 20</code> 정도로 확인한 뒤 전체를 실행하세요. 천천히 보고 싶다면 반복문 안에 <code>Thread.sleep(100);</code>을 넣습니다. (이때 <code>main</code>에 <code>throws InterruptedException</code>이 필요합니다)</div>
+  <div class="note"><b>출력량 주의.</b> <code>dispNum4</code>는 0 ~ 9999 어떤 값도 그릴 수 있지만, 전부 찍으면 60,000줄이 됩니다. 그래서 <code>main</code>은 0 ~ 12와 4567, 9999만 출력합니다. 위 코드의 반복 범위를 직접 늘려 실행해 보세요. 출력이 너무 많으면 실행기가 중간에 멈추고 알려 줍니다.</div>
 
   <h2>확인 문제</h2>
   <details class="q"><summary>num = 507 일 때 splitDigits의 결과는?</summary><div class="a"><code>{0,5,0,7}</code> — 507/1000 = 0, 507/100 = 5, 507/10 %10 = 0, 507 %10 = 7.</div></details>
@@ -567,11 +599,9 @@ java Step1</pre></div>
   </div>
 
   <h2>코드</h2>
-  <div class="code" data-src="src6" data-cap="Step6.java"></div>
+  <div class="runner" data-src="src6" data-name="Step6.java" data-file="steps/Step6.java" data-main="Step6"></div>
   <p>리셋할 때 <code>oldclk = 0</code>으로 두는 이유: 리셋 직전에 clk가 1이었다면, 리셋을 풀고 clk = 0을 넣는 순간 하강 엣지로 오인해 곧바로 1이 되기 때문입니다.</p>
 
-  <h3>실행 결과</h3>
-  <div class="code out" data-src="out6" data-cap="콘솔"></div>
 
   <div class="note"><b>실제 74LS90과의 차이.</b> 실제 칩은 R0(1)·R0(2) 두 핀이 모두 1일 때 0, R9(1)·R9(2)가 모두 1일 때 9로 초기화합니다. 이 강좌의 R0/R1/R2는 이후 시계 회로(12시 → 1시 등)를 만들기 편하도록 단순화한 모델입니다.</div>
 
@@ -624,10 +654,8 @@ java Step1</pre></div>
 
   <h2>코드</h2>
   <p>Step 2, 3, 6의 메서드를 모두 가져오고 <code>main</code>만 새로 씁니다.</p>
-  <div class="code" data-src="src7" data-cap="Step7.java"></div>
+  <div class="runner" data-src="src7" data-name="Step7.java" data-file="steps/Step7.java" data-main="Step7"></div>
 
-  <h3>실행 결과 (앞부분)</h3>
-  <div class="code out" data-src="out7" data-cap="콘솔"></div>
 
   <h2>확인 문제</h2>
   <details class="q"><summary>반복을 <code>i &lt; 22</code>로 늘리면 마지막에 무엇이 출력될까요?</summary><div class="a">i = 20에서 하강 엣지가 한 번 더 생겨 9 → <b>0</b>으로 돌아갑니다. 10진 카운터이기 때문입니다.</div></details>
@@ -719,11 +747,9 @@ java Step1</pre></div>
   </div>
 
   <h2>코드</h2>
-  <div class="code" data-src="src8" data-cap="Step8.java"></div>
+  <div class="runner" data-src="src8" data-name="Step8.java" data-file="steps/Step8.java" data-main="Step8"></div>
   <p><code>counter100</code>에서 <b>1의 자리를 먼저</b> 호출하는 이유: 10의 자리의 clk로 쓸 <code>q1[3]</code>이 이번 반복에서 새로 계산된 값이어야 하기 때문입니다. 회로에서 신호가 1의 자리 → 10의 자리 방향으로 흐르는 것과 같습니다.</p>
 
-  <h3>실행 결과 (09 → 10, 99 → 00 부분)</h3>
-  <div class="code out" data-src="out8" data-cap="콘솔"></div>
 
   <h2>확인 문제</h2>
   <details class="q"><summary>b3 대신 b0를 10의 자리 clk에 연결하면?</summary><div class="a">b0는 1 → 0이 홀수 → 짝수로 넘어갈 때마다(1→2, 3→4 …) 떨어지므로, 1의 자리가 <b>2씩 올라갈 때마다</b> 10의 자리가 올라가 버립니다.</div></details>
@@ -832,10 +858,8 @@ java Step1</pre></div>
   </div>
 
   <h2>코드</h2>
-  <div class="code" data-src="src9" data-cap="Step9.java"></div>
+  <div class="runner" data-src="src9" data-name="Step9.java" data-file="steps/Step9.java" data-main="Step9"></div>
 
-  <h3>실행 결과 (59 → 00 부분)</h3>
-  <div class="code out" data-src="out9" data-cap="콘솔"></div>
 
   <div class="note"><b>실제 회로에서는.</b> 74LS90은 R0(1)과 R0(2) 두 핀이 <b>모두 1일 때</b> 리셋되므로, b2와 b1을 두 핀에 바로 연결하면 AND 게이트가 따로 필요 없습니다. 또 6이 수십 나노초 동안 실제로 나타났다 사라지지만 너무 짧아 눈에는 보이지 않습니다.</div>
 
@@ -868,7 +892,7 @@ java Step1</pre></div>
     <tbody>
       <tr><td>데이터시트(설계도)</td><td>클래스</td><td><code>class TTL7490</code></td></tr>
       <tr><td>브레드보드에 꽂은 칩 한 개</td><td>객체 (<code>new</code>)</td><td><code>new TTL7490()</code></td></tr>
-      <tr><td>칩 안의 기억 소자</td><td>필드 (<code>private</code>)</td><td><code>num</code>, <code>oldclk</code></td></tr>
+      <tr><td>칩 안의 기억 소자</td><td>필드</td><td><code>num</code>, <code>oldclk</code></td></tr>
       <tr><td>전원을 켰을 때 상태</td><td>생성자</td><td><code>TTL7490(R0, R1, R2)</code></td></tr>
       <tr><td>입력 핀</td><td>set 메서드</td><td><code>setClock()</code>, <code>reset()</code></td></tr>
       <tr><td>출력 핀</td><td>get 메서드</td><td><code>getOutput()</code></td></tr>
@@ -878,12 +902,12 @@ java Step1</pre></div>
 
   <h2>만들 클래스</h2>
   <div class="uml-grid">
-    <div class="uml"><div class="nm">TTL7490<small>10진 카운터</small></div><div class="f">- <b>num</b> : int<br>- <b>oldclk</b> : int<br>- <b>output</b> : int[4]</div><div class="m">+ <b>setClock</b>(clk)<br>+ <b>reset</b>(R0, R1, R2)<br>+ <b>getOutput</b>() : int[]<br>+ <b>setNum</b>(n)</div></div>
-    <div class="uml"><div class="nm">TTL7446<small>BCD → 7세그먼트</small></div><div class="f">- <b>TABLE</b> : int[][] (static)<br>- <b>input</b> : int[4]<br>- <b>output</b> : int[7]</div><div class="m">+ <b>setInput</b>(int[])<br>+ <b>getOutput</b>() : int[]<br>+ <b>getNum</b>() : int</div></div>
-    <div class="uml"><div class="nm">FND<small>5×5 표시기</small></div><div class="f">- <b>input</b> : int[7]<br>- <b>seg</b> : char[5][5]<br>- <b>ch</b> : char</div><div class="m">+ <b>setInput</b>(int[])<br>+ <b>setChar</b>(c)<br>+ <b>dispFnd</b>()<br>+ <b>dispFnd</b>(line)</div></div>
-    <div class="uml"><div class="nm">DigitalClock<small>위 칩들을 가진 시계</small></div><div class="f">- <b>h10 … s1</b> : TTL7490 ×6<br>- <b>dec</b> : TTL7446[6]<br>- <b>fnd</b> : FND[6]<br>- <b>pm</b> : boolean</div><div class="m">+ <b>setTime</b>(h, m, s, pm)<br>+ <b>setClock</b>(clk)<br>+ <b>display</b>()<br>+ <b>toString</b>()</div></div>
+    <div class="uml"><div class="nm">TTL7490<small>10진 카운터</small></div><div class="f">~ <b>num</b> : int<br>~ <b>oldclk</b> : int<br>~ <b>output</b> : int[4]</div><div class="m">+ <b>setClock</b>(clk)<br>+ <b>reset</b>(R0, R1, R2)<br>+ <b>getOutput</b>() : int[]<br>+ <b>setNum</b>(n)</div></div>
+    <div class="uml"><div class="nm">TTL7446<small>BCD → 7세그먼트</small></div><div class="f">~ <b>input</b> : int[4]<br>~ <b>output</b> : int[7]<br>~ <b>num</b> : int</div><div class="m">~ <b>setInput</b>(int[])<br>~ <b>getOutput</b>() : int[]<br>~ <b>getNum</b>() : int</div></div>
+    <div class="uml"><div class="nm">FND<small>5×5 표시기</small></div><div class="f">~ <b>input</b> : int[7]<br>~ <b>seg</b> : char[5][5]<br>~ <b>ch</b> : char</div><div class="m">~ <b>setInput</b>(int[])<br>~ <b>setChar</b>(c)<br>~ <b>dispFnd</b>()<br>~ <b>dispFnd</b>(line)</div></div>
+    <div class="uml"><div class="nm">Main<small>위 칩들을 조립한 시계</small></div><div class="f">main 안의 지역 변수<br>· TTL7490 ×6 (시·분·초)<br>· TTL7446 ×6<br>· FND ×6<br>· apm, chk : boolean</div><div class="m">+ <b>main</b>(String[])<br><span style="opacity:.75">1부 메서드도 함께 들어 있음<br>(dispfnd, fnd, cnvtDec2Bin,<br>cnvtDec2BinBit, ttl7490)</span></div></div>
   </div>
-  <p style="font-size:14px;color:var(--muted)"><code>-</code>는 private(밖에서 못 씀), <code>+</code>는 public(밖에서 호출)입니다.</p>
+  <p style="font-size:14px;color:var(--muted)">UML에서 <code>+</code>는 public(밖에서 호출), <code>-</code>는 private(밖에서 못 씀), <code>~</code>는 <b>지정자를 생략</b>한 것(같은 폴더 안에서만 접근)을 뜻합니다. 이 강좌의 칩 클래스는 대부분 지정자를 생략했고, 안에서만 쓰는 <code>cnvt()</code>·<code>reset()</code>에만 <code>private</code>을 붙였습니다.</p>
 
   <h2>2부 단계</h2>
   <div class="scroll">
@@ -896,7 +920,7 @@ java Step1</pre></div>
       <tr><td>4</td><td style="text-align:left">객체 연결: 100진 카운터</td><td style="text-align:left"><code>Counter100.java</code></td></tr>
       <tr><td>5</td><td style="text-align:left">리셋 연결: 60진 초 카운터</td><td style="text-align:left"><code>Counter60.java</code></td></tr>
       <tr><td>6</td><td style="text-align:left">카운터 4개: MM:SS</td><td style="text-align:left"><code>ClockMMSS.java</code></td></tr>
-      <tr><td>7</td><td style="text-align:left">DigitalClock 클래스로 완성</td><td style="text-align:left"><code>DigitalClock.java</code>, <code>ClockMain.java</code></td></tr>
+      <tr><td>7</td><td style="text-align:left">칩 18개를 조립해 12시간제 시계 완성</td><td style="text-align:left"><code>Main.java</code></td></tr>
     </tbody>
   </table>
   </div>
@@ -904,7 +928,7 @@ java Step1</pre></div>
   <h2>파일 구성과 실행</h2>
   <p>클래스마다 파일을 하나씩 만들고 <b>한 폴더</b>에 둡니다. 같은 폴더에 있는 클래스는 import 없이 서로 사용할 수 있습니다.</p>
   <div class="code out"><div class="cap"><span>classes 폴더에서</span></div><pre>javac -encoding UTF-8 *.java
-java ClockMain</pre></div>
+java Main</pre></div>
   <div class="note"><b>원본 폴더를 쓸 때 주의.</b> 원본의 <code>TTL4776.java</code> 파일 안에는 <code>class TTL7446</code>이 들어 있습니다. public이 아닌 클래스는 파일 이름이 달라도 컴파일되지만, 찾기 쉽도록 <code>TTL7446.java</code>로 맞추는 것이 좋습니다. 또 한 폴더에 같은 이름의 클래스가 두 번 있으면 <code>duplicate class</code> 오류가 나므로, 강좌 코드는 새 폴더에서 실행하세요.</div>
 </section>
 
@@ -916,7 +940,7 @@ java ClockMain</pre></div>
   <ul class="goals"><li>필드와 private</li><li>생성자와 this(…)</li><li>객체마다 따로 있는 상태</li></ul>
 
   <div class="uml-grid" style="grid-template-columns:minmax(0,320px)">
-    <div class="uml"><div class="nm">TTL7490</div><div class="f">- <b>num</b> : int<br>- <b>oldclk</b> : int<br>- <b>output</b> : int[4]</div><div class="m">+ TTL7490()<br>+ TTL7490(R0, R1, R2)<br>- <b>cnvt</b>()<br>+ <b>setClock</b>(clk)<br>+ <b>reset</b>(R0, R1, R2)<br>+ <b>getOutput</b>() : int[]<br>+ <b>setNum</b>(n)<br>+ <b>getNum</b>() : int</div></div>
+    <div class="uml"><div class="nm">TTL7490</div><div class="f">~ <b>num</b> : int<br>~ <b>output</b> : int[4]<br>~ <b>oldclk</b> : int</div><div class="m">+ TTL7490()<br>+ TTL7490(R0, R1, R2)<br>- <b>cnvt</b>()<br>+ <b>setClock</b>(clk)<br>+ <b>reset</b>(R0, R1, R2)<br>+ <b>getOutput</b>() : int[]<br>+ <b>setNum</b>(n)</div></div>
   </div>
 
   <h2>메서드에서 클래스로</h2>
@@ -924,8 +948,8 @@ java ClockMain</pre></div>
   <table class="data">
     <thead><tr><th>1부 (메서드)</th><th>2부 (클래스)</th><th>이유</th></tr></thead>
     <tbody>
-      <tr><td><code>static int cnt</code></td><td><code>private int num</code></td><td>객체마다 따로 기억</td></tr>
-      <tr><td><code>static int oldclk</code></td><td><code>private int oldclk</code></td><td>밖에서 바꾸지 못하게 보호</td></tr>
+      <tr><td><code>static int cnt</code></td><td><code>int num</code> (필드)</td><td>객체마다 따로 기억</td></tr>
+      <tr><td><code>static int oldclk</code></td><td><code>int oldclk</code> (필드)</td><td>칩마다 직전 클럭을 따로 기억</td></tr>
       <tr><td><code>ttl7490(clk, R0, R1, R2)</code> 하나</td><td><code>setClock(clk)</code> + <code>reset(R0, R1, R2)</code></td><td>핀 종류별로 메서드 분리</td></tr>
       <tr><td><code>return cnvtDec2Bin(cnt)</code></td><td><code>output</code> 필드 + <code>getOutput()</code></td><td>출력 핀 값을 칩이 들고 있음</td></tr>
     </tbody>
@@ -933,11 +957,11 @@ java ClockMain</pre></div>
   </div>
 
   <h2>코드</h2>
-  <div class="code" data-src="c7490" data-cap="TTL7490.java" data-file="classes/TTL7490.java"></div>
+  <div class="srcfile" data-src="c7490" data-name="TTL7490.java" data-file="classes/TTL7490.java"></div>
   <ul>
-    <li><b>private 필드</b>: <code>oldclk</code>를 밖에서 마음대로 바꾸면 엣지 검출이 망가집니다. 칩 내부는 핀(public 메서드)으로만 건드리게 막습니다.</li>
-    <li><b><code>this(1, 0, 0)</code></b>: 생성자 안에서 다른 생성자를 부릅니다. 초기화 코드를 한 곳에만 두기 위해서입니다.</li>
-    <li><b><code>cnvt()</code>는 private</b>: 값이 바뀔 때 칩 안에서 알아서 부르는 내부 동작이라 밖에 공개할 필요가 없습니다.</li>
+    <li><b>생성자가 두 개</b>: <code>TTL7490()</code>은 0에서, <code>TTL7490(R0, R1, R2)</code>는 지정한 값에서 시작합니다. 둘 다 <code>oldclk = 0</code>으로 두고 <code>reset()</code>을 불러 초기 상태를 만듭니다.</li>
+    <li><b><code>cnvt()</code>는 private</b>: <code>num</code>이 바뀔 때 칩 안에서 알아서 부르는 내부 동작이라 밖에 공개하지 않습니다. 나머지 메서드가 핀에 해당합니다.</li>
+    <li><b><code>setClock()</code>이 상태를 바꾸는 유일한 통로</b>: 1 → 0으로 <b>떨어질 때만</b> 카운트하고, 그 밖에는 <code>oldclk</code>만 갱신합니다.</li>
     <li><b><code>getOutput()</code>은 배열 자체를 돌려줍니다</b>: 한 번 받아 둔 배열도 카운트가 바뀌면 값이 함께 바뀝니다. 핀에 전선을 꽂아 둔 것과 같습니다.</li>
   </ul>
 
@@ -948,17 +972,15 @@ java ClockMain</pre></div>
   </div>
 
   <h2>테스트</h2>
-  <div class="code" data-src="ct7490" data-cap="Test7490.java" data-file="classes/Test7490.java"></div>
-  <h3>실행 결과</h3>
-  <div class="code out" data-src="o7490" data-cap="콘솔"></div>
-  <p>a에만 클럭을 넣었으므로 b는 처음 값 2를 그대로 유지하고, b를 리셋해도 a는 영향을 받지 않습니다.</p>
+  <div class="runner" data-src="ct7490" data-name="Test7490.java" data-file="classes/Test7490.java" data-main="Test7490" data-deps="c7490"></div>
+  <p>a에만 클럭을 넣었으므로 b는 처음 값 2를 그대로 유지하고, b를 리셋해도 a는 영향을 받지 않습니다. <code>TTL7490</code>에는 값을 읽는 <code>getNum()</code>이 없어서, 테스트 쪽에서 출력 4비트를 8·4·2·1로 더하는 <code>val()</code>을 두었습니다.</p>
 
-  <div class="note"><b>원본 TTL7490.java와 다른 점.</b> 필드를 <code>private</code>으로 바꾸고, 기본 생성자는 <code>this(1, 0, 0)</code>로 줄였습니다. <code>setNum</code>은 10 이상이 들어와도 0 ~ 9가 되도록 <code>% 10</code>을 붙였고, 값을 확인하는 <code>getNum()</code>을 추가했습니다.</div>
+  <div class="note"><b>더 다듬어 볼 곳.</b> 필드에 <code>private</code>을 붙이면 <code>a.num = 5;</code> 같은 코드를 컴파일 단계에서 막을 수 있습니다. <code>setNum(int n)</code>에 <code>n % 10</code>을 붙이면 10 이상이 들어와도 0 ~ 9로 유지되고, <code>getNum()</code>을 추가하면 테스트에서 값을 바로 확인할 수 있습니다. 위 코드를 고쳐 실행해 보세요.</div>
 
   <h2>확인 문제</h2>
   <details class="q"><summary><code>TTL7490 b = a;</code> 로 만들고 <code>b.setClock()</code>을 부르면 a는?</summary><div class="a">a도 바뀝니다. <code>new</code>를 쓰지 않았으므로 b는 새 칩이 아니라 <b>같은 객체</b>를 가리키는 또 하나의 이름입니다.</div></details>
   <details class="q"><summary>1부에서는 리셋할 때 <code>oldclk = 0</code>을 했는데, 클래스의 <code>reset()</code>에는 없습니다. 괜찮을까요?</summary><div class="a">괜찮습니다. 1부에서는 한 번의 호출에 clk와 R이 함께 들어와, 리셋하는 동안 clk를 기록하지 못했기 때문에 맞춰 준 것입니다. 클래스에서는 clk 기록을 <code>setClock()</code>이 항상 따로 맡습니다.</div></details>
-  <details class="q"><summary>밖에서 <code>a.num = 5;</code> 라고 쓰면?</summary><div class="a"><code>num has private access in TTL7490</code> 컴파일 오류가 납니다. 값을 정하려면 <code>a.setNum(5)</code>를 써야 합니다.</div></details>
+  <details class="q"><summary>밖에서 <code>a.num = 5;</code> 라고 쓰면?</summary><div class="a">같은 폴더라면 컴파일은 됩니다. 하지만 <code>cnvt()</code>가 불리지 않아 <code>num</code>만 5가 되고 <b>출력 4비트는 예전 값 그대로</b>입니다. 이런 어긋남을 막으려고 <code>setNum()</code>을 두고, 필드에는 <code>private</code>을 붙입니다.</div></details>
 
   <h2>연습 과제</h2>
   <ol class="task">
@@ -975,30 +997,28 @@ java ClockMain</pre></div>
   <ul class="goals"><li>static final 상수</li><li>생성자 오버로딩</li><li>참조와 갱신 시점</li></ul>
 
   <div class="uml-grid" style="grid-template-columns:minmax(0,320px)">
-    <div class="uml"><div class="nm">TTL7446</div><div class="f">- <b>TABLE</b> : int[][] <i>static final</i><br>- <b>input</b> : int[4]<br>- <b>output</b> : int[7]<br>- <b>num</b> : int</div><div class="m">+ TTL7446()<br>+ TTL7446(int[] in)<br>- <b>cnvt</b>()<br>+ <b>setInput</b>(int[] in)<br>+ <b>getOutput</b>() : int[]<br>+ <b>getNum</b>() : int</div></div>
+    <div class="uml"><div class="nm">TTL7446</div><div class="f">~ <b>num</b> : int<br>~ <b>input</b> : int[4]<br>~ <b>output</b> : int[7]</div><div class="m">+ TTL7446()<br>+ TTL7446(int[] in)<br>- <b>cnvt</b>()<br>~ <b>setInput</b>(int[] in)<br>~ <b>getNum</b>() : int<br>~ <b>getOutput</b>() : int[]</div></div>
   </div>
 
-  <h2>진리표는 static final</h2>
-  <p>0 ~ 9의 세그먼트 표는 어느 7446 칩이든 똑같습니다. 1부에서는 메서드를 부를 때마다 <code>table</code>을 새로 만들었지만, 이제는 <code>static</code>으로 <b>클래스에 하나만</b> 두고 모든 객체가 함께 씁니다. <code>final</code>은 다른 표로 바꿔 끼우지 못하게 합니다.</p>
+  <h2>진리표는 어디에 둘까</h2>
+  <p>0 ~ 9의 세그먼트 표는 어느 7446 칩이든 똑같습니다. 이 코드는 1부처럼 <code>cnvt()</code> 안의 <b>지역 변수</b>로 두었습니다. 읽기 쉽지만, <code>cnvt()</code>를 부를 때마다 10×7짜리 표가 새로 만들어집니다. 시계에는 7446이 6개이고 매초 여러 번 불리므로, 표를 <code>private static final int[][] TABLE</code>로 <b>클래스에 하나만</b> 두는 편이 낫습니다. <code>static</code>은 객체마다가 아니라 클래스에 하나, <code>final</code>은 다른 표로 바꿔 끼우지 못하게 한다는 뜻입니다.</p>
 
   <h2>코드</h2>
-  <div class="code" data-src="c7446" data-cap="TTL7446.java" data-file="classes/TTL7446.java"></div>
-  <p><code>TABLE[num].clone()</code>으로 <b>복사본</b>을 돌려주는 이유: 원본 행을 그대로 주면, 받은 쪽에서 <code>output[0] = 0</code>처럼 값을 바꿀 때 static 표가 바뀌어 모든 디코더의 숫자 모양이 망가집니다.</p>
+  <div class="srcfile" data-src="c7446" data-name="TTL7446.java" data-file="classes/TTL7446.java"></div>
+  <p><code>output = fnd[num];</code>은 표의 <b>한 행을 그대로 가리키게</b> 합니다. 지금은 표가 호출마다 새로 만들어지므로 문제가 없지만, 표를 <code>static</code>으로 옮기면 이야기가 달라집니다. 받은 쪽에서 <code>output[0] = 0</code>처럼 값을 바꾸면 <b>표 원본이 바뀌어</b> 모든 디코더의 숫자 모양이 망가집니다. 그때는 <code>TABLE[num].clone()</code>으로 복사본을 돌려줘야 합니다.</p>
 
   <h2>setInput을 다시 불러야 하는 이유</h2>
   <p><code>input</code> 필드는 7490의 <code>output</code> 배열을 가리키므로 비트 값은 자동으로 바뀝니다. 하지만 <code>output</code>은 <code>cnvt()</code>가 실행될 때만 계산됩니다. 실제 7446은 입력이 바뀌면 곧바로 출력이 바뀌는 조합 회로지만, 프로그램에서는 <b>값이 바뀐 뒤 <code>setInput()</code>을 다시 불러야</b> 출력이 새로 계산됩니다.</p>
 
   <h2>테스트</h2>
-  <div class="code" data-src="ct7446" data-cap="Test7446.java" data-file="classes/Test7446.java"></div>
-  <h3>실행 결과</h3>
-  <div class="code out" data-src="o7446" data-cap="콘솔"></div>
+  <div class="runner" data-src="ct7446" data-name="Test7446.java" data-file="classes/Test7446.java" data-main="Test7446" data-deps="c7490 c7446"></div>
   <p>마지막 두 줄을 보세요. 카운터는 0이 되었는데 디코더는 <code>setInput</code>을 부르기 전까지 9를 유지합니다.</p>
 
-  <div class="note"><b>원본 TTL4776.java와 다른 점.</b> 파일 이름을 클래스 이름과 같은 <code>TTL7446.java</code>로 바꿨습니다. 진리표를 <code>cnvt()</code> 안의 지역 변수에서 <code>static final</code> 필드로 옮겼고, 10 ~ 15가 들어오면 예외 대신 모든 세그먼트를 끄도록 했습니다.</div>
+  <div class="note"><b>파일 이름과 10 ~ 15 입력.</b> 원본 파일 이름은 <code>TTL4776.java</code>지만 안에 든 클래스는 <code>TTL7446</code>이라 <code>TTL7446.java</code>로 맞췄습니다. 또 <code>cnvt()</code>는 <code>fnd[num]</code>을 그대로 읽으므로, 10 ~ 15가 입력되면 <code>ArrayIndexOutOfBoundsException</code>이 납니다. 위 테스트 코드에 <code>decoder.setInput(new int[]{1,1,1,1});</code>를 넣고 실행해 확인한 뒤, <code>if (num &gt; 9) output = new int[7];</code>로 막아 보세요.</div>
 
   <h2>확인 문제</h2>
-  <details class="q"><summary><code>TABLE</code>에서 <code>static</code>을 빼면 어떻게 될까요?</summary><div class="a">동작은 같지만 7446 객체를 만들 때마다 같은 표가 하나씩 더 생깁니다. 시계에는 7446이 6개이므로 똑같은 표 6개가 메모리에 올라갑니다.</div></details>
-  <details class="q"><summary><code>new TTL7446()</code>으로 만든 직후 <code>getNum()</code>은?</summary><div class="a"><b>0</b>입니다. 기본 생성자가 <code>this(new int[4])</code>로 0000을 입력해 두기 때문입니다.</div></details>
+  <details class="q"><summary>진리표를 <code>static</code> 필드로 옮기면 무엇이 좋아질까요?</summary><div class="a">표가 클래스에 하나만 생깁니다. 지금은 <code>cnvt()</code>를 부를 때마다 표를 새로 만들므로, 시계가 1초 움직일 때마다 7446 여섯 개가 각각 표를 만들었다 버립니다.</div></details>
+  <details class="q"><summary><code>new TTL7446()</code>으로 만든 직후 <code>getNum()</code>은?</summary><div class="a"><b>0</b>입니다. 기본 생성자가 입력을 <code>{0,0,0,0}</code>으로 두고 <code>cnvt()</code>를 부르기 때문입니다. 이때 <code>output</code>은 숫자 0의 세그먼트가 됩니다.</div></details>
 
   <h2>연습 과제</h2>
   <ol class="task">
@@ -1015,11 +1035,11 @@ java ClockMain</pre></div>
   <ul class="goals"><li>메서드 오버로딩</li><li>줄 단위 가로 출력</li><li>객체 배열</li></ul>
 
   <div class="uml-grid" style="grid-template-columns:minmax(0,320px)">
-    <div class="uml"><div class="nm">FND</div><div class="f">- <b>input</b> : int[7]<br>- <b>seg</b> : char[5][5]<br>- <b>ch</b> : char</div><div class="m">+ FND()<br>+ FND(char c)<br>+ FND(char c, int[] in)<br>- <b>clear</b>()<br>- <b>cnvt</b>()<br>+ <b>setChar</b>(char c)<br>+ <b>setInput</b>(int[] in)<br>+ <b>dispFnd</b>()<br>+ <b>dispFnd</b>(int line)</div></div>
+    <div class="uml"><div class="nm">FND</div><div class="f">~ <b>input</b> : int[7]<br>~ <b>seg</b> : char[5][5]<br>~ <b>ch</b> : char</div><div class="m">+ FND()<br>+ FND(char c)<br>+ FND(char c, int[] in)<br>- <b>reset</b>()<br>- <b>cnvt</b>()<br>~ <b>setChar</b>(char c)<br>~ <b>setInput</b>(int[] in)<br>~ <b>dispFnd</b>()<br>~ <b>dispFnd</b>(int line)</div></div>
   </div>
 
   <h2>코드</h2>
-  <div class="code" data-src="cfnd" data-cap="FND.java" data-file="classes/FND.java"></div>
+  <div class="srcfile" data-src="cfnd" data-name="FND.java" data-file="classes/FND.java"></div>
 
   <h2>dispFnd가 두 개인 이유</h2>
   <p>이름은 같고 매개변수가 다른 메서드를 여러 개 두는 것을 <b>오버로딩</b>이라고 합니다.</p>
@@ -1043,11 +1063,9 @@ java ClockMain</pre></div>
 
   <h2>테스트</h2>
   <p>숫자 모양을 만들려면 7490 → 7446 → FND를 거쳐야 하므로, 1 ~ 2단계에서 만든 클래스를 함께 씁니다.</p>
-  <div class="code" data-src="ctfnd" data-cap="TestFND.java" data-file="classes/TestFND.java"></div>
-  <h3>실행 결과</h3>
-  <div class="code out" data-src="ofnd" data-cap="콘솔"></div>
+  <div class="runner" data-src="ctfnd" data-name="TestFND.java" data-file="classes/TestFND.java" data-main="TestFND" data-deps="c7490 c7446 cfnd"></div>
 
-  <div class="note"><b>원본 FND.java와 다른 점.</b> 원본의 <code>setChar()</code>는 문자만 바꾸고 화면을 다시 그리지 않아서, 다음 <code>setInput()</code> 전까지 모양이 그대로였습니다. 여기서는 <code>cnvt()</code>를 불러 바로 반영되게 했습니다.</div>
+  <div class="note"><b><code>setChar()</code>는 화면을 다시 그리지 않습니다.</b> 문자만 바꾸고 <code>cnvt()</code>를 부르지 않으므로, 다음 <code>setInput()</code> 전까지 <code>seg</code>에는 예전 문자가 남아 있습니다. 위 테스트의 두 번째와 세 번째 출력이 그 차이입니다. <code>setChar()</code> 끝에 <code>cnvt();</code> 한 줄을 넣고 다시 실행해 보세요. (<code>reset()</code>도 이름만 리셋이지 화면을 공백으로 지우는 일을 합니다.)</div>
 
   <h2>확인 문제</h2>
   <details class="q"><summary><code>FND[] fnds = new FND[5];</code> 바로 다음에 <code>fnds[0].dispFnd();</code> 를 부르면?</summary><div class="a"><code>NullPointerException</code>이 발생합니다. 객체 배열은 객체를 담을 <b>칸</b>만 만들고, 각 칸은 <code>null</code>입니다. <code>fnds[k] = new FND()</code>로 객체를 넣어야 합니다.</div></details>
@@ -1086,7 +1104,7 @@ java ClockMain</pre></div>
   </div>
 
   <h2>코드</h2>
-  <div class="code" data-src="c100" data-cap="Counter100.java" data-file="classes/Counter100.java"></div>
+  <div class="runner" data-src="c100" data-name="Counter100.java" data-file="classes/Counter100.java" data-main="Counter100" data-deps="c7490 c7446 cfnd"></div>
   <p><code>wire(c, d, f)</code>는 객체 세 개를 받아 7490 → 7446 → FND 순서로 값을 흘려보냅니다. 메서드에 객체를 넘기면 복사본이 아니라 <b>그 객체</b>가 전달되므로, 메서드 안에서 <code>setInput</code>한 결과가 밖의 d, f에 그대로 남습니다.</p>
 
   <h2>1부 Step 8과 비교</h2>
@@ -1102,8 +1120,6 @@ java ClockMain</pre></div>
   </table>
   </div>
 
-  <h3>실행 결과 (09, 10 … 99, 00 부분)</h3>
-  <div class="code out" data-src="o100" data-cap="콘솔"></div>
 
   <h2>확인 문제</h2>
   <details class="q"><summary>반복문에서 <code>wire()</code>를 <code>setClock()</code>보다 먼저 부르면?</summary><div class="a">FND에는 이번 클럭이 반영되기 <b>전</b> 값이 들어가므로 화면이 한 박자씩 늦게 보입니다. 신호가 흐르는 순서(카운트 → 디코드 → 표시)대로 호출해야 합니다.</div></details>
@@ -1126,7 +1142,7 @@ java ClockMain</pre></div>
   <div class="code" data-src="cmp15" data-cap="1부 counter60 vs 2부"></div>
 
   <h2>코드</h2>
-  <div class="code" data-src="c60" data-cap="Counter60.java" data-file="classes/Counter60.java"></div>
+  <div class="runner" data-src="c60" data-name="Counter60.java" data-file="classes/Counter60.java" data-main="Counter60" data-deps="c7490 c7446 cfnd"></div>
   <ul>
     <li><code>s10.reset(q[2] &amp; q[1], 0, 0)</code>는 매 반복 호출됩니다. 10의 자리가 6이 아니면 R0 = 0이라 아무 변화가 없고, 6이 되는 순간에만 0이 됩니다.</li>
     <li><code>setNum(5)</code>로 50초부터 시작해 59 → 00을 빨리 확인합니다.</li>
@@ -1140,8 +1156,6 @@ java ClockMain</pre></div>
     <pre class="console" id="l15out" style="margin-top:12px"></pre>
   </div>
 
-  <h3>실행 결과 (58초 ~ 00초 부분)</h3>
-  <div class="code out" data-src="o60" data-cap="콘솔"></div>
 
   <h2>확인 문제</h2>
   <details class="q"><summary><code>s10.reset(…)</code>을 <code>s10.setClock(…)</code>보다 <b>먼저</b> 부르면?</summary><div class="a">리셋이 지난 반복의 값(5)을 보고 판단하므로, 6이 된 뒤 한 반복 동안 남아 화면에 <b>59, 60, 01</b>처럼 보입니다. 1부 Step 9 확인 문제와 같은 현상입니다.</div></details>
@@ -1185,7 +1199,7 @@ java ClockMain</pre></div>
   </div>
 
   <h2>코드</h2>
-  <div class="code" data-src="cmmss" data-cap="ClockMMSS.java" data-file="classes/ClockMMSS.java"></div>
+  <div class="runner" data-src="cmmss" data-name="ClockMMSS.java" data-file="classes/ClockMMSS.java" data-main="ClockMMSS" data-deps="c7490 c7446 cfnd"></div>
   <p>반복문 안의 호출 순서는 신호가 흐르는 순서(초 1 → 초 10 → 분 1 → 분 10)와 같아야 합니다. 앞 칩의 출력이 바뀐 뒤에 다음 칩의 <code>setClock</code>을 불러야 같은 반복 안에서 자리올림이 이어집니다.</p>
 
   <div class="lab" id="lab16">
@@ -1196,8 +1210,6 @@ java ClockMain</pre></div>
     <pre class="console" id="l16out" style="margin-top:12px"></pre>
   </div>
 
-  <h3>실행 결과 (59:59 → 00:01 부분)</h3>
-  <div class="code out" data-src="ommss" data-cap="콘솔"></div>
 
   <div class="note"><b>main이 길어졌습니다.</b> 칩 변수 12개와 연결 코드가 모두 main 안에 있습니다. 시까지 더하면 18개가 됩니다. 다음 단계에서는 이 칩들을 <b>필드로 가진 시계 클래스</b>를 만들어 main을 몇 줄로 줄입니다.</div>
 
@@ -1211,16 +1223,28 @@ java ClockMain</pre></div>
   </ol>
 </section>
 
-<!-- ================= 2부 7단계 : DigitalClock ================= -->
-<section class="step" id="step-17" data-n="17" data-part="2" data-k="7" data-title="DigitalClock 완성" data-sub="class DigitalClock" hidden>
+<!-- ================= 2부 7단계 : Main ================= -->
+<section class="step" id="step-17" data-n="17" data-part="2" data-k="7" data-title="Main: 시계 완성" data-sub="class Main" hidden>
   <div class="eyebrow">2부 · 7단계</div>
-  <h1>DigitalClock 클래스로 시계 완성</h1>
-  <p class="lead">칩 18개를 필드로 가진 <code>DigitalClock</code> 클래스를 만듭니다. 객체가 다른 객체들을 부품으로 갖는 구조를 <b>조합(composition)</b>이라고 합니다. 연결은 클래스 안에 숨기고, 밖에서는 <code>setTime</code>, <code>setClock</code>, <code>display</code>만 부르면 됩니다. 시는 원본 <code>Main.java</code>처럼 12시간제와 AM/PM으로 만듭니다.</p>
-  <ul class="goals"><li>객체를 필드로 가진 클래스</li><li>13시 → 01시 리셋</li><li>AM/PM 전환과 toString</li></ul>
+  <h1>Main.java: 12시간제 디지털 시계</h1>
+  <p class="lead">지금까지 만든 칩 클래스 세 개를 모아 시계를 완성합니다. <code>main</code> 안에서 7490 여섯 개, 7446 여섯 개, FND 여섯 개를 만들고 초 → 분 → 시 순서로 클럭을 이어 붙이면, 1부에서 메서드로 만들던 자리올림이 <b>객체 사이의 연결</b>로 바뀝니다.</p>
+  <ul class="goals"><li>칩 18개로 회로 조립하기</li><li>13시 → 01시 리셋</li><li>AM/PM 전환</li></ul>
 
-  <div class="uml-grid">
-    <div class="uml"><div class="nm">DigitalClock</div><div class="f">- <b>h10, h1, m10, m1, s10, s1</b> : TTL7490<br>- <b>dec</b> : TTL7446[6]<br>- <b>fnd</b> : FND[6]<br>- <b>pm</b> : boolean<br>- <b>was11</b> : boolean</div><div class="m">+ DigitalClock()<br>+ <b>setTime</b>(h, m, s, isPm)<br>+ <b>setClock</b>(clk)<br>- <b>checkAmPm</b>()<br>- <b>update</b>()<br>+ <b>display</b>()<br>+ <b>toString</b>() : String</div></div>
+  <h2>여섯 자리를 어떻게 잇는가</h2>
+  <div class="scroll">
+  <table class="data">
+    <thead><tr><th>자리</th><th>7490 객체</th><th>클럭(setClock) 입력</th><th>리셋(reset) 조건</th></tr></thead>
+    <tbody>
+      <tr><td>초 1</td><td><code>ttl7490_S1</code></td><td><code>i % 2</code> — 바깥에서 주는 클럭</td><td>없음 (0 ~ 9)</td></tr>
+      <tr><td>초 10</td><td><code>ttl7490_S10</code></td><td>S1 의 <code>b3</code></td><td><code>b2 &amp; b1</code> → 6에서 0</td></tr>
+      <tr><td>분 1</td><td><code>ttl7490_M1</code></td><td>S10 의 <code>b2</code></td><td>없음 (0 ~ 9)</td></tr>
+      <tr><td>분 10</td><td><code>ttl7490_M10</code></td><td>M1 의 <code>b3</code></td><td><code>b2 &amp; b1</code> → 6에서 0</td></tr>
+      <tr><td>시 1</td><td><code>ttl7490_H1</code></td><td>M10 의 <code>b2</code></td><td>13시에서 <b>R1</b> → 1</td></tr>
+      <tr><td>시 10</td><td><code>ttl7490_H10</code></td><td>H1 의 <code>b3</code></td><td>13시에서 <b>R0</b> → 0</td></tr>
+    </tbody>
+  </table>
   </div>
+  <p>Step 8 · 9에서 만든 100진 · 60진 카운터가 그대로 쓰입니다. 초와 분은 60진(10의 자리가 6이 되면 리셋), 시만 1 ~ 12로 도는 점이 다릅니다.</p>
 
   <h2>시 카운터: 1 ~ 12</h2>
   <p>시계의 시는 12 다음이 01입니다. 13이 되는 순간을 찾아 10의 자리는 R0로 0, 1의 자리는 <b>R1로 1</b>을 만듭니다. 7490에 R1이 있는 이유가 여기 있습니다.</p>
@@ -1235,21 +1259,20 @@ java ClockMain</pre></div>
     </tbody>
   </table>
   </div>
-  <p>생성자에서 <code>h10 = new TTL7490(0, 1, 0)</code>, <code>h1 = new TTL7490(0, 0, 1)</code>로 <b>12시</b>에서 시작하게 한 것도 R1, R2를 활용한 것입니다.</p>
+  <p><code>new TTL7490(0, 1, 0)</code>(R1 → 1)과 <code>new TTL7490(0, 0, 1)</code>(R2 → 2)로 시 카운터를 <b>12시</b>에서 시작하게 한 것도 같은 R 핀을 쓴 것입니다. 7490에 R1, R2가 있는 이유가 여기 있습니다.</p>
 
   <h2>AM/PM 전환</h2>
-  <p>11시 → 12시로 넘어가는 순간 AM과 PM이 바뀝니다. 단순히 "12시이면 바꾼다"로 하면 12:00 ~ 12:59 동안 매초 바뀌어 버리므로, <code>was11</code> 필드에 11시를 지나왔는지 기억해 두고 12시가 되는 <b>처음 한 번만</b> 바꿉니다. 원본의 <code>chk</code> 변수와 같은 역할입니다.</p>
+  <p>11시 → 12시로 넘어가는 순간 AM과 PM이 바뀝니다. 단순히 "12시이면 바꾼다"로 하면 12:00 ~ 12:59 동안 매초 뒤집혀 버리므로, <code>chk</code> 변수에 11시를 지나왔는지 기억해 두고 12시가 되는 <b>처음 한 번만</b> <code>apm</code>을 뒤집습니다. 조건은 비트로 씁니다. 11시는 <code>H10 b0 == 1 &amp;&amp; H1 b0 == 1</code>(10 + 1), 12시는 <code>H10 b0 == 1 &amp;&amp; H1 b1 == 1</code>(10 + 2)입니다.</p>
 
   <h2>코드</h2>
-  <div class="code" data-src="cclock" data-cap="DigitalClock.java" data-file="classes/DigitalClock.java"></div>
+  <p>12:59:30에서 출발해 102번 반복합니다. 클럭은 <code>i % 2</code>로 1, 0을 번갈아 주므로 <b>반복 두 번이 1초</b>이고, 출력은 클럭이 0인 때(<code>i % 2 == 0</code>)만 합니다. 51초가 지나는 동안 12:59:59 → 01:00:00 리셋을 볼 수 있습니다.</p>
+  <div class="runner" data-src="cmain" data-name="Main.java" data-file="classes/Main.java" data-main="Main" data-deps="c7490 c7446 cfnd"></div>
   <ul>
-    <li><b>필드 초기화</b>: <code>private TTL7490 s1 = new TTL7490();</code>처럼 선언과 함께 객체를 만들면, 시계 객체가 생길 때 칩도 함께 생깁니다.</li>
-    <li><b><code>update()</code></b>: 1부 Step 4의 <code>dispNum</code>처럼 여러 단계를 한 번에 연결합니다. 칩 6개를 지역 배열 <code>cnt</code>에 담아 for문으로 처리합니다.</li>
-    <li><b><code>toString()</code></b>: <code>System.out.println(clock)</code>을 하면 자동으로 불립니다. <code>@Override</code>는 Object 클래스의 메서드를 다시 정의한다는 표시입니다.</li>
+    <li><b>파일 위쪽의 static 메서드들</b>: <code>dispfnd</code>, <code>fnd</code>, <code>cnvtDec2Bin</code>, <code>cnvtDec2BinBit</code>, <code>ttl7490</code>은 1부에서 만든 <b>메서드 버전</b>입니다. <code>main</code>은 쓰지 않지만, 같은 일을 하는 두 방식을 한 파일에서 비교할 수 있게 남겨 두었습니다.</li>
+    <li><b>이름으로 구분하는 칩</b>: <code>ttl7490_S1</code>, <code>ttl7446_S1</code>, <code>cfnd_S1</code> … 자리마다 칩 세 개가 한 조입니다. 1부에서 번호(<code>cnt[id]</code>)로 구분하던 것이 변수 이름으로 바뀌었습니다.</li>
+    <li><b>출력은 줄 단위로</b>: <code>dispFnd(j)</code>를 자리 순서대로 불러 한 줄을 완성하고 줄을 바꿉니다. <code>"@@ "</code>는 AM · PM 표시, <code>"@ "</code>는 시 · 분 · 초 사이의 콜론입니다.</li>
+    <li><b>고쳐 볼 곳</b>: <code>setNum</code> 여섯 줄로 시작 시각을 바꾸고, <code>i&lt;102</code>의 횟수를 늘려 보세요. 10:59:50에서 시작해 102번 돌리면 11시 → 12시의 <b>AM/PM 전환</b>을 직접 볼 수 있습니다.</li>
   </ul>
-
-  <div class="code" data-src="cmain" data-cap="ClockMain.java" data-file="classes/ClockMain.java"></div>
-  <p>시계 객체 두 개는 칩 18개씩을 따로 가지므로 서로 영향을 주지 않습니다.</p>
 
   <div class="lab" id="lab17">
     <div class="lab-h"><b>직접 해보기</b><span id="l17time"></span></div>
@@ -1259,21 +1282,18 @@ java ClockMain</pre></div>
     <pre class="console" id="l17out" style="margin-top:12px"></pre>
   </div>
 
-  <h3>실행 결과</h3>
-  <div class="code out" data-src="omain" data-cap="콘솔"></div>
-  <div class="note"><b>확인한 내용.</b> 이 클래스를 자정부터 24시간(86,400초) 동안 돌리며 매초 실제 시각과 비교해 모두 일치하는 것을 확인했습니다. 13시 → 01시 리셋과 AM/PM 전환도 포함됩니다.</div>
-
-  <div class="note"><b>원본 Main.java와 다른 점.</b> main의 지역 변수였던 칩들을 <code>DigitalClock</code>의 private 필드로 옮기고, 연결 코드를 <code>setClock()</code>, 출력 코드를 <code>display()</code>로 나눴습니다. <code>apm</code>은 <code>pm</code>, <code>chk</code>는 <code>was11</code>로 이름을 바꿨습니다.</div>
+  <div class="note"><b>실행 결과 읽는 법.</b> 한 프레임이 1초입니다. 왼쪽 <code>@@</code>는 위쪽이면 AM, 아래쪽이면 PM을 뜻합니다. 12:59:30부터 51프레임이 지나면 12:59:59 다음에 13시가 아니라 <b>01:00:00</b>이 나옵니다.</div>
 
   <h2>확인 문제</h2>
   <details class="q"><summary>13시 리셋에서 <code>h1.reset(0, 1, 0)</code> 대신 <code>h1.reset(1, 0, 0)</code>을 쓰면?</summary><div class="a">12 다음이 <b>00시</b>가 됩니다. 12시간제 시계에는 0시가 없으므로 R1로 1을 만들어야 합니다.</div></details>
-  <details class="q"><summary><code>was11</code> 없이 "12시이면 <code>pm = !pm</code>"으로 하면?</summary><div class="a">12:00:00 ~ 12:59:59 동안 <code>setClock</code>이 불릴 때마다 AM/PM이 번갈아 바뀌어 깜빡입니다.</div></details>
-  <details class="q"><summary>밖에서 <code>clock.s1.setNum(5)</code>를 호출할 수 있을까요?</summary><div class="a">없습니다. <code>s1</code>은 private이라 컴파일 오류가 납니다. 시간은 <code>setTime()</code>으로만 바꾸게 해서, 칩 사이 연결이 어긋나지 않도록 보호합니다.</div></details>
+  <details class="q"><summary><code>chk</code> 없이 "12시이면 <code>apm</code>을 뒤집는다"로 하면?</summary><div class="a">12:00:00 ~ 12:59:59 동안 반복마다 AM/PM이 번갈아 바뀌어 깜빡입니다. 12시로 <b>바뀌는 순간</b>을 한 번만 잡아야 합니다.</div></details>
+  <details class="q"><summary>칩 18개가 모두 <code>main</code>의 지역 변수인데, 불편한 점은?</summary><div class="a">시계를 두 개 만들거나 연결 코드를 다른 메서드로 나누려면 변수 18개를 전부 넘겨야 합니다. 칩들을 필드로 가진 <code>DigitalClock</code> 클래스로 묶으면 해결됩니다. 아래 연습 과제 1번이 그 작업입니다.</div></details>
 
   <h2>연습 과제</h2>
   <ol class="task">
-    <li><code>Thread.sleep(500)</code>을 넣어 실제 시간처럼 1초마다 움직이는 <code>run</code>을 만들어 보세요. (main에 <code>throws InterruptedException</code> 필요)</li>
-    <li>24시간제 <code>DigitalClock24</code> 클래스를 만들어 보세요.</li>
+    <li>칩 18개와 <code>apm</code>, <code>chk</code>를 필드로 가진 <code>DigitalClock</code> 클래스를 만들고, 연결은 <code>setClock()</code>, 출력은 <code>display()</code>로 나눠 보세요. <code>main</code>이 열 줄 안쪽으로 줄어듭니다.</li>
+    <li>24시간제로 바꿔 보세요. 13시 리셋을 빼고 24시에서 00시로 돌아가게 하면 됩니다.</li>
+    <li><code>Thread.sleep(500)</code>을 넣어 실제 시간처럼 움직이게 해 보세요. (내 컴퓨터에서 실행할 때만 동작합니다. <code>main</code>에 <code>throws InterruptedException</code>이 필요합니다)</li>
     <li>알람 시각을 저장하는 <code>setAlarm(h, m, isPm)</code>과, 그 시각이 되면 <code>true</code>를 돌려주는 <code>isAlarm()</code>을 추가해 보세요.</li>
   </ol>
   <div class="note"><b>강좌를 마쳤습니다.</b> 1부에서 메서드로 만든 변환 로직이 2부에서 칩 클래스 안으로 들어갔고, 칩 객체를 조합해 시계를 완성했습니다. 같은 칩 클래스로 타이머, 스톱워치, 주사위 같은 다른 회로도 만들어 보세요.</div>
@@ -1326,20 +1346,11 @@ java ClockMain</pre></div>
             System.out.println("   배열: {" + bin[0] + "," + bin[1] + "," + bin[2] + "," + bin[3] + "}");
         }
     }
-}</script>
-<script type="text/plain" id="out1">0 -> 0000   배열: {0,0,0,0}
-1 -> 0001   배열: {1,0,0,0}
-2 -> 0010   배열: {0,1,0,0}
-3 -> 0011   배열: {1,1,0,0}
-4 -> 0100   배열: {0,0,1,0}
-5 -> 0101   배열: {1,0,1,0}
-6 -> 0110   배열: {0,1,1,0}
-7 -> 0111   배열: {1,1,1,0}
-8 -> 1000   배열: {0,0,0,1}
-9 -> 1001   배열: {1,0,0,1}</script>
+}
+</script>
 <script type="text/plain" id="src2">public class Step2 {
 
-    static int[] cnvtDec2Bin(int num) {      // Step 1
+    static int[] cnvtDec2Bin(int num) {
         int[] out = new int[4];
         for (int i = 0; i < 4; i++) {
             out[i] = num % 2;
@@ -1395,17 +1406,8 @@ java ClockMain</pre></div>
             System.out.println();
         }
     }
-}</script>
-<script type="text/plain" id="out2">0 : bin={0,0,0,0}  seg={1,1,1,1,1,1,0}
-1 : bin={1,0,0,0}  seg={0,1,1,0,0,0,0}
-2 : bin={0,1,0,0}  seg={1,1,0,1,1,0,1}
-3 : bin={1,1,0,0}  seg={1,1,1,1,0,0,1}
-4 : bin={0,0,1,0}  seg={0,1,1,0,0,1,1}
-5 : bin={1,0,1,0}  seg={1,0,1,1,0,1,1}
-6 : bin={0,1,1,0}  seg={1,0,1,1,1,1,1}
-7 : bin={1,1,1,0}  seg={1,1,1,0,0,1,0}
-8 : bin={0,0,0,1}  seg={1,1,1,1,1,1,1}
-9 : bin={1,0,0,1}  seg={1,1,1,1,0,1,1}</script>
+}
+</script>
 <script type="text/plain" id="src3">public class Step3 {
 
     // [Step 3] 7비트 세그먼트 데이터 -> 5x5 문자 배열
@@ -1454,35 +1456,56 @@ java ClockMain</pre></div>
             printFnd(makeFnd(segData[n]));
         }
     }
-}</script>
-<script type="text/plain" id="out3">[0]
-#####
-#   #
-#   #
-#   #
-#####
-
-[1]
-    #
-    #
-    #
-    #
-    #
-
-[2]
-#####
-    #
-#####
-#
-#####
-
-... ([3] ~ [9] 생략)</script>
+}
+</script>
 <script type="text/plain" id="src4">public class Step4 {
 
-    // cnvtDec2Bin()        : Step 1 과 동일
-    // ttl7446()            : Step 2 와 동일
-    // makeFnd(), printFnd(): Step 3 과 동일
-    //   (전체 코드는 steps/Step4.java 참고)
+    static int[] cnvtDec2Bin(int num) {
+        int[] out = new int[4];
+        for (int i = 0; i < 4; i++) {
+            out[i] = num % 2;
+            num = num / 2;
+        }
+        return out;
+    }
+
+    static int[] ttl7446(int[] bin) {
+        int[][] table = {
+            {1,1,1,1,1,1,0}, {0,1,1,0,0,0,0}, {1,1,0,1,1,0,1},
+            {1,1,1,1,0,0,1}, {0,1,1,0,0,1,1}, {1,0,1,1,0,1,1},
+            {1,0,1,1,1,1,1}, {1,1,1,0,0,1,0}, {1,1,1,1,1,1,1},
+            {1,1,1,1,0,1,1}
+        };
+        int num = bin[3] * 8 + bin[2] * 4 + bin[1] * 2 + bin[0];
+        if (num > 9) return new int[7];
+        return table[num];
+    }
+
+    static char[][] makeFnd(int[] seg) {
+        char[][] fnd = new char[5][5];
+        for (int i = 0; i < 5; i++)
+            for (int j = 0; j < 5; j++)
+                fnd[i][j] = ' ';
+
+        if (seg[0] == 1) for (int i = 0; i < 5; i++) fnd[0][i]   = '#';
+        if (seg[1] == 1) for (int i = 0; i < 3; i++) fnd[i][4]   = '#';
+        if (seg[2] == 1) for (int i = 0; i < 3; i++) fnd[i+2][4] = '#';
+        if (seg[3] == 1) for (int i = 0; i < 5; i++) fnd[4][i]   = '#';
+        if (seg[4] == 1) for (int i = 0; i < 3; i++) fnd[i+2][0] = '#';
+        if (seg[5] == 1) for (int i = 0; i < 3; i++) fnd[i][0]   = '#';
+        if (seg[6] == 1) for (int i = 0; i < 5; i++) fnd[2][i]   = '#';
+        return fnd;
+    }
+
+    static void printFnd(char[][] fnd) {
+        for (int i = 0; i < 5; i++) {
+            for (int j = 0; j < 5; j++) {
+                System.out.print(fnd[i][j]);
+            }
+            System.out.println();
+        }
+        System.out.println();
+    }
 
     // [Step 4] 1 ~ 3단계 메서드를 연결
     //   10진수 -> cnvtDec2Bin -> ttl7446 -> makeFnd -> printFnd
@@ -1498,29 +1521,11 @@ java ClockMain</pre></div>
             dispNum(n);
         }
     }
-}</script>
+}
+</script>
 <script type="text/plain" id="src4b">static void dispNum(int n) {
     printFnd(makeFnd(ttl7446(cnvtDec2Bin(n))));   // 안쪽부터 실행
 }</script>
-<script type="text/plain" id="out4">#####
-#   #
-#   #
-#   #
-#####
-
-    #
-    #
-    #
-    #
-    #
-
-#####
-    #
-#####
-#
-#####
-
-... (3 ~ 9 생략)</script>
 <script type="text/plain" id="loopdiag">for row = 0 ~ 4 :                       ← 바깥: 줄
     for k = 0 ~ 3 :                     ← 가운데: 자리(천·백·십·일)
         fnds[k][row][0 ~ 4] 출력         ← 안쪽: 칸
@@ -1535,7 +1540,42 @@ row 4 →  #####  #####  #####  #####
           k=0    k=1    k=2    k=3</script>
 <script type="text/plain" id="src5">public class Step5 {
 
-    // cnvtDec2Bin(), ttl7446(), makeFnd() : Step 1 ~ 3 과 동일
+    static int[] cnvtDec2Bin(int num) {
+        int[] out = new int[4];
+        for (int i = 0; i < 4; i++) {
+            out[i] = num % 2;
+            num = num / 2;
+        }
+        return out;
+    }
+
+    static int[] ttl7446(int[] bin) {
+        int[][] table = {
+            {1,1,1,1,1,1,0}, {0,1,1,0,0,0,0}, {1,1,0,1,1,0,1},
+            {1,1,1,1,0,0,1}, {0,1,1,0,0,1,1}, {1,0,1,1,0,1,1},
+            {1,0,1,1,1,1,1}, {1,1,1,0,0,1,0}, {1,1,1,1,1,1,1},
+            {1,1,1,1,0,1,1}
+        };
+        int num = bin[3] * 8 + bin[2] * 4 + bin[1] * 2 + bin[0];
+        if (num > 9) return new int[7];
+        return table[num];
+    }
+
+    static char[][] makeFnd(int[] seg) {
+        char[][] fnd = new char[5][5];
+        for (int i = 0; i < 5; i++)
+            for (int j = 0; j < 5; j++)
+                fnd[i][j] = ' ';
+
+        if (seg[0] == 1) for (int i = 0; i < 5; i++) fnd[0][i]   = '#';
+        if (seg[1] == 1) for (int i = 0; i < 3; i++) fnd[i][4]   = '#';
+        if (seg[2] == 1) for (int i = 0; i < 3; i++) fnd[i+2][4] = '#';
+        if (seg[3] == 1) for (int i = 0; i < 5; i++) fnd[4][i]   = '#';
+        if (seg[4] == 1) for (int i = 0; i < 3; i++) fnd[i+2][0] = '#';
+        if (seg[5] == 1) for (int i = 0; i < 3; i++) fnd[i][0]   = '#';
+        if (seg[6] == 1) for (int i = 0; i < 5; i++) fnd[2][i]   = '#';
+        return fnd;
+    }
 
     // [Step 5-1] 한 자리(digit) = Step 1 ~ 3 을 묶은 메서드
     static char[][] digit(int n) {
@@ -1580,42 +1620,28 @@ row 4 →  #####  #####  #####  #####
     }
 
     public static void main(String[] args) {
-        for (int n = 0; n <= 9999; n++) {
+        for (int n = 0; n <= 12; n++) {     // 0 ~ 12
             dispNum4(n);
         }
+
+        dispNum4(4567);                     // 네 자리 확인
+        dispNum4(9999);
     }
-}</script>
-<script type="text/plain" id="out5">#####  #####  #####  #####
-#   #  #   #  #   #  #   #
-#   #  #   #  #   #  #   #
-#   #  #   #  #   #  #   #
-#####  #####  #####  #####
-
-#####  #####  #####      #
-#   #  #   #  #   #      #
-#   #  #   #  #   #      #
-#   #  #   #  #   #      #
-#####  #####  #####      #
-
-#####  #####  #####  #####
-#   #  #   #  #   #      #
-#   #  #   #  #   #  #####
-#   #  #   #  #   #  #
-#####  #####  #####  #####
-
-... (0003 ~ 9998 생략, 총 60,000줄)
-
-#####  #####  #####  #####
-#   #  #   #  #   #  #   #
-#####  #####  #####  #####
-    #      #      #      #
-#####  #####  #####  #####</script>
+}
+</script>
 <script type="text/plain" id="src6">public class Step6 {
 
     static int cnt = 0;      // 현재 카운트 값 (0 ~ 9)
     static int oldclk = 0;   // 직전 clk 값 (엣지 검출용)
 
-    // cnvtDec2Bin() : Step 1 과 동일
+    static int[] cnvtDec2Bin(int num) {
+        int[] out = new int[4];
+        for (int i = 0; i < 4; i++) {
+            out[i] = num % 2;
+            num = num / 2;
+        }
+        return out;
+    }
 
     // [Step 6] 10진 카운터 TTL 7490
     //   R0 = 1 -> 0으로 초기화
@@ -1672,26 +1698,72 @@ row 4 →  #####  #####  #####  #####
         test(1, 0, 0, 0);
         test(0, 0, 0, 0);   // 하강 엣지, 카운트 업
     }
-}</script>
-<script type="text/plain" id="out6">clk=0 R0=1 R1=0 R2=0  (oldclk=0)  -> cnt=0  Q=0000
-clk=1 R0=0 R1=0 R2=0  (oldclk=0)  -> cnt=0  Q=0000
-clk=0 R0=0 R1=0 R2=0  (oldclk=1)  -> cnt=1  Q=0001
-clk=0 R0=0 R1=0 R2=0  (oldclk=0)  -> cnt=1  Q=0001
-clk=1 R0=0 R1=0 R2=0  (oldclk=0)  -> cnt=1  Q=0001
-clk=0 R0=0 R1=0 R2=0  (oldclk=1)  -> cnt=2  Q=0010
-clk=0 R0=0 R1=1 R2=0  (oldclk=0)  -> cnt=1  Q=0001
-clk=0 R0=0 R1=0 R2=1  (oldclk=0)  -> cnt=2  Q=0010
-clk=1 R0=0 R1=0 R2=0  (oldclk=0)  -> cnt=2  Q=0010
-clk=0 R0=0 R1=0 R2=0  (oldclk=1)  -> cnt=3  Q=0011</script>
+}
+</script>
 <script type="text/plain" id="src7">public class Step7 {
 
     static int cnt = 0;
     static int oldclk = 0;
 
-    // cnvtDec2Bin()        : Step 1
-    // ttl7446()            : Step 2
-    // makeFnd(), printFnd(): Step 3
-    // ttl7490()            : Step 6
+    static int[] cnvtDec2Bin(int num) {
+        int[] out = new int[4];
+        for (int i = 0; i < 4; i++) {
+            out[i] = num % 2;
+            num = num / 2;
+        }
+        return out;
+    }
+
+    static int[] ttl7446(int[] bin) {
+        int[][] table = {
+            {1,1,1,1,1,1,0}, {0,1,1,0,0,0,0}, {1,1,0,1,1,0,1},
+            {1,1,1,1,0,0,1}, {0,1,1,0,0,1,1}, {1,0,1,1,0,1,1},
+            {1,0,1,1,1,1,1}, {1,1,1,0,0,1,0}, {1,1,1,1,1,1,1},
+            {1,1,1,1,0,1,1}
+        };
+        int num = bin[3] * 8 + bin[2] * 4 + bin[1] * 2 + bin[0];
+        if (num > 9) return new int[7];
+        return table[num];
+    }
+
+    static char[][] makeFnd(int[] seg) {
+        char[][] fnd = new char[5][5];
+        for (int i = 0; i < 5; i++)
+            for (int j = 0; j < 5; j++)
+                fnd[i][j] = ' ';
+
+        if (seg[0] == 1) for (int i = 0; i < 5; i++) fnd[0][i]   = '#';
+        if (seg[1] == 1) for (int i = 0; i < 3; i++) fnd[i][4]   = '#';
+        if (seg[2] == 1) for (int i = 0; i < 3; i++) fnd[i+2][4] = '#';
+        if (seg[3] == 1) for (int i = 0; i < 5; i++) fnd[4][i]   = '#';
+        if (seg[4] == 1) for (int i = 0; i < 3; i++) fnd[i+2][0] = '#';
+        if (seg[5] == 1) for (int i = 0; i < 3; i++) fnd[i][0]   = '#';
+        if (seg[6] == 1) for (int i = 0; i < 5; i++) fnd[2][i]   = '#';
+        return fnd;
+    }
+
+    static void printFnd(char[][] fnd) {
+        for (int i = 0; i < 5; i++) {
+            for (int j = 0; j < 5; j++) {
+                System.out.print(fnd[i][j]);
+            }
+            System.out.println();
+        }
+        System.out.println();
+    }
+
+    static int[] ttl7490(int clk, int R0, int R1, int R2) {
+        if (R0 == 1)      { oldclk = 0; cnt = 0; }
+        else if (R1 == 1) { oldclk = 0; cnt = 1; }
+        else if (R2 == 1) { oldclk = 0; cnt = 2; }
+        else {
+            if (clk == 0 && oldclk == 1) {
+                if (++cnt == 10) cnt = 0;
+            }
+            oldclk = clk;
+        }
+        return cnvtDec2Bin(cnt);
+    }
 
     public static void main(String[] args) {
         ttl7490(0, 1, 0, 0);                // 시작 전에 0으로 초기화
@@ -1706,29 +1778,8 @@ clk=0 R0=0 R1=0 R2=0  (oldclk=1)  -> cnt=3  Q=0011</script>
             }
         }
     }
-}</script>
-<script type="text/plain" id="out7">i=0  count=0
-#####
-#   #
-#   #
-#   #
-#####
-
-i=2  count=1
-    #
-    #
-    #
-    #
-    #
-
-i=4  count=2
-#####
-    #
-#####
-#
-#####
-
-... (i=6 ~ i=18 : count 3 ~ 9 생략)</script>
+}
+</script>
 <script type="text/plain" id="src8a">// Step 6 : 카운터 1개
 static int cnt = 0;
 static int oldclk = 0;
@@ -1749,8 +1800,55 @@ static int[] ttl7490(int id, int clk, int R0, int R1, int R2) { ... cnt[id] ... 
     static int[] cnt    = new int[2];   // 카운터마다 따로 기억
     static int[] oldclk = new int[2];
 
-    // cnvtDec2Bin() : Step 1,  ttl7446() : Step 2
-    // makeFnd()     : Step 3,  printFnds() : Step 5
+    static int[] cnvtDec2Bin(int num) {
+        int[] out = new int[4];
+        for (int i = 0; i < 4; i++) {
+            out[i] = num % 2;
+            num = num / 2;
+        }
+        return out;
+    }
+
+    static int[] ttl7446(int[] bin) {
+        int[][] table = {
+            {1,1,1,1,1,1,0}, {0,1,1,0,0,0,0}, {1,1,0,1,1,0,1},
+            {1,1,1,1,0,0,1}, {0,1,1,0,0,1,1}, {1,0,1,1,0,1,1},
+            {1,0,1,1,1,1,1}, {1,1,1,0,0,1,0}, {1,1,1,1,1,1,1},
+            {1,1,1,1,0,1,1}
+        };
+        int num = bin[3] * 8 + bin[2] * 4 + bin[1] * 2 + bin[0];
+        if (num > 9) return new int[7];
+        return table[num];
+    }
+
+    static char[][] makeFnd(int[] seg) {
+        char[][] fnd = new char[5][5];
+        for (int i = 0; i < 5; i++)
+            for (int j = 0; j < 5; j++)
+                fnd[i][j] = ' ';
+
+        if (seg[0] == 1) for (int i = 0; i < 5; i++) fnd[0][i]   = '#';
+        if (seg[1] == 1) for (int i = 0; i < 3; i++) fnd[i][4]   = '#';
+        if (seg[2] == 1) for (int i = 0; i < 3; i++) fnd[i+2][4] = '#';
+        if (seg[3] == 1) for (int i = 0; i < 5; i++) fnd[4][i]   = '#';
+        if (seg[4] == 1) for (int i = 0; i < 3; i++) fnd[i+2][0] = '#';
+        if (seg[5] == 1) for (int i = 0; i < 3; i++) fnd[i][0]   = '#';
+        if (seg[6] == 1) for (int i = 0; i < 5; i++) fnd[2][i]   = '#';
+        return fnd;
+    }
+
+    static void printFnds(char[][][] fnds) {
+        for (int row = 0; row < 5; row++) {
+            for (int k = 0; k < fnds.length; k++) {
+                for (int col = 0; col < 5; col++) {
+                    System.out.print(fnds[k][row][col]);
+                }
+                System.out.print("  ");
+            }
+            System.out.println();
+        }
+        System.out.println();
+    }
 
     // [Step 8-1] 카운터 번호(id)를 함께 받는 ttl7490
     static int[] ttl7490(int id, int clk, int R0, int R1, int R2) {
@@ -1800,43 +1898,79 @@ static int[] ttl7490(int id, int clk, int R0, int R1, int R2) { ... cnt[id] ... 
             }
         }
     }
-}</script>
-<script type="text/plain" id="out8">... (count=00 ~ 08 생략)
-
-i=18  count=09
-#####  #####
-#   #  #   #
-#   #  #####
-#   #      #
-#####  #####
-
-i=20  count=10
-    #  #####
-    #  #   #
-    #  #   #
-    #  #   #
-    #  #####
-
-... (count=11 ~ 98 생략)
-
-i=198  count=99
-#####  #####
-#   #  #   #
-#####  #####
-    #      #
-#####  #####
-
-i=200  count=00
-#####  #####
-#   #  #   #
-#   #  #   #
-#   #  #   #
-#####  #####</script>
+}
+</script>
 <script type="text/plain" id="src9">public class Step9 {
 
-    // ONE, TEN, cnt[], oldclk[]          : Step 8 과 동일
-    // ttl7490(id, ...), dispCounter()     : Step 8 과 동일
-    // cnvtDec2Bin, ttl7446, makeFnd, printFnds
+    static final int ONE = 0;   // 1의 자리 카운터 번호
+    static final int TEN = 1;   // 10의 자리 카운터 번호
+
+    static int[] cnt    = new int[2];   // 카운터마다 따로 기억
+    static int[] oldclk = new int[2];
+
+    static int[] cnvtDec2Bin(int num) {
+        int[] out = new int[4];
+        for (int i = 0; i < 4; i++) {
+            out[i] = num % 2;
+            num = num / 2;
+        }
+        return out;
+    }
+
+    static int[] ttl7446(int[] bin) {
+        int[][] table = {
+            {1,1,1,1,1,1,0}, {0,1,1,0,0,0,0}, {1,1,0,1,1,0,1},
+            {1,1,1,1,0,0,1}, {0,1,1,0,0,1,1}, {1,0,1,1,0,1,1},
+            {1,0,1,1,1,1,1}, {1,1,1,0,0,1,0}, {1,1,1,1,1,1,1},
+            {1,1,1,1,0,1,1}
+        };
+        int num = bin[3] * 8 + bin[2] * 4 + bin[1] * 2 + bin[0];
+        if (num > 9) return new int[7];
+        return table[num];
+    }
+
+    static char[][] makeFnd(int[] seg) {
+        char[][] fnd = new char[5][5];
+        for (int i = 0; i < 5; i++)
+            for (int j = 0; j < 5; j++)
+                fnd[i][j] = ' ';
+
+        if (seg[0] == 1) for (int i = 0; i < 5; i++) fnd[0][i]   = '#';
+        if (seg[1] == 1) for (int i = 0; i < 3; i++) fnd[i][4]   = '#';
+        if (seg[2] == 1) for (int i = 0; i < 3; i++) fnd[i+2][4] = '#';
+        if (seg[3] == 1) for (int i = 0; i < 5; i++) fnd[4][i]   = '#';
+        if (seg[4] == 1) for (int i = 0; i < 3; i++) fnd[i+2][0] = '#';
+        if (seg[5] == 1) for (int i = 0; i < 3; i++) fnd[i][0]   = '#';
+        if (seg[6] == 1) for (int i = 0; i < 5; i++) fnd[2][i]   = '#';
+        return fnd;
+    }
+
+    static void printFnds(char[][][] fnds) {
+        for (int row = 0; row < 5; row++) {
+            for (int k = 0; k < fnds.length; k++) {
+                for (int col = 0; col < 5; col++) {
+                    System.out.print(fnds[k][row][col]);
+                }
+                System.out.print("  ");
+            }
+            System.out.println();
+        }
+        System.out.println();
+    }
+
+    // [Step 8-1] 카운터 번호(id)를 함께 받는 ttl7490
+    static int[] ttl7490(int id, int clk, int R0, int R1, int R2) {
+        if (R0 == 1)      { oldclk[id] = 0; cnt[id] = 0; }
+        else if (R1 == 1) { oldclk[id] = 0; cnt[id] = 1; }
+        else if (R2 == 1) { oldclk[id] = 0; cnt[id] = 2; }
+        else {
+            if (clk == 0 && oldclk[id] == 1) {
+                if (++cnt[id] == 10) cnt[id] = 0;
+            }
+            oldclk[id] = clk;
+        }
+        return cnvtDec2Bin(cnt[id]);
+    }
 
     // [Step 9] 60진 카운터 (00 ~ 59)
     //   10의 자리가 6(0110)이 되면 b2 & b1 = 1 -> R0 = 1 -> 즉시 0
@@ -1849,6 +1983,17 @@ i=200  count=00
         q10 = ttl7490(TEN, q1[3], r0, 0, 0);         // 출력을 R0로 되돌려 연결
 
         return new int[][] { q10, q1 };
+    }
+
+    // [Step 8-3] 여러 자리의 Q를 FND로 가로 출력
+    static void dispCounter(int[][] q) {
+        char[][][] fnds = new char[q.length][][];
+
+        for (int k = 0; k < q.length; k++) {
+            fnds[k] = makeFnd(ttl7446(q[k]));
+        }
+
+        printFnds(fnds);
     }
 
     public static void main(String[] args) {
@@ -1865,7 +2010,8 @@ i=200  count=00
             }
         }
     }
-}</script>
+}
+</script>
 <script type="text/plain" id="cmp10">// ---- 1부 : 메서드 + static 배열 ----
 static final int S1 = 0, S10 = 1, M1 = 2, M10 = 3, H1 = 4, H10 = 5;
 static int[] cnt    = new int[6];      // 카운터 6개의 값
@@ -1889,191 +2035,184 @@ q10 = ttl7490(TEN, q1[3], r0, 0, 0);           // 2) 같은 clk 로 다시 호�
 // ---- 2부 : 핀마다 메서드가 따로 ----
 s10.setClock(s1.getOutput()[3]);               // clk 핀
 s10.reset(s10.getOutput()[2] & s10.getOutput()[1], 0, 0);   // R0 핀</script>
-<script type="text/plain" id="c7490">// TTL 7490 : 10진 카운터 칩
-class TTL7490 {
-
-    // ---- 필드 : 칩이 기억하는 상태 ----
-    private int num;                     // 현재 카운트 값 (0 ~ 9)
-    private int oldclk;                  // 직전 clk 값 (엣지 검출용)
-    private int[] output = new int[4];   // 출력 핀 b0 ~ b3
-
-    // ---- 생성자 : 전원을 켰을 때의 상태 ----
-    TTL7490() {
-        this(1, 0, 0);                   // 기본은 0으로 초기화
-    }
-
-    TTL7490(int R0, int R1, int R2) {
+<script type="text/plain" id="c7490">class TTL7490{
+    int num;
+    int[] output = new int[4];
+    int oldclk;
+    
+    TTL7490(){
         oldclk = 0;
+        reset(1, 0, 0);
+    }
+    
+    TTL7490(int R0, int R1, int R2){
+        oldclk = 0;        
         reset(R0, R1, R2);
     }
-
-    // num -> 4비트 출력 (1부 Step 1 의 cnvtDec2Bin)
-    private void cnvt() {
+    
+    private void cnvt(){
         int n = num;
-        for (int i = 0; i < 4; i++) {
+        
+        for(int i=0; i<4; i++){
             output[i] = n % 2;
-            n = n / 2;
+            n = (int)(n / 2);
         }
     }
-
-    // clk 입력 핀 : 1 -> 0 으로 바뀔 때 카운트 업
-    public void setClock(int clk) {
-        if (clk == 0 && oldclk == 1) {
-            if (++num == 10) num = 0;
+    
+    public void setClock(int clk){
+        if(clk == 0 && oldclk == 1){
+            if(++num == 10) num = 0;
+            
             cnvt();
         }
+        
         oldclk = clk;
     }
-
-    // 리셋 입력 핀 : R0 -> 0, R1 -> 1, R2 -> 2
-    public void reset(int R0, int R1, int R2) {
-        if (R0 == 1)      num = 0;
-        else if (R1 == 1) num = 1;
-        else if (R2 == 1) num = 2;
+    
+    public void reset(int R0, int R1, int R2){
+        if(R0 == 1) num = 0;
+        else if(R1 == 1) num = 1;
+        else if(R2 == 1) num = 2;
+        
         cnvt();
     }
-
-    // 출력 핀 b0 ~ b3
-    public int[] getOutput() {
+    
+    public int[] getOutput(){
         return output;
     }
-
-    // 원하는 값으로 맞추기 (시계의 시간 설정용)
-    public void setNum(int n) {
-        num = n % 10;
+    
+    public void setNum(int n){
+        num = n;
         cnvt();
     }
-
-    public int getNum() {
-        return num;
+}
+</script>
+<script type="text/plain" id="c7446">class TTL7446 {
+    int num;
+    int[] input;
+    int[] output;
+    
+    TTL7446(){
+        input = new int[]{0,0,0,0};
+        output = new int[7];
+        cnvt();
     }
-}</script>
-<script type="text/plain" id="c7446">// TTL 7446 : BCD -> 7세그먼트 디코더 칩
-class TTL7446 {
-
-    // 진리표 {a,b,c,d,e,f,g} : 모든 7446 객체가 함께 쓰므로 static
-    private static final int[][] TABLE = {
-        {1,1,1,1,1,1,0},  // 0
-        {0,1,1,0,0,0,0},  // 1
-        {1,1,0,1,1,0,1},  // 2
-        {1,1,1,1,0,0,1},  // 3
-        {0,1,1,0,0,1,1},  // 4
-        {1,0,1,1,0,1,1},  // 5
-        {1,0,1,1,1,1,1},  // 6
-        {1,1,1,0,0,1,0},  // 7
-        {1,1,1,1,1,1,1},  // 8
-        {1,1,1,1,0,1,1}   // 9
-    };
-
-    // ---- 필드 ----
-    private int[] input;                 // 입력 핀 b0 ~ b3
-    private int[] output = new int[7];   // 출력 핀 a ~ g
-    private int num;                     // 입력을 10진수로 읽은 값
-
-    // ---- 생성자 ----
-    TTL7446() {
-        this(new int[4]);                // 입력 0000
-    }
-
-    TTL7446(int[] in) {
-        setInput(in);
-    }
-
-    // 입력 4비트 -> 7세그먼트 출력 (1부 Step 2 의 ttl7446)
-    private void cnvt() {
-        num = input[3] * 8 + input[2] * 4 + input[1] * 2 + input[0];
-
-        if (num > 9) output = new int[7];       // 10 ~ 15 는 모두 끔
-        else         output = TABLE[num].clone(); // 표 원본은 지킨다
-    }
-
-    // 입력 핀에 신호 연결
-    public void setInput(int[] in) {
+    
+    TTL7446(int[] in){
+        input = new int[4];
+        output = new int[7];
         input = in;
         cnvt();
     }
-
-    // 출력 핀 a ~ g
-    public int[] getOutput() {
-        return output;
+    
+    private void cnvt(){
+        int[][] fnd = {
+            {1,1,1,1,1,1,0},
+            {0,1,1,0,0,0,0},
+            {1,1,0,1,1,0,1},
+            {1,1,1,1,0,0,1},
+            {0,1,1,0,0,1,1},
+            {1,0,1,1,0,1,1},
+            {1,0,1,1,1,1,1},
+            {1,1,1,0,0,1,0},
+            {1,1,1,1,1,1,1},
+            {1,1,1,1,0,1,1}
+        };
+        
+        num = input[3] * 8 + input[2] * 4 + input[1] * 2 + input[0] * 1;
+        
+        output = fnd[num];
     }
-
-    public int getNum() {
-        return num;
-    }
-}</script>
-<script type="text/plain" id="cfnd">// FND : 7세그먼트 표시기를 5x5 문자로 흉내
-class FND {
-
-    // ---- 필드 ----
-    private int[] input = new int[7];        // 입력 핀 a ~ g
-    private char[][] seg = new char[5][5];   // 화면
-    private char ch;                         // 켜진 칸에 찍을 문자
-
-    // ---- 생성자 (오버로딩) ----
-    FND() {
-        this('#');
-    }
-
-    FND(char c) {
-        ch = c;
+    
+    void setInput(int[] in){
+        input = in;
         cnvt();
     }
-
-    FND(char c, int[] in) {
-        ch = c;
-        setInput(in);
+    
+    int getNum(){
+        return num;
     }
-
-    private void clear() {
-        for (int i = 0; i < 5; i++)
-            for (int j = 0; j < 5; j++)
+    
+    int[] getOutput(){
+        return output;
+    }
+}
+</script>
+<script type="text/plain" id="cfnd">class FND{
+    int[] input = new int[7];
+    char[][] seg = new char[5][5];
+    char ch;
+    
+    FND(){
+        ch = '#';
+        reset();
+    }
+    
+    FND(char c){
+        ch = c;
+        reset();
+    }
+    
+    FND(char c, int[] in){
+        ch = c;
+        input = in;
+        reset();
+        cnvt();
+    }
+    
+    private void reset(){
+        for(int i=0; i<5; i++){
+            for(int j=0; j<5; j++)
                 seg[i][j] = ' ';
+        }
     }
-
-    // 입력 a ~ g -> 5x5 화면 (1부 Step 3 의 makeFnd)
-    private void cnvt() {
-        clear();
-
-        if (input[0] == 1) for (int i = 0; i < 5; i++) seg[0][i]   = ch;  // a
-        if (input[1] == 1) for (int i = 0; i < 3; i++) seg[i][4]   = ch;  // b
-        if (input[2] == 1) for (int i = 0; i < 3; i++) seg[i+2][4] = ch;  // c
-        if (input[3] == 1) for (int i = 0; i < 5; i++) seg[4][i]   = ch;  // d
-        if (input[4] == 1) for (int i = 0; i < 3; i++) seg[i+2][0] = ch;  // e
-        if (input[5] == 1) for (int i = 0; i < 3; i++) seg[i][0]   = ch;  // f
-        if (input[6] == 1) for (int i = 0; i < 5; i++) seg[2][i]   = ch;  // g
+    
+    private void cnvt(){
+        reset();
+        
+        if(input[0] == 1) for(int i=0; i<5; i++) seg[0][i] = ch;    //a
+        if(input[1] == 1) for(int i=0; i<3; i++) seg[i][4] = ch;    //b
+        if(input[2] == 1) for(int i=0; i<3; i++) seg[i+2][4] = ch;  //c 
+        if(input[3] == 1) for(int i=0; i<5; i++) seg[4][i] = ch;    //d
+        if(input[4] == 1) for(int i=0; i<3; i++) seg[i+2][0] = ch;  //e
+        if(input[5] == 1) for(int i=0; i<3; i++) seg[i][0] = ch;    //f
+        if(input[6] == 1) for(int i=0; i<5; i++) seg[2][i] = ch;    //g
     }
-
-    public void setChar(char c) {
+    
+    void setChar(char c){
         ch = c;
-        cnvt();                              // 문자가 바뀌면 화면도 다시 그림
     }
-
-    public void setInput(int[] in) {
+    
+    void setInput(int[] in){
         input = in;
         cnvt();
     }
-
-    // 한 자리 전체 출력 (세로 5줄)
-    public void dispFnd() {
-        for (int i = 0; i < 5; i++) {
-            for (int j = 0; j < 5; j++) {
+    
+    void dispFnd(){
+        for(int i=0; i<5; i++){
+            for(int j=0; j<5; j++){
                 System.out.print(seg[i][j]);
             }
-            System.out.println();
+            System.out.println("");
         }
-        System.out.println();
+        
+        System.out.println("");
     }
-
-    // line 번째 줄만 출력 (여러 자리를 가로로 이어 붙일 때)
-    public void dispFnd(int line) {
-        for (int j = 0; j < 5; j++) {
+    
+    void dispFnd(int line){
+        for(int j=0; j<5; j++){
             System.out.print(seg[line][j]);
         }
         System.out.print(" ");
     }
-}</script>
+}
+</script>
 <script type="text/plain" id="ct7490">public class Test7490 {
+
+    // 4비트 출력을 10진수로 (8·4·2·1 가중치) — TTL7490 에는 getNum 이 없다
+    static int val(int[] q) {
+        return q[3] * 8 + q[2] * 4 + q[1] * 2 + q[0];
+    }
 
     static void printBin(int[] q) {
         for (int i = 3; i >= 0; i--) System.out.print(q[i]);
@@ -2088,17 +2227,22 @@ class FND {
             a.setClock(clk);                 // a 에만 클럭을 넣는다
 
             if (clk == 0) {
-                System.out.print("i=" + i + "  a=" + a.getNum() + " (");
+                System.out.print("i=" + i + "  a=" + val(a.getOutput()) + " (");
                 printBin(a.getOutput());
-                System.out.println(")   b=" + b.getNum());
+                System.out.println(")   b=" + val(b.getOutput()));
             }
         }
 
         b.reset(0, 1, 0);                    // b 만 1로 초기화
-        System.out.println("b.reset(0,1,0)  ->  a=" + a.getNum() + ", b=" + b.getNum());
+        System.out.println("b.reset(0,1,0)  ->  a=" + val(a.getOutput()) + ", b=" + val(b.getOutput()));
     }
-}</script>
+}
+</script>
 <script type="text/plain" id="ct7446">public class Test7446 {
+
+    static int val(int[] q) {
+        return q[3] * 8 + q[2] * 4 + q[1] * 2 + q[0];
+    }
 
     static void printArray(int[] arr) {
         System.out.print("{");
@@ -2127,11 +2271,12 @@ class FND {
         // setInput 을 부르지 않으면?
         counter.setClock(1);
         counter.setClock(0);                             // 9 -> 0
-        System.out.println("counter=" + counter.getNum() + ", decoder=" + decoder.getNum() + "  (setInput 전)");
+        System.out.println("counter=" + val(counter.getOutput()) + ", decoder=" + decoder.getNum() + "  (setInput 전)");
         decoder.setInput(counter.getOutput());
-        System.out.println("counter=" + counter.getNum() + ", decoder=" + decoder.getNum() + "  (setInput 후)");
+        System.out.println("counter=" + val(counter.getOutput()) + ", decoder=" + decoder.getNum() + "  (setInput 후)");
     }
-}</script>
+}
+</script>
 <script type="text/plain" id="ctfnd">public class TestFND {
 
     // 숫자 n 을 표시하는 FND 객체 만들기 (7490 -> 7446 -> FND)
@@ -2148,8 +2293,11 @@ class FND {
         FND seven = makeDigit(7, '#');
         seven.dispFnd();
 
-        // 2) 문자만 바꾸기
+        // 2) 문자 바꾸기 : setChar 는 화면을 다시 그리지 않는다 (cnvt 를 부르지 않음)
         seven.setChar('*');
+        seven.dispFnd();                     // 아직 '#' 그대로
+
+        seven.setInput(seven.input);         // 입력을 다시 넣으면 그때 '*' 로 그려진다
         seven.dispFnd();
 
         // 3) 여러 자리 가로 출력 : 줄(line) 단위로
@@ -2165,7 +2313,8 @@ class FND {
             System.out.println();
         }
     }
-}</script>
+}
+</script>
 <script type="text/plain" id="c100">public class Counter100 {
 
     // 7490 -> 7446 -> FND 전선 연결 (값이 바뀐 뒤 호출)
@@ -2200,8 +2349,13 @@ class FND {
             }
         }
     }
-}</script>
+}
+</script>
 <script type="text/plain" id="c60">public class Counter60 {
+
+    static int val(int[] q) {
+        return q[3] * 8 + q[2] * 4 + q[1] * 2 + q[0];
+    }
 
     static void wire(TTL7490 c, TTL7446 d, FND f) {
         d.setInput(c.getOutput());
@@ -2226,7 +2380,7 @@ class FND {
                 wire(s10, d10, f10);
                 wire(s1, d1, f1);
 
-                System.out.println("[" + s10.getNum() + s1.getNum() + "초]");
+                System.out.println("[" + val(s10.getOutput()) + val(s1.getOutput()) + "초]");
                 for (int line = 0; line < 5; line++) {
                     f10.dispFnd(line);
                     f1.dispFnd(line);
@@ -2236,7 +2390,8 @@ class FND {
             }
         }
     }
-}</script>
+}
+</script>
 <script type="text/plain" id="cmmss">public class ClockMMSS {
 
     static void wire(TTL7490 c, TTL7446 d, FND f) {
@@ -2280,317 +2435,1523 @@ class FND {
             }
         }
     }
-}</script>
-<script type="text/plain" id="cclock">// 디지털 시계 : 칩 객체들을 필드로 가진 클래스 (12시간제, AM/PM)
-class DigitalClock {
-
-    // ---- 카운터 칩 6개 ----
-    private TTL7490 h10 = new TTL7490(0, 1, 0);   // 1  -> 12:00:00 에서 시작
-    private TTL7490 h1  = new TTL7490(0, 0, 1);   // 2
-    private TTL7490 m10 = new TTL7490();
-    private TTL7490 m1  = new TTL7490();
-    private TTL7490 s10 = new TTL7490();
-    private TTL7490 s1  = new TTL7490();
-
-    // ---- 디코더와 표시기 6개씩 (순서 : 시10, 시1, 분10, 분1, 초10, 초1) ----
-    private TTL7446[] dec = new TTL7446[6];
-    private FND[]     fnd = new FND[6];
-
-    private boolean pm = false;      // false = AM, true = PM
-    private boolean was11 = false;   // 11시를 지나왔는지 (AM/PM 전환용)
-
-    DigitalClock() {
-        for (int k = 0; k < 6; k++) {
-            dec[k] = new TTL7446();
-            fnd[k] = new FND();
-        }
-        update();
-    }
-
-    // 시간 맞추기 (객체를 만든 직후, 클럭을 넣기 전에 호출)
-    public void setTime(int h, int m, int s, boolean isPm) {
-        h10.setNum(h / 10);  h1.setNum(h % 10);
-        m10.setNum(m / 10);  m1.setNum(m % 10);
-        s10.setNum(s / 10);  s1.setNum(s % 10);
-        pm = isPm;
-        update();
-    }
-
-    // 1초 클럭 입력 : clk 가 1 -> 0 이 될 때 1초 증가
-    public void setClock(int clk) {
-        // 초 : 60진
-        s1.setClock(clk);
-        s10.setClock(s1.getOutput()[3]);
-        s10.reset(s10.getOutput()[2] & s10.getOutput()[1], 0, 0);
-
-        // 분 : 60진, 클럭 = 초 10의 자리 b2
-        m1.setClock(s10.getOutput()[2]);
-        m10.setClock(m1.getOutput()[3]);
-        m10.reset(m10.getOutput()[2] & m10.getOutput()[1], 0, 0);
-
-        // 시 : 1 ~ 12, 클럭 = 분 10의 자리 b2
-        h1.setClock(m10.getOutput()[2]);
-        h10.setClock(h1.getOutput()[3]);
-        if ((h10.getOutput()[0] & h1.getOutput()[1] & h1.getOutput()[0]) == 1) {   // 13
-            h10.reset(1, 0, 0);          // 10의 자리 -> 0
-            h1.reset(0, 1, 0);           // 1의 자리  -> 1   => 01시
-        }
-
-        checkAmPm();
-        update();
-    }
-
-    // 11시 -> 12시로 넘어가는 순간 AM/PM 전환
-    private void checkAmPm() {
-        int[] qh10 = h10.getOutput();
-        int[] qh1  = h1.getOutput();
-
-        if (qh10[0] == 1 && qh1[0] == 1) {                 // 11시
-            was11 = true;
-        }
-        else if (qh10[0] == 1 && qh1[1] == 1 && was11) {   // 12시 (11시 다음)
-            was11 = false;
-            pm = !pm;
-        }
-    }
-
-    // 모든 칩 연결 : 7490 -> 7446 -> FND
-    private void update() {
-        TTL7490[] cnt = { h10, h1, m10, m1, s10, s1 };
-        for (int k = 0; k < 6; k++) {
-            dec[k].setInput(cnt[k].getOutput());
-            fnd[k].setInput(dec[k].getOutput());
-        }
-    }
-
-    // 콘솔에 FND 6자리 출력
-    public void display() {
-        for (int line = 0; line < 5; line++) {
-            // AM 이면 위쪽(1번 줄), PM 이면 아래쪽(3번 줄)에 @@ 표시
-            if      (line == 1 && !pm) System.out.print("@@ ");
-            else if (line == 3 &&  pm) System.out.print("@@ ");
-            else                       System.out.print("   ");
-
-            for (int k = 0; k < 6; k++) {
-                fnd[k].dispFnd(line);
-                if (k == 1 || k == 3) {                      // 시:분, 분:초 사이
-                    System.out.print((line == 1 || line == 3) ? "@ " : "  ");
-                }
+}
+</script>
+<script type="text/plain" id="cmain">public class Main
+{
+    static int cnt;
+    static int oldclk;
+    
+    static void dispfnd(int[] fnd){
+        char[][] seg = new char[5][5];
+        
+        for(int i=0; i<5; i++)
+            for(int j=0; j<5; j++)
+                seg[i][j] = ' ';
+                
+        if(fnd[0] == 1) for(int i=0; i<5; i++) seg[0][i] = '#';
+        if(fnd[1] == 1) for(int i=0; i<3; i++) seg[i][4] = '#';
+        if(fnd[2] == 1) for(int i=0; i<3; i++) seg[i+2][4] = '#';
+        if(fnd[3] == 1) for(int i=0; i<5; i++) seg[4][i] = '#';
+        if(fnd[4] == 1) for(int i=0; i<3; i++) seg[i+2][0] = '#';
+        if(fnd[5] == 1) for(int i=0; i<3; i++) seg[i][0] = '#';
+        if(fnd[6] == 1) for(int i=0; i<5; i++) seg[2][i] = '#';
+        
+        for(int i=0; i<5; i++){
+            for(int j=0; j<5; j++){
+                System.out.print(seg[i][j]);
             }
-            System.out.println();
+            System.out.println("");
         }
-        System.out.println();
     }
-
-    // "11:59:58 AM" 형태의 문자열
-    @Override
-    public String toString() {
-        return "" + h10.getNum() + h1.getNum() + ":" + m10.getNum() + m1.getNum()
-                + ":" + s10.getNum() + s1.getNum() + (pm ? " PM" : " AM");
+    
+    static int[] fnd(int[] bin){
+        int num;
+        int[][] table = {
+            {1,1,1,1,1,1,0},
+            {0,1,1,0,0,0,0},
+            {1,1,0,1,1,0,1},
+            {1,1,1,1,0,0,1},
+            {0,1,1,0,0,1,1},
+            {1,0,1,1,0,1,1},
+            {1,0,1,1,1,1,1},
+            {1,1,1,0,0,1,0},
+            {1,1,1,1,1,1,1},
+            {1,1,1,1,0,1,1}
+        };
+        
+        num = bin[3] * 8 + bin[2] * 4 + bin[1] * 2 + bin[0];
+        
+        return table[num];
     }
-}</script>
-<script type="text/plain" id="cmain">public class ClockMain {
-
-    // 시계에 seconds 초 만큼 클럭을 넣으며 출력
-    static void run(DigitalClock clock, int seconds) {
-        for (int i = 0; i < seconds * 2; i++) {
-            clock.setClock(i % 2);
-
-            if (i % 2 == 0) {
-                System.out.println(clock);       // toString() 자동 호출
-                clock.display();
+    
+    static int[] cnvtDec2Bin(int num){
+        int[] out = new int[4];
+        
+        for(int i=0; i<4; i++){
+            out[i] = num % 2;
+            num = num / 2;
+        }
+        
+        return out;
+    }
+    
+    static int[] cnvtDec2BinBit(int num){
+        int[] out = new int[4];
+        
+        for(int i=0; i<4; i++){
+            out[i] = (num & 0x01);
+            num >>= 1;
+        }
+        
+        return out;
+    }
+    
+    static int[] ttl7490(int clk, int R0, int R1, int R2){
+        if(R0 == 1)  {
+            oldclk = 0;
+            cnt = 0;
+        }
+        else if(R1 == 1){
+            oldclk = 0;
+            cnt = 1;
+        }
+        else if(R2 == 1){
+            oldclk = 0;
+            cnt = 2;
+        }
+        else{
+            if(clk == 0 && oldclk == 1){
+                if(++cnt == 10) cnt = 0;
             }
+
+            oldclk = clk;
         }
+        
+        return cnvtDec2Bin(cnt);
     }
+    
+	public static void main(String[] args) {
+		int[] bin = new int[4];
+		int[] fnddata = new int[7];
+		int[] c = new int[4];
+		
+		boolean apm = false; // am = false, pm = true
+		boolean chk = false;
+		
+		TTL7490 ttl7490_S1 = new TTL7490();
+		TTL7490 ttl7490_S10 = new TTL7490();
+		TTL7490 ttl7490_M1 = new TTL7490();
+		TTL7490 ttl7490_M10 = new TTL7490();
+		TTL7490 ttl7490_H1 = new TTL7490(0,0,1);
+		TTL7490 ttl7490_H10 = new TTL7490(0,1,0);
+		
+		TTL7446 ttl7446_S1 = new TTL7446();
+		TTL7446 ttl7446_S10 = new TTL7446();
+		TTL7446 ttl7446_M1 = new TTL7446();
+		TTL7446 ttl7446_M10 = new TTL7446();
+		TTL7446 ttl7446_H1 = new TTL7446();
+		TTL7446 ttl7446_H10 = new TTL7446();
 
-    public static void main(String[] args) {
-        DigitalClock morning = new DigitalClock();
-        morning.setTime(11, 59, 58, false);      // 오전 11:59:58
+        FND cfnd_S1 = new FND();
+        FND cfnd_S10 = new FND();
+        FND cfnd_M1 = new FND();
+        FND cfnd_M10 = new FND();
+        FND cfnd_H1 = new FND();
+        FND cfnd_H10 = new FND();
+        
+        ttl7490_H10.setNum(1);
+        ttl7490_H1.setNum(2);
+        
+        ttl7490_M10.setNum(5);
+        ttl7490_M1.setNum(9);
+        
+        ttl7490_S10.setNum(3);
+        ttl7490_S1.setNum(0);
 
-        DigitalClock lunch = new DigitalClock();
-        lunch.setTime(12, 59, 58, true);         // 오후 12:59:58
-
-        run(morning, 4);                         // -> 12:00:01 PM
-        run(lunch, 4);                           // -> 01:00:01 PM
-    }
-}</script>
-<script type="text/plain" id="o7490">i=0  a=0 (0000)   b=2
-i=2  a=1 (0001)   b=2
-i=4  a=2 (0010)   b=2
-i=6  a=3 (0011)   b=2
-b.reset(0,1,0)  ->  a=3, b=1</script>
-<script type="text/plain" id="o7446">num=0  seg={1,1,1,1,1,1,0}
-num=1  seg={0,1,1,0,0,0,0}
-num=2  seg={1,1,0,1,1,0,1}
-num=3  seg={1,1,1,1,0,0,1}
-num=4  seg={0,1,1,0,0,1,1}
-num=5  seg={1,0,1,1,0,1,1}
-num=6  seg={1,0,1,1,1,1,1}
-num=7  seg={1,1,1,0,0,1,0}
-num=8  seg={1,1,1,1,1,1,1}
-num=9  seg={1,1,1,1,0,1,1}
-counter=0, decoder=9  (setInput 전)
-counter=0, decoder=0  (setInput 후)</script>
-<script type="text/plain" id="ofnd">#####
-#   #
-#   #
-    #
-    #
-
-*****
-*   *
-*   *
-    *
-    *
-
-@@@@@ @@@@@ @   @ @@@@@ @@@@@ 
-@   @     @ @   @ @     @   @ 
-@   @ @@@@@ @@@@@ @@@@@ @@@@@ 
-@   @ @         @ @   @ @   @ 
-@@@@@ @@@@@     @ @@@@@ @@@@@ </script>
-<script type="text/plain" id="o100">... (00 ~ 08 생략)
-
-##### ##### 
-#   # #   # 
-#   # ##### 
-#   #     # 
-##### ##### 
-
-    # ##### 
-    # #   # 
-    # #   # 
-    # #   # 
-    # ##### 
-
-... (11 ~ 98 생략)
-
-##### ##### 
-#   # #   # 
-##### ##### 
-    #     # 
-##### ##### 
-
-##### ##### 
-#   # #   # 
-#   # #   # 
-#   # #   # 
-##### ##### </script>
-<script type="text/plain" id="o60">... ([50초] ~ [57초] 생략)
-
-[58초]
-##### ##### 
-#     #   # 
-##### ##### 
-    # #   # 
-##### ##### 
-
-[59초]
-##### ##### 
-#     #   # 
-##### ##### 
-    #     # 
-##### ##### 
-
-[00초]
-##### ##### 
-#   # #   # 
-#   # #   # 
-#   # #   # 
-##### ##### 
-
-... ([01초] 생략)</script>
-<script type="text/plain" id="ommss">... (59:50 ~ 59:58 생략)
-
-##### #####   ##### ##### 
-#     #   # @ #     #   # 
-##### #####   ##### ##### 
-    #     # @     #     # 
-##### #####   ##### ##### 
-
-##### #####   ##### ##### 
-#   # #   # @ #   # #   # 
-#   # #   #   #   # #   # 
-#   # #   # @ #   # #   # 
-##### #####   ##### ##### 
-
-##### #####   #####     # 
-#   # #   # @ #   #     # 
-#   # #   #   #   #     # 
-#   # #   # @ #   #     # 
-##### #####   #####     # </script>
-<script type="text/plain" id="omain">11:59:58 AM
-       #     #   ##### #####   ##### ##### 
-@@     #     # @ #     #   # @ #     #   # 
-       #     #   ##### #####   ##### ##### 
-       #     # @     #     # @     # #   # 
-       #     #   ##### #####   ##### ##### 
-
-11:59:59 AM
-       #     #   ##### #####   ##### ##### 
-@@     #     # @ #     #   # @ #     #   # 
-       #     #   ##### #####   ##### ##### 
-       #     # @     #     # @     #     # 
-       #     #   ##### #####   ##### ##### 
-
-12:00:00 PM
-       # #####   ##### #####   ##### ##### 
-       #     # @ #   # #   # @ #   # #   # 
-       # #####   #   # #   #   #   # #   # 
-@@     # #     @ #   # #   # @ #   # #   # 
-       # #####   ##### #####   ##### ##### 
-
-12:00:01 PM
-       # #####   ##### #####   #####     # 
-       #     # @ #   # #   # @ #   #     # 
-       # #####   #   # #   #   #   #     # 
-@@     # #     @ #   # #   # @ #   #     # 
-       # #####   ##### #####   #####     # 
-
-12:59:58 PM
-       # #####   ##### #####   ##### ##### 
-       #     # @ #     #   # @ #     #   # 
-       # #####   ##### #####   ##### ##### 
-@@     # #     @     #     # @     # #   # 
-       # #####   ##### #####   ##### ##### 
-
-12:59:59 PM
-       # #####   ##### #####   ##### ##### 
-       #     # @ #     #   # @ #     #   # 
-       # #####   ##### #####   ##### ##### 
-@@     # #     @     #     # @     #     # 
-       # #####   ##### #####   ##### ##### 
-
-01:00:00 PM
-   #####     #   ##### #####   ##### ##### 
-   #   #     # @ #   # #   # @ #   # #   # 
-   #   #     #   #   # #   #   #   # #   # 
-@@ #   #     # @ #   # #   # @ #   # #   # 
-   #####     #   ##### #####   ##### ##### 
-
-01:00:01 PM
-   #####     #   ##### #####   #####     # 
-   #   #     # @ #   # #   # @ #   #     # 
-   #   #     #   #   # #   #   #   #     # 
-@@ #   #     # @ #   # #   # @ #   #     # 
-   #####     #   ##### #####   #####     # </script>
-<script type="text/plain" id="out9">... (count=00 ~ 58 생략)
-
-i=118  count=59
-#####  #####
-#      #   #
-#####  #####
-    #      #
-#####  #####
-
-i=120  count=00
-#####  #####
-#   #  #   #
-#   #  #   #
-#   #  #   #
-#####  #####</script>
+// TTL7490 Class		
+        System.out.println("------------------------------------");
+		for(int i=0; i<102; i++){
+		    ttl7490_S1.setClock(i%2);
+		    ttl7490_S10.setClock(ttl7490_S1.getOutput()[3]);
+		    ttl7490_S10.reset((int)(ttl7490_S10.getOutput()[2] & ttl7490_S10.getOutput()[1]), 0, 0);
+		    
+		    ttl7490_M1.setClock(ttl7490_S10.getOutput()[2]);
+		    ttl7490_M10.setClock(ttl7490_M1.getOutput()[3]);
+		    ttl7490_M10.reset((int)(ttl7490_M10.getOutput()[2] & ttl7490_M10.getOutput()[1]), 0, 0);
+		    
+		    ttl7490_H1.setClock(ttl7490_M10.getOutput()[2]);
+		    ttl7490_H10.setClock(ttl7490_H1.getOutput()[3]);
+		    if((ttl7490_H10.getOutput()[0] & ttl7490_H1.getOutput()[1] & ttl7490_H1.getOutput()[0]) == 1){
+    		    ttl7490_H10.reset(1, 0, 0);
+    		    ttl7490_H1.reset(0, 1, 0);
+		    }
+		    
+		    if(ttl7490_H10.getOutput()[0] == 1 && ttl7490_H1.getOutput()[0] == 1 && chk == false){
+		        chk = true;
+		    }
+		    else if(ttl7490_H10.getOutput()[0] == 1 && ttl7490_H1.getOutput()[1] == 1 && chk == true ){
+		        chk = false;
+		        
+		        if(apm == false) apm = true;
+    		    else apm = false;
+		    }
+		    
+		    if(i%2 == 0){
+		        ttl7446_S1.setInput(ttl7490_S1.getOutput());
+        		cfnd_S1.setInput(ttl7446_S1.getOutput());
+        		
+        		ttl7446_S10.setInput(ttl7490_S10.getOutput());
+        		cfnd_S10.setInput(ttl7446_S10.getOutput());
+        		
+        		ttl7446_M1.setInput(ttl7490_M1.getOutput());
+        		cfnd_M1.setInput(ttl7446_M1.getOutput());
+        		
+        		ttl7446_M10.setInput(ttl7490_M10.getOutput());
+        		cfnd_M10.setInput(ttl7446_M10.getOutput());
+        		
+        		ttl7446_H1.setInput(ttl7490_H1.getOutput());
+        		cfnd_H1.setInput(ttl7446_H1.getOutput());
+        		
+        		ttl7446_H10.setInput(ttl7490_H10.getOutput());
+        		cfnd_H10.setInput(ttl7446_H10.getOutput());
+        		
+        		for(int j=0; j<5; j++){
+        		    if(j == 1 && apm == false) 
+            		    System.out.print("@@ ");
+                    else if(j == 3 && apm == true) 
+            		    System.out.print("@@ ");            		    
+            		else
+            		    System.out.print("   ");
+        		    
+        		    cfnd_H10.dispFnd(j);
+            		cfnd_H1.dispFnd(j);
+            		if(j == 1 || j == 3) 
+            		    System.out.print("@ ");
+            		else
+            		    System.out.print("  ");
+            		    
+            		cfnd_M10.dispFnd(j);
+            		cfnd_M1.dispFnd(j);
+            		if(j == 1 || j == 3) 
+            		    System.out.print("@ ");
+            		else
+            		    System.out.print("  ");
+            		cfnd_S10.dispFnd(j);
+            		cfnd_S1.dispFnd(j);
+            		System.out.println("");
+        		}
+        		
+        		System.out.println("\n");
+		    }
+		}
+	}
+}
+</script>
 <script>window.Prism = window.Prism || {}; window.Prism.manual = true;</script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-java.min.js"></script>
+<!-- ===== 브라우저 안에서 도는 작은 Java 실행기 ===== -->
+<script>
+/* ============================================================================
+   javamini.js — 강좌용 초소형 Java 실행기 (Java subset interpreter)
+   ----------------------------------------------------------------------------
+   이 강좌에 나오는 Java 문법만 지원합니다.
+     · 클래스 / 필드 / 생성자 / 메서드(오버로딩) / static / final
+     · int, char, boolean, String, 배열(1 ~ 3차원), 객체
+     · if, else, for, 향상된 for, while, do-while, break, continue, return
+     · 사칙 · 비교 · 논리 · 비트 · 증감 · 삼항 · 형변환 연산자, 문자열 결합
+     · System.out.print / println / printf, Math, Integer, 배열 .length · .clone()
+   지원하지 않는 것 : 상속, 인터페이스, 제네릭, try/catch, switch, 실수 연산,
+     스레드, 파일 입출력, 그 밖의 표준 라이브러리
+   ========================================================================== */
+(function (global) {
+"use strict";
+
+/* ========================== 1. 토큰 분리 (Lexer) ========================== */
+
+const KEYWORDS = new Set([
+  "class","interface","enum","extends","implements","import","package",
+  "public","private","protected","static","final","abstract","synchronized","transient","volatile","native","strictfp",
+  "void","int","char","boolean","double","float","long","short","byte",
+  "if","else","for","while","do","return","break","continue","switch","case","default",
+  "new","this","super","null","true","false","instanceof","throw","throws","try","catch","finally","assert"
+]);
+
+const PUNCT = [
+  ">>>=","<<=",">>=",">>>","...",
+  "==","!=","<=",">=","&&","||","++","--","+=","-=","*=","/=","%=","&=","|=","^=","<<",">>","::","->",
+  "{","}","(",")","[","]",";",",",".","=","+","-","*","/","%","&","|","^","!","~","<",">","?",":","@"
+];
+
+class JavaSyntaxError extends Error {
+  constructor(msg, line, file) {
+    super(msg);
+    this.line = line; this.file = file; this.javaKind = "syntax";
+  }
+}
+
+function tokenize(src, file) {
+  const t = []; let i = 0, line = 1;
+  const n = src.length;
+  const err = (m) => { throw new JavaSyntaxError(m, line, file); };
+
+  while (i < n) {
+    const c = src[i];
+    if (c === "\n") { line++; i++; continue; }
+    if (c === " " || c === "\t" || c === "\r" || c === "\f") { i++; continue; }
+    if (c === "/" && src[i + 1] === "/") { while (i < n && src[i] !== "\n") i++; continue; }
+    if (c === "/" && src[i + 1] === "*") {
+      i += 2;
+      while (i < n && !(src[i] === "*" && src[i + 1] === "/")) { if (src[i] === "\n") line++; i++; }
+      if (i >= n) err("주석 /* 가 닫히지 않았습니다");
+      i += 2; continue;
+    }
+    if (c >= "0" && c <= "9") {                                  // 숫자
+      const s = i;
+      if (c === "0" && (src[i + 1] === "x" || src[i + 1] === "X")) {
+        i += 2; while (i < n && /[0-9a-fA-F_]/.test(src[i])) i++;
+        t.push({ k: "num", v: parseInt(src.slice(s + 2, i).replace(/_/g, ""), 16), line });
+      } else if (c === "0" && (src[i + 1] === "b" || src[i + 1] === "B")) {
+        i += 2; while (i < n && /[01_]/.test(src[i])) i++;
+        t.push({ k: "num", v: parseInt(src.slice(s + 2, i).replace(/_/g, ""), 2), line });
+      } else {
+        while (i < n && /[0-9_]/.test(src[i])) i++;
+        let isFloat = false;
+        if (src[i] === "." && /[0-9]/.test(src[i + 1] || "")) { isFloat = true; i++; while (i < n && /[0-9_]/.test(src[i])) i++; }
+        if (src[i] === "e" || src[i] === "E") { isFloat = true; i++; if (src[i] === "+" || src[i] === "-") i++; while (i < n && /[0-9]/.test(src[i])) i++; }
+        const text = src.slice(s, i).replace(/_/g, "");
+        if (/[lLfFdD]/.test(src[i] || "")) { if (/[fFdD]/.test(src[i])) isFloat = true; i++; }
+        t.push({ k: "num", v: isFloat ? parseFloat(text) : parseInt(text, 10), float: isFloat, line });
+      }
+      continue;
+    }
+    if (c === "'" || c === '"') {                                // 문자 · 문자열
+      const quote = c, startLine = line; let out = ""; i++;
+      while (i < n && src[i] !== quote) {
+        if (src[i] === "\n") err("문자열이 줄 끝에서 닫히지 않았습니다");
+        if (src[i] === "\\") {
+          const e = src[i + 1];
+          const map = { n: "\n", t: "\t", r: "\r", b: "\b", f: "\f", "0": "\0", "\\": "\\", "'": "'", '"': '"' };
+          if (e === "u") { out += String.fromCharCode(parseInt(src.substr(i + 2, 4), 16)); i += 6; continue; }
+          if (!(e in map)) err("알 수 없는 이스케이프 문자 \\" + e);
+          out += map[e]; i += 2; continue;
+        }
+        out += src[i++];
+      }
+      if (i >= n) err("따옴표가 닫히지 않았습니다");
+      i++;
+      if (quote === "'") {
+        if (out.length !== 1) { line = startLine; err("문자(char)는 한 글자여야 합니다"); }
+        t.push({ k: "char", v: out.charCodeAt(0), line: startLine });
+      } else t.push({ k: "str", v: out, line: startLine });
+      continue;
+    }
+    if (/[A-Za-z_$À-￿]/.test(c)) {                     // 이름 · 키워드
+      const s = i;
+      while (i < n && /[A-Za-z0-9_$À-￿]/.test(src[i])) i++;
+      const w = src.slice(s, i);
+      t.push({ k: KEYWORDS.has(w) ? "kw" : "id", v: w, line });
+      continue;
+    }
+    let matched = null;                                          // 기호
+    for (const p of PUNCT) if (src.startsWith(p, i)) { matched = p; break; }
+    if (!matched) err("알 수 없는 문자 '" + c + "'");
+    t.push({ k: "op", v: matched, line }); i += matched.length;
+  }
+  t.push({ k: "eof", v: "", line });
+  return t;
+}
+
+/* ============================ 2. 구문 분석 (Parser) ======================== */
+
+const PRIMITIVES = new Set(["int", "char", "boolean", "double", "float", "long", "short", "byte", "void"]);
+const MODIFIERS = new Set(["public", "private", "protected", "static", "final", "abstract", "synchronized", "native", "transient", "volatile", "strictfp", "default"]);
+
+class Parser {
+  constructor(tokens, file) { this.t = tokens; this.p = 0; this.file = file; }
+
+  peek(o) { return this.t[this.p + (o || 0)]; }
+  get line() { return this.peek().line; }
+  err(m, tok) { throw new JavaSyntaxError(m, (tok || this.peek()).line, this.file); }
+  is(v, o) { const x = this.peek(o); return (x.k === "op" || x.k === "kw") && x.v === v; }
+  isId(o) { return this.peek(o).k === "id"; }
+  next() { return this.t[this.p++]; }
+  eat(v) { if (this.is(v)) { this.p++; return true; } return false; }
+  expect(v) { if (!this.is(v)) this.err("'" + v + "' 가 필요합니다 ('" + this.peek().v + "' 을(를) 만났습니다)"); return this.next(); }
+  expectId() { if (!this.isId()) this.err("이름이 필요합니다 ('" + this.peek().v + "' 을(를) 만났습니다)"); return this.next().v; }
+
+  parseUnit() {
+    const classes = [];
+    while (this.peek().k !== "eof") {
+      if (this.is("package") || this.is("import")) { while (!this.is(";") && this.peek().k !== "eof") this.p++; this.eat(";"); continue; }
+      if (this.eat(";")) continue;
+      const mods = this.parseModifiers();
+      if (this.is("class")) classes.push(this.parseClass(mods));
+      else if (this.is("interface") || this.is("enum")) this.err("interface · enum 은 이 실행기에서 지원하지 않습니다");
+      else this.err("class 선언이 필요합니다");
+    }
+    return classes;
+  }
+
+  parseModifiers() {
+    const mods = new Set();
+    for (;;) {
+      const x = this.peek();
+      if (x.k === "op" && x.v === "@") { this.p++; this.expectId(); continue; }
+      if (x.k === "kw" && MODIFIERS.has(x.v)) { mods.add(x.v); this.p++; continue; }
+      return mods;
+    }
+  }
+
+  parseClass(mods) {
+    this.expect("class");
+    const name = this.expectId();
+    if (this.is("<")) this.err("제네릭은 이 실행기에서 지원하지 않습니다");
+    if (this.eat("extends") || this.eat("implements")) this.err("상속 · 인터페이스 구현은 이 실행기에서 지원하지 않습니다");
+    this.expect("{");
+    const cls = { name, mods, fields: [], methods: [], ctors: [] };
+    while (!this.is("}")) {
+      if (this.peek().k === "eof") this.err("클래스 '" + name + "' 의 } 가 없습니다");
+      if (this.eat(";")) continue;
+      this.parseMember(cls);
+    }
+    this.expect("}");
+    return cls;
+  }
+
+  parseMember(cls) {
+    const mods = this.parseModifiers();
+    const startLine = this.line;
+
+    if (this.isId() && this.peek().v === cls.name && this.is("(", 1)) {      // 생성자
+      this.p++;
+      const params = this.parseParams();
+      if (this.eat("throws")) { do { this.parseType(); } while (this.eat(",")); }
+      cls.ctors.push({ params, body: this.parseBlock(), line: startLine, cls: cls.name, name: cls.name });
+      return;
+    }
+    if (this.is("{")) this.err("초기화 블록은 이 실행기에서 지원하지 않습니다");
+    if (this.is("class")) this.err("중첩 클래스는 이 실행기에서 지원하지 않습니다");
+
+    const type = this.parseType();
+    let name = this.expectId();
+
+    if (this.is("(")) {                                                      // 메서드
+      const params = this.parseParams();
+      if (this.eat("throws")) { do { this.parseType(); } while (this.eat(",")); }
+      let body = null;
+      if (this.is("{")) body = this.parseBlock(); else this.expect(";");
+      cls.methods.push({ name, type, params, body, isStatic: mods.has("static"), line: startLine, cls: cls.name });
+      return;
+    }
+    for (;;) {                                                               // 필드
+      let extra = 0;
+      while (this.eat("[")) { this.expect("]"); extra++; }
+      const ftype = { base: type.base, dims: type.dims + extra };
+      let init = null;
+      if (this.eat("=")) init = this.is("{") ? this.parseArrayInit() : this.parseExpr();
+      cls.fields.push({ name, type: ftype, init, isStatic: mods.has("static"), isFinal: mods.has("final"), line: startLine, cls: cls.name });
+      if (this.eat(",")) { name = this.expectId(); continue; }
+      break;
+    }
+    this.expect(";");
+  }
+
+  parseParams() {
+    this.expect("(");
+    const ps = [];
+    if (!this.is(")")) {
+      do {
+        this.parseModifiers();
+        const type = this.parseType();
+        if (this.eat("...")) type.dims++;
+        const name = this.expectId();
+        let extra = 0; while (this.eat("[")) { this.expect("]"); extra++; }
+        ps.push({ type: { base: type.base, dims: type.dims + extra }, name });
+      } while (this.eat(","));
+    }
+    this.expect(")");
+    return ps;
+  }
+
+  looksLikeType() {
+    const x = this.peek();
+    return (x.k === "kw" && PRIMITIVES.has(x.v)) || x.k === "id";
+  }
+
+  parseType() {
+    const x = this.peek();
+    let base;
+    if (x.k === "kw" && PRIMITIVES.has(x.v)) { base = x.v; this.p++; }
+    else if (x.k === "id") {
+      base = this.next().v;
+      while (this.is(".") && this.isId(1)) { this.p++; base += "." + this.next().v; }
+      if (this.is("<")) this.err("제네릭은 이 실행기에서 지원하지 않습니다");
+    } else this.err("자료형이 필요합니다");
+    let dims = 0;
+    while (this.is("[") && this.is("]", 1)) { this.p += 2; dims++; }
+    return { base, dims };
+  }
+
+  parseBlock() {
+    const line = this.line;
+    this.expect("{");
+    const stmts = [];
+    while (!this.is("}")) {
+      if (this.peek().k === "eof") this.err("} 가 없습니다");
+      stmts.push(this.parseStmt());
+    }
+    this.expect("}");
+    return { k: "block", stmts, line };
+  }
+
+  isLocalVarDecl() {
+    const save = this.p;
+    try {
+      if (this.is("final")) this.p++;
+      if (!this.looksLikeType()) return false;
+      this.parseType();
+      return this.isId();
+    } catch (e) { return false; }
+    finally { this.p = save; }
+  }
+
+  parseStmt() {
+    const line = this.line;
+    if (this.is("{")) return this.parseBlock();
+    if (this.eat(";")) return { k: "empty", line };
+
+    if (this.is("if")) {
+      this.p++; this.expect("("); const cond = this.parseExpr(); this.expect(")");
+      const then = this.parseStmt();
+      const alt = this.eat("else") ? this.parseStmt() : null;
+      return { k: "if", cond, then, alt, line };
+    }
+    if (this.is("while")) {
+      this.p++; this.expect("("); const cond = this.parseExpr(); this.expect(")");
+      return { k: "while", cond, body: this.parseStmt(), line };
+    }
+    if (this.is("do")) {
+      this.p++; const body = this.parseStmt();
+      this.expect("while"); this.expect("("); const cond = this.parseExpr(); this.expect(")"); this.expect(";");
+      return { k: "do", body, cond, line };
+    }
+    if (this.is("for")) {
+      this.p++; this.expect("(");
+      const save = this.p;
+      if (this.isLocalVarDecl()) {
+        const decl = this.parseLocalDecl(false);
+        if (this.eat(":")) {
+          const iter = this.parseExpr(); this.expect(")");
+          return { k: "foreach", type: decl.type, name: decl.decls[0].name, iter, body: this.parseStmt(), line };
+        }
+        this.p = save;
+      }
+      let init = null;
+      if (!this.is(";")) init = this.isLocalVarDecl() ? this.parseLocalDecl(true) : (function (self) { const l = { k: "exprs", list: self.parseExprList(), line }; self.expect(";"); return l; })(this);
+      else this.expect(";");
+      const cond = this.is(";") ? null : this.parseExpr(); this.expect(";");
+      const upd = this.is(")") ? [] : this.parseExprList(); this.expect(")");
+      return { k: "for", init, cond, upd, body: this.parseStmt(), line };
+    }
+    if (this.is("return")) { this.p++; const e = this.is(";") ? null : this.parseExpr(); this.expect(";"); return { k: "return", e, line }; }
+    if (this.is("break")) { this.p++; this.expect(";"); return { k: "break", line }; }
+    if (this.is("continue")) { this.p++; this.expect(";"); return { k: "continue", line }; }
+    if (this.is("switch")) this.err("switch 문은 이 실행기에서 지원하지 않습니다 (if · else if 로 바꿔 보세요)");
+    if (this.is("try") || this.is("throw")) this.err("예외 처리(try · throw)는 이 실행기에서 지원하지 않습니다");
+
+    if (this.isLocalVarDecl()) return this.parseLocalDecl(true);
+
+    const e = this.parseExpr(); this.expect(";");
+    return { k: "exprStmt", e, line };
+  }
+
+  parseLocalDecl(semi) {
+    const line = this.line;
+    this.eat("final");
+    const type = this.parseType();
+    const decls = [];
+    do {
+      const name = this.expectId();
+      let extra = 0; while (this.eat("[")) { this.expect("]"); extra++; }
+      let init = null;
+      if (this.eat("=")) init = this.is("{") ? this.parseArrayInit() : this.parseExpr();
+      decls.push({ name, dims: extra, init });
+    } while (this.eat(","));
+    if (semi) this.expect(";");
+    return { k: "local", type, decls, line };
+  }
+
+  parseExprList() { const l = [this.parseExpr()]; while (this.eat(",")) l.push(this.parseExpr()); return l; }
+
+  parseArrayInit() {
+    const line = this.line;
+    this.expect("{");
+    const items = [];
+    if (!this.is("}")) {
+      do {
+        if (this.is("}")) break;
+        items.push(this.is("{") ? this.parseArrayInit() : this.parseExpr());
+      } while (this.eat(","));
+    }
+    this.expect("}");
+    return { k: "arrayInit", items, line };
+  }
+
+  parseExpr() { return this.parseAssign(); }
+
+  parseAssign() {
+    const left = this.parseTernary();
+    const x = this.peek();
+    if (x.k === "op" && ["=", "+=", "-=", "*=", "/=", "%=", "&=", "|=", "^=", "<<=", ">>=", ">>>="].indexOf(x.v) >= 0) {
+      this.p++;
+      const right = this.is("{") ? this.parseArrayInit() : this.parseAssign();
+      if (["name", "field", "index"].indexOf(left.k) < 0) this.err("여기에는 값을 넣을 수 없습니다", x);
+      return { k: "assign", op: x.v, target: left, value: right, line: x.line };
+    }
+    return left;
+  }
+
+  parseTernary() {
+    const c = this.parseBinary(0);
+    if (this.is("?")) {
+      const line = this.line; this.p++;
+      const a = this.parseAssign(); this.expect(":"); const b = this.parseAssign();
+      return { k: "cond", c, a, b, line };
+    }
+    return c;
+  }
+
+  parseBinary(level) {
+    const levels = Parser.LEVELS;
+    if (level >= levels.length) return this.parseUnary();
+    let left = this.parseBinary(level + 1);
+    for (;;) {
+      const x = this.peek();
+      if ((x.k !== "op" && x.k !== "kw") || levels[level].indexOf(x.v) < 0) return left;
+      this.p++;
+      if (x.v === "instanceof") { this.parseType(); left = { k: "lit", v: true, type: "boolean", line: x.line }; continue; }
+      left = { k: "bin", op: x.v, l: left, r: this.parseBinary(level + 1), line: x.line };
+    }
+  }
+
+  parseUnary() {
+    const x = this.peek();
+    if (x.k === "op" && ["+", "-", "!", "~"].indexOf(x.v) >= 0) { this.p++; return { k: "un", op: x.v, e: this.parseUnary(), line: x.line }; }
+    if (x.k === "op" && (x.v === "++" || x.v === "--")) { this.p++; return { k: "pre", op: x.v, e: this.parseUnary(), line: x.line }; }
+    if (x.k === "op" && x.v === "(") {                                      // 형변환
+      const save = this.p;
+      this.p++;
+      if (this.looksLikeType()) {
+        let type = null;
+        try { type = this.parseType(); } catch (e) { type = null; }
+        if (type && this.is(")")) {
+          const after = this.peek(1);
+          const prim = PRIMITIVES.has(type.base);
+          const canFollow = after.k === "id" || after.k === "num" || after.k === "str" || after.k === "char" ||
+            (after.k === "op" && ["(", "-", "+", "~", "!"].indexOf(after.v) >= 0) ||
+            (after.k === "kw" && ["new", "this", "true", "false", "null"].indexOf(after.v) >= 0);
+          if ((prim || type.dims > 0) && canFollow) { this.p++; return { k: "cast", type, e: this.parseUnary(), line: x.line }; }
+          if (!prim && (after.k === "id" || (after.k === "op" && after.v === "(") || (after.k === "kw" && after.v === "new"))) {
+            this.p++; return { k: "cast", type, e: this.parseUnary(), line: x.line };
+          }
+        }
+      }
+      this.p = save;
+    }
+    return this.parsePostfix(this.parsePrimary());
+  }
+
+  parsePostfix(e) {
+    for (;;) {
+      const x = this.peek();
+      if (x.k === "op" && x.v === ".") {
+        this.p++;
+        const name = this.expectId();
+        e = this.is("(") ? { k: "call", target: e, name, args: this.parseArgs(), line: x.line } : { k: "field", obj: e, name, line: x.line };
+        continue;
+      }
+      if (x.k === "op" && x.v === "[") { this.p++; const idx = this.parseExpr(); this.expect("]"); e = { k: "index", arr: e, idx, line: x.line }; continue; }
+      if (x.k === "op" && (x.v === "++" || x.v === "--")) { this.p++; e = { k: "post", op: x.v, e, line: x.line }; continue; }
+      return e;
+    }
+  }
+
+  parseArgs() {
+    this.expect("(");
+    const args = [];
+    if (!this.is(")")) do { args.push(this.parseExpr()); } while (this.eat(","));
+    this.expect(")");
+    return args;
+  }
+
+  parsePrimary() {
+    const x = this.peek();
+    if (x.k === "num") { this.p++; return { k: "lit", v: x.v, type: x.float ? "double" : "int", line: x.line }; }
+    if (x.k === "str") { this.p++; return { k: "lit", v: x.v, type: "String", line: x.line }; }
+    if (x.k === "char") { this.p++; return { k: "lit", v: x.v, type: "char", line: x.line }; }
+    if (x.k === "kw") {
+      if (x.v === "true") { this.p++; return { k: "lit", v: true, type: "boolean", line: x.line }; }
+      if (x.v === "false") { this.p++; return { k: "lit", v: false, type: "boolean", line: x.line }; }
+      if (x.v === "null") { this.p++; return { k: "lit", v: null, type: "null", line: x.line }; }
+      if (x.v === "this") {
+        this.p++;
+        if (this.is("(")) return { k: "thisCall", args: this.parseArgs(), line: x.line };
+        return { k: "this", line: x.line };
+      }
+      if (x.v === "super") this.err("super 는 이 실행기에서 지원하지 않습니다");
+      if (x.v === "new") return this.parseNew();
+    }
+    if (x.k === "op" && x.v === "(") { this.p++; const e = this.parseExpr(); this.expect(")"); return e; }
+    if (x.k === "id") {
+      this.p++;
+      if (this.is("(")) return { k: "call", target: null, name: x.v, args: this.parseArgs(), line: x.line };
+      return { k: "name", id: x.v, line: x.line };
+    }
+    this.err("여기에 올 수 없는 것입니다: '" + x.v + "'");
+  }
+
+  parseNew() {
+    const line = this.line;
+    this.expect("new");
+    const base = this.parseTypeNameOnly();
+    if (this.is("[")) {
+      const dimExprs = []; let extra = 0;
+      while (this.is("[")) {
+        this.p++;
+        if (this.is("]")) { this.p++; extra++; }
+        else { if (extra) this.err("배열 크기는 앞쪽 [ ] 부터 적어야 합니다"); dimExprs.push(this.parseExpr()); this.expect("]"); }
+      }
+      const init = this.is("{") ? this.parseArrayInit() : null;
+      if (!init && dimExprs.length === 0) this.err("배열 크기 또는 { } 초기값이 필요합니다");
+      return { k: "newArray", base, dimExprs, extra, init, line };
+    }
+    const args = this.parseArgs();
+    if (this.is("{")) this.err("익명 클래스는 이 실행기에서 지원하지 않습니다");
+    return { k: "new", cls: base, args, line };
+  }
+
+  parseTypeNameOnly() {
+    const x = this.peek();
+    if (x.k === "kw" && PRIMITIVES.has(x.v)) { this.p++; return x.v; }
+    let base = this.expectId();
+    while (this.is(".") && this.isId(1)) { this.p++; base += "." + this.next().v; }
+    return base;
+  }
+}
+
+Parser.LEVELS = [["||"], ["&&"], ["|"], ["^"], ["&"], ["==", "!="], ["<", ">", "<=", ">=", "instanceof"], ["<<", ">>", ">>>"], ["+", "-"], ["*", "/", "%"]];
+
+/* ============================ 3. 실행 (Interpreter) ======================== */
+
+class JChar { constructor(code) { this.code = code & 0xffff; } }
+function ch(code) { return new JChar(code); }
+class JArray {
+  constructor(elem, data) { this.elem = elem; this.a = data; }        // elem : { base, dims }
+}
+class JObject {
+  constructor(cls) { this.cls = cls; this.f = Object.create(null); }
+}
+class ClassRef { constructor(name) { this.name = name; } }
+class LibRef { constructor(name) { this.name = name; } }               // System, Math, Integer ...
+const STDOUT = { __stdout: true };
+
+class JavaRuntimeError extends Error {
+  constructor(javaClass, msg, line, file) {
+    super(msg);
+    this.javaClass = javaClass; this.line = line; this.file = file; this.javaKind = "runtime";
+  }
+}
+class JavaLimitError extends Error {
+  constructor(msg) { super(msg); this.javaKind = "limit"; }
+}
+
+const BREAK = { s: "break" }, CONTINUE = { s: "continue" };
+
+const INT_TYPES = new Set(["int", "long", "short", "byte"]);
+
+function isIntLike(t) { return t && t.dims === 0 && INT_TYPES.has(t.base); }
+
+class Interp {
+  constructor(opts) {
+    opts = opts || {};
+    this.classes = new Map();
+    this.out = [];
+    this.outLen = 0;
+    this.steps = 0;
+    this.maxSteps = opts.maxSteps || 40000000;
+    this.maxOutput = opts.maxOutput || 400000;
+    this.timeLimitMs = opts.timeLimitMs || 6000;
+    this.start = Date.now();
+    this.stack = [];
+    this.fileOf = new Map();
+  }
+
+  /* ---- 준비 ---- */
+  load(sources) {                                     // sources : [{ name, code }]
+    for (const s of sources) {
+      const classes = new Parser(tokenize(s.code, s.name), s.name).parseUnit();
+      for (const c of classes) {
+        if (this.classes.has(c.name)) throw new JavaSyntaxError("클래스 '" + c.name + "' 가 두 번 선언되었습니다", 1, s.name);
+        c.file = s.name;
+        c.statics = Object.create(null);
+        c.fieldTypes = Object.create(null);
+        for (const f of c.fields) c.fieldTypes[f.name] = f.type;
+        this.classes.set(c.name, c);
+      }
+    }
+  }
+
+  initStatics() {
+    for (const c of this.classes.values())
+      for (const f of c.fields) if (f.isStatic) c.statics[f.name] = this.defaultOf(f.type);
+    for (const c of this.classes.values()) {
+      const env = { vars: new Map(), parent: null, thisObj: null, cls: c };
+      for (const f of c.fields) if (f.isStatic && f.init) c.statics[f.name] = this.coerce(f.type, this.evalInit(f.init, f.type, env), f.line, c.file);
+    }
+  }
+
+  findMainClass(wanted) {
+    if (wanted && this.classes.has(wanted)) return this.classes.get(wanted);
+    for (const c of this.classes.values())
+      if (c.methods.some(m => m.name === "main" && m.isStatic)) return c;
+    return null;
+  }
+
+  runMain(mainClass) {
+    const c = this.findMainClass(mainClass);
+    if (!c) throw new JavaSyntaxError("main 메서드를 찾을 수 없습니다", 1, "");
+    const m = c.methods.find(x => x.name === "main" && x.isStatic);
+    const args = new JArray({ base: "String", dims: 0 }, []);
+    this.invoke(c, m, null, [args], m.line);
+  }
+
+  /* ---- 한도 ---- */
+  tick() {
+    if (++this.steps > this.maxSteps) throw new JavaLimitError("실행이 너무 오래 걸립니다. 반복 횟수가 너무 크거나 끝나지 않는 반복문이 있는지 확인하세요.");
+    if ((this.steps & 8191) === 0 && Date.now() - this.start > this.timeLimitMs)
+      throw new JavaLimitError("실행 시간이 " + (this.timeLimitMs / 1000) + "초를 넘었습니다. 끝나지 않는 반복문이 있는지 확인하세요.");
+  }
+
+  write(s) {
+    this.outLen += s.length;
+    if (this.outLen > this.maxOutput) throw new JavaLimitError("출력이 너무 많습니다 (" + this.maxOutput.toLocaleString() + "자 초과). 반복 횟수를 줄여 보세요.");
+    this.out.push(s);
+  }
+
+  /* ---- 값 도우미 ---- */
+  defaultOf(type) {
+    if (type.dims > 0) return null;
+    if (type.base === "char") return ch(0);
+    if (type.base === "boolean") return false;
+    if (INT_TYPES.has(type.base) || type.base === "double" || type.base === "float") return 0;
+    return null;
+  }
+
+  coerce(type, v, line, file) {
+    if (!type || type.dims > 0) return v;
+    if (type.base === "char") {
+      if (v instanceof JChar) return v;
+      if (typeof v === "number") return ch(v | 0);
+      return v;
+    }
+    if (INT_TYPES.has(type.base)) {
+      if (v instanceof JChar) return v.code;
+      if (typeof v === "number") return Math.trunc(v) | 0;
+      return v;
+    }
+    if (type.base === "double" || type.base === "float") {
+      if (v instanceof JChar) return v.code;
+      return v;
+    }
+    return v;
+  }
+
+  num(v, line, file) {
+    if (v instanceof JChar) return v.code;
+    if (typeof v === "number") return v;
+    if (typeof v === "boolean") throw new JavaRuntimeError("Error", "boolean 값으로는 계산할 수 없습니다", line, file);
+    if (v === null) throw new JavaRuntimeError("java.lang.NullPointerException", "값이 null 입니다", line, file);
+    throw new JavaRuntimeError("Error", "숫자가 필요한 자리입니다", line, file);
+  }
+
+  bool(v, line, file) {
+    if (typeof v === "boolean") return v;
+    throw new JavaRuntimeError("Error", "true / false 가 필요한 자리입니다", line, file);
+  }
+
+  str(v) {
+    if (v === null || v === undefined) return "null";
+    if (v instanceof JChar) return String.fromCharCode(v.code);
+    if (typeof v === "boolean") return v ? "true" : "false";
+    if (typeof v === "number") return Number.isInteger(v) ? String(v) : this.dbl(v);
+    if (typeof v === "string") return v;
+    if (v instanceof JArray) return "[" + this.sigOf(v.elem) + "@" + this.hash(v);
+    if (v instanceof JObject) {
+      const m = this.findMethod(v.cls, "toString", 0);
+      if (m) return this.str(this.invoke(v.cls, m, v, [], m.line));
+      return v.cls.name + "@" + this.hash(v);
+    }
+    return String(v);
+  }
+
+  dbl(n) {
+    if (!isFinite(n)) return n > 0 ? "Infinity" : (n < 0 ? "-Infinity" : "NaN");
+    if (Number.isInteger(n)) return n.toFixed(1);
+    return String(n);
+  }
+
+  sigOf(t) {
+    const map = { int: "I", char: "C", boolean: "Z", double: "D", float: "F", long: "J", short: "S", byte: "B" };
+    let s = "";
+    for (let i = 0; i < t.dims; i++) s += "[";
+    return s + (map[t.base] || ("L" + t.base + ";"));
+  }
+
+  hash(o) {
+    if (!o.__h) o.__h = (Math.floor(Math.random() * 0x7fffffff)).toString(16);
+    return o.__h;
+  }
+
+  /* ---- 클래스 · 메서드 찾기 ---- */
+  findMethod(cls, name, argc) {
+    const cands = cls.methods.filter(m => m.name === name && m.params.length === argc);
+    return cands.length ? cands[0] : null;
+  }
+
+  pickOverload(list, args, line, file, what) {
+    const byArity = list.filter(m => m.params.length === args.length);
+    if (byArity.length === 0) {
+      throw new JavaRuntimeError("Error", what + " 을(를) 인자 " + args.length + "개로 부를 수 없습니다", line, file);
+    }
+    if (byArity.length === 1) return byArity[0];
+    let best = null, bestScore = -1;
+    for (const m of byArity) {
+      let score = 0, ok = true;
+      for (let i = 0; i < args.length; i++) {
+        const t = m.params[i].type, v = args[i];
+        if (t.dims > 0) { if (v instanceof JArray && v.elem.dims === t.dims - 1) score += 2; else if (v === null) score += 1; else { ok = false; break; } }
+        else if (t.base === "char") { if (v instanceof JChar) score += 2; else if (typeof v === "number") score += 1; else { ok = false; break; } }
+        else if (INT_TYPES.has(t.base) || t.base === "double" || t.base === "float") {
+          if (typeof v === "number") score += 2; else if (v instanceof JChar) score += 1; else { ok = false; break; }
+        }
+        else if (t.base === "boolean") { if (typeof v === "boolean") score += 2; else { ok = false; break; } }
+        else if (t.base === "String") { if (typeof v === "string" || v === null) score += 2; else { ok = false; break; } }
+        else { if (v instanceof JObject && v.cls.name === t.base) score += 2; else if (v === null) score += 1; else { ok = false; break; } }
+      }
+      if (ok && score > bestScore) { bestScore = score; best = m; }
+    }
+    if (!best) throw new JavaRuntimeError("Error", what + " 에 맞는 매개변수 짝을 찾지 못했습니다", line, file);
+    return best;
+  }
+
+  invoke(cls, m, thisObj, args, line) {
+    if (this.stack.length > 400) throw new JavaRuntimeError("java.lang.StackOverflowError", "메서드 호출이 너무 깊습니다 (재귀 호출을 확인하세요)", line, cls.file);
+    this.tick();
+    const env = { vars: new Map(), parent: null, thisObj, cls };
+    for (let i = 0; i < m.params.length; i++)
+      env.vars.set(m.params[i].name, { type: m.params[i].type, v: this.coerce(m.params[i].type, args[i], line, cls.file) });
+    this.stack.push({ cls: cls.name, method: m.name, file: cls.file, line: m.line });
+    try {
+      const r = this.exec(m.body, env);
+      if (r && r.s === "return") return m.type ? this.coerce(m.type, r.v, line, cls.file) : r.v;
+      return null;
+    } finally { this.stack.pop(); }
+  }
+
+  construct(cls, args, line, file) {
+    const obj = new JObject(cls);
+    for (const f of cls.fields) if (!f.isStatic) obj.f[f.name] = this.defaultOf(f.type);
+    if (cls.ctors.length === 0) {
+      if (args.length > 0) throw new JavaRuntimeError("Error", cls.name + " 생성자는 매개변수를 받지 않습니다", line, file);
+      this.initFields(cls, obj);
+      return obj;
+    }
+    const ctor = this.pickOverload(cls.ctors, args, line, file, cls.name + " 생성자");
+    this.runCtor(cls, ctor, obj, args, line);
+    return obj;
+  }
+
+  initFields(cls, obj) {
+    const env = { vars: new Map(), parent: null, thisObj: obj, cls };
+    for (const f of cls.fields) if (!f.isStatic && f.init) obj.f[f.name] = this.coerce(f.type, this.evalInit(f.init, f.type, env), f.line, cls.file);
+  }
+
+  runCtor(cls, ctor, obj, args, line) {
+    if (this.stack.length > 400) throw new JavaRuntimeError("java.lang.StackOverflowError", "생성자 호출이 너무 깊습니다", line, cls.file);
+    const first = ctor.body.stmts[0];
+    const delegates = first && first.k === "exprStmt" && first.e.k === "thisCall";
+    if (!delegates) this.initFields(cls, obj);
+    const env = { vars: new Map(), parent: null, thisObj: obj, cls };
+    for (let i = 0; i < ctor.params.length; i++)
+      env.vars.set(ctor.params[i].name, { type: ctor.params[i].type, v: this.coerce(ctor.params[i].type, args[i], line, cls.file) });
+    this.stack.push({ cls: cls.name, method: "<init>", file: cls.file, line: ctor.line });
+    try { this.exec(ctor.body, env); } finally { this.stack.pop(); }
+  }
+
+  /* ---- 배열 ---- */
+  makeArray(elem, sizes, line, file) {
+    const n = sizes[0];
+    if (n < 0) throw new JavaRuntimeError("java.lang.NegativeArraySizeException", String(n), line, file);
+    if (n > 5000000) throw new JavaLimitError("배열이 너무 큽니다 (" + n + ")");
+    const data = new Array(n);
+    if (sizes.length === 1) { const d = this.defaultOf(elem); for (let i = 0; i < n; i++) data[i] = (elem.base === "char" && elem.dims === 0) ? ch(0) : d; }
+    else { const inner = { base: elem.base, dims: elem.dims - 1 }; for (let i = 0; i < n; i++) data[i] = this.makeArray(inner, sizes.slice(1), line, file); }
+    return new JArray(elem, data);
+  }
+
+  evalInit(node, type, env) {
+    if (node.k === "arrayInit") return this.buildArrayInit(node, type, env);
+    return this.eval(node, env);
+  }
+
+  buildArrayInit(node, type, env) {
+    if (!type || type.dims === 0) throw new JavaRuntimeError("Error", "{ } 초기값은 배열에만 쓸 수 있습니다", node.line, env.cls.file);
+    const elem = { base: type.base, dims: type.dims - 1 };
+    const data = node.items.map(it => it.k === "arrayInit"
+      ? this.buildArrayInit(it, elem, env)
+      : this.coerce(elem, this.eval(it, env), node.line, env.cls.file));
+    return new JArray(elem, data);
+  }
+}
+
+/* ---- 문장 실행 · 식 계산 ---- */
+Object.assign(Interp.prototype, {
+
+  child(env) { return { vars: new Map(), parent: env, thisObj: env.thisObj, cls: env.cls }; },
+
+  lookup(name, env) {
+    for (let e = env; e; e = e.parent) { const v = e.vars.get(name); if (v) return v; }
+    return null;
+  },
+
+  exec(st, env) {
+    this.tick();
+    if (this.stack.length) this.stack[this.stack.length - 1].line = st.line;
+    const file = env.cls.file;
+
+    switch (st.k) {
+      case "block": {
+        const inner = this.child(env);
+        for (const s of st.stmts) { const r = this.exec(s, inner); if (r) return r; }
+        return;
+      }
+      case "empty": return;
+      case "local": {
+        for (const d of st.decls) {
+          const type = { base: st.type.base, dims: st.type.dims + d.dims };
+          const v = d.init ? this.coerce(type, this.evalInit(d.init, type, env), st.line, file) : this.defaultOf(type);
+          env.vars.set(d.name, { type, v });
+        }
+        return;
+      }
+      case "exprStmt": this.eval(st.e, env); return;
+      case "exprs": for (const e of st.list) this.eval(e, env); return;
+      case "if": {
+        if (this.bool(this.eval(st.cond, env), st.line, file)) return this.exec(st.then, env);
+        if (st.alt) return this.exec(st.alt, env);
+        return;
+      }
+      case "while": {
+        while (this.bool(this.eval(st.cond, env), st.line, file)) {
+          this.tick();
+          const r = this.exec(st.body, env);
+          if (r === BREAK) break;
+          if (r && r !== CONTINUE) return r;
+        }
+        return;
+      }
+      case "do": {
+        do {
+          this.tick();
+          const r = this.exec(st.body, env);
+          if (r === BREAK) break;
+          if (r && r !== CONTINUE) return r;
+        } while (this.bool(this.eval(st.cond, env), st.line, file));
+        return;
+      }
+      case "for": {
+        const loop = this.child(env);
+        if (st.init) this.exec(st.init, loop);
+        for (;;) {
+          this.tick();
+          if (st.cond && !this.bool(this.eval(st.cond, loop), st.line, file)) break;
+          const r = this.exec(st.body, loop);
+          if (r === BREAK) break;
+          if (r && r !== CONTINUE) return r;
+          for (const u of st.upd) this.eval(u, loop);
+        }
+        return;
+      }
+      case "foreach": {
+        const arr = this.eval(st.iter, env);
+        if (arr === null) throw new JavaRuntimeError("java.lang.NullPointerException", "null 배열을 반복할 수 없습니다", st.line, file);
+        if (!(arr instanceof JArray)) throw new JavaRuntimeError("Error", "향상된 for 문은 배열에만 쓸 수 있습니다", st.line, file);
+        for (const item of arr.a) {
+          this.tick();
+          const loop = this.child(env);
+          loop.vars.set(st.name, { type: st.type, v: this.coerce(st.type, item, st.line, file) });
+          const r = this.exec(st.body, loop);
+          if (r === BREAK) break;
+          if (r && r !== CONTINUE) return r;
+        }
+        return;
+      }
+      case "return": return { s: "return", v: st.e ? this.eval(st.e, env) : null };
+      case "break": return BREAK;
+      case "continue": return CONTINUE;
+      default: throw new JavaRuntimeError("Error", "알 수 없는 문장입니다", st.line, file);
+    }
+  },
+
+  /* ---- 식 ---- */
+  eval(e, env) {
+    this.tick();
+    const file = env.cls.file;
+    switch (e.k) {
+      case "lit": return e.type === "char" ? ch(e.v) : e.v;
+      case "this": {
+        if (!env.thisObj) throw new JavaRuntimeError("Error", "static 메서드 안에서는 this 를 쓸 수 없습니다", e.line, file);
+        return env.thisObj;
+      }
+      case "name": return this.readName(e.id, e, env);
+      case "field": return this.readField(e, env);
+      case "index": {
+        const { arr, i } = this.arrayIndex(e, env);
+        return arr.a[i];
+      }
+      case "arrayInit": throw new JavaRuntimeError("Error", "{ } 초기값은 선언과 함께 써야 합니다", e.line, file);
+      case "newArray": {
+        if (e.init) {
+          const type = { base: e.base, dims: e.dimExprs.length + e.extra };
+          return this.buildArrayInit(e.init, type, env);
+        }
+        const sizes = e.dimExprs.map(d => this.num(this.eval(d, env), e.line, file) | 0);
+        const elem = { base: e.base, dims: e.dimExprs.length - 1 + e.extra };
+        return this.makeArray(elem, sizes, e.line, file);
+      }
+      case "new": {
+        const cls = this.classes.get(e.cls);
+        if (!cls) throw new JavaRuntimeError("Error", "클래스 '" + e.cls + "' 를 찾을 수 없습니다", e.line, file);
+        const args = e.args.map(a => this.eval(a, env));
+        return this.construct(cls, args, e.line, file);
+      }
+      case "cast": {
+        const v = this.eval(e.e, env);
+        if (e.type.dims > 0) return v;
+        if (e.type.base === "char") return ch(this.num(v, e.line, file) | 0);
+        if (INT_TYPES.has(e.type.base)) {
+          let n = Math.trunc(this.num(v, e.line, file));
+          if (e.type.base === "byte") n = (n << 24) >> 24;
+          if (e.type.base === "short") n = (n << 16) >> 16;
+          return e.type.base === "long" ? n : (n | 0);
+        }
+        if (e.type.base === "double" || e.type.base === "float") return this.num(v, e.line, file);
+        return v;
+      }
+      case "un": {
+        if (e.op === "!") return !this.bool(this.eval(e.e, env), e.line, file);
+        const n = this.num(this.eval(e.e, env), e.line, file);
+        if (e.op === "-") return Number.isInteger(n) ? (-n | 0) : -n;
+        if (e.op === "+") return n;
+        return ~n;
+      }
+      case "pre": case "post": {
+        const ref = this.lvalue(e.e, env);
+        const old = this.num(ref.get(), e.line, file);
+        const nv = e.op === "++" ? old + 1 : old - 1;
+        ref.set(Number.isInteger(nv) ? nv | 0 : nv);
+        const wasChar = ref.get() instanceof JChar;
+        if (e.k === "pre") return ref.get();
+        return wasChar ? ch(old) : old;
+      }
+      case "bin": {
+        if (e.op === "&&") return this.bool(this.eval(e.l, env), e.line, file) ? this.bool(this.eval(e.r, env), e.line, file) : false;
+        if (e.op === "||") return this.bool(this.eval(e.l, env), e.line, file) ? true : this.bool(this.eval(e.r, env), e.line, file);
+        return this.binop(e.op, this.eval(e.l, env), this.eval(e.r, env), e.line, file);
+      }
+      case "cond": return this.bool(this.eval(e.c, env), e.line, file) ? this.eval(e.a, env) : this.eval(e.b, env);
+      case "assign": {
+        const ref = this.lvalue(e.target, env);
+        let v;
+        if (e.op === "=") {
+          v = e.value.k === "arrayInit" ? this.buildArrayInit(e.value, ref.type || { base: "int", dims: 1 }, env) : this.eval(e.value, env);
+        } else {
+          const cur = ref.get();
+          v = this.binop(e.op.slice(0, -1), cur, this.eval(e.value, env), e.line, file);
+        }
+        v = this.coerce(ref.type, v, e.line, file);
+        ref.set(v);
+        return v;
+      }
+      case "thisCall": {
+        const cls = env.cls;
+        const args = e.args.map(a => this.eval(a, env));
+        const ctor = this.pickOverload(cls.ctors, args, e.line, file, cls.name + " 생성자");
+        this.runCtor(cls, ctor, env.thisObj, args, e.line);
+        return null;
+      }
+      case "call": return this.call(e, env);
+      default: throw new JavaRuntimeError("Error", "알 수 없는 식입니다", e.line, file);
+    }
+  },
+
+  binop(op, l, r, line, file) {
+    if (op === "+" && (typeof l === "string" || typeof r === "string")) return this.str(l) + this.str(r);
+    if (op === "==" || op === "!=") {
+      let eq;
+      if (l === null || r === null) eq = (l === null && r === null);
+      else if (typeof l === "boolean" || typeof r === "boolean") eq = l === r;
+      else if (l instanceof JArray || r instanceof JArray || l instanceof JObject || r instanceof JObject) eq = l === r;
+      else if (typeof l === "string" || typeof r === "string") eq = l === r;
+      else eq = this.num(l, line, file) === this.num(r, line, file);
+      return op === "==" ? eq : !eq;
+    }
+    if ((op === "&" || op === "|" || op === "^") && typeof l === "boolean" && typeof r === "boolean")
+      return op === "&" ? (l && r) : op === "|" ? (l || r) : (l !== r);
+
+    const a = this.num(l, line, file), b = this.num(r, line, file);
+    const bothInt = Number.isInteger(a) && Number.isInteger(b) && !(typeof l === "number" && !Number.isInteger(l));
+    switch (op) {
+      case "+": return bothInt ? (a + b) | 0 : a + b;
+      case "-": return bothInt ? (a - b) | 0 : a - b;
+      case "*": return bothInt ? Math.imul(a, b) : a * b;
+      case "/":
+        if (b === 0 && bothInt) throw new JavaRuntimeError("java.lang.ArithmeticException", "/ by zero", line, file);
+        return bothInt ? (Math.trunc(a / b) | 0) : a / b;
+      case "%":
+        if (b === 0 && bothInt) throw new JavaRuntimeError("java.lang.ArithmeticException", "/ by zero", line, file);
+        return a % b;
+      case "<": return a < b;
+      case ">": return a > b;
+      case "<=": return a <= b;
+      case ">=": return a >= b;
+      case "&": return a & b;
+      case "|": return a | b;
+      case "^": return a ^ b;
+      case "<<": return a << b;
+      case ">>": return a >> b;
+      case ">>>": return a >>> b;
+      default: throw new JavaRuntimeError("Error", "알 수 없는 연산자 " + op, line, file);
+    }
+  },
+
+  /* ---- 이름 읽기 / 쓰기 ---- */
+  readName(id, e, env) {
+    const local = this.lookup(id, env);
+    if (local) return local.v;
+    if (env.thisObj && id in env.thisObj.f) return env.thisObj.f[id];
+    if (env.cls && id in env.cls.statics) return env.cls.statics[id];
+    for (const c of this.classes.values()) if (c !== env.cls && id in c.statics && c.fields.some(f => f.name === id && f.isStatic)) { /* 다른 클래스의 static 은 이름만으로 접근 불가 */ }
+    if (this.classes.has(id)) return new ClassRef(id);
+    if (["System", "Math", "Integer", "String", "Character", "Boolean", "Long", "Double", "Arrays", "Object"].indexOf(id) >= 0) return new LibRef(id);
+    throw new JavaRuntimeError("Error", "'" + id + "' 를 찾을 수 없습니다 (선언했는지, 이름을 맞게 적었는지 확인하세요)", e.line, env.cls.file);
+  },
+
+  readField(e, env) {
+    const file = env.cls.file;
+    if (e.obj.k === "name" && !this.lookup(e.obj.id, env) && (e.obj.id === "System" || e.obj.id === "Math" || e.obj.id === "Integer" || e.obj.id === "Character" || e.obj.id === "Long" || e.obj.id === "Double")) {
+      const lib = e.obj.id;
+      if (lib === "System" && e.name === "out") return STDOUT;
+      if (lib === "System" && e.name === "err") return STDOUT;
+      if (lib === "Math" && e.name === "PI") return Math.PI;
+      if (lib === "Math" && e.name === "E") return Math.E;
+      if (lib === "Integer" && e.name === "MAX_VALUE") return 2147483647;
+      if (lib === "Integer" && e.name === "MIN_VALUE") return -2147483648;
+      throw new JavaRuntimeError("Error", lib + "." + e.name + " 은(는) 이 실행기에서 지원하지 않습니다", e.line, file);
+    }
+    const obj = this.eval(e.obj, env);
+    if (obj instanceof JArray) {
+      if (e.name === "length") return obj.a.length;
+      throw new JavaRuntimeError("Error", "배열에는 '" + e.name + "' 이(가) 없습니다", e.line, file);
+    }
+    if (obj === null) throw new JavaRuntimeError("java.lang.NullPointerException", "null 인 값에서 '" + e.name + "' 을(를) 읽으려고 했습니다", e.line, file);
+    if (obj instanceof ClassRef) {
+      const c = this.classes.get(obj.name);
+      if (e.name in c.statics) return c.statics[e.name];
+      throw new JavaRuntimeError("Error", obj.name + " 에 static 필드 '" + e.name + "' 이(가) 없습니다", e.line, file);
+    }
+    if (obj instanceof JObject) {
+      if (e.name in obj.f) return obj.f[e.name];
+      throw new JavaRuntimeError("Error", obj.cls.name + " 에 필드 '" + e.name + "' 이(가) 없습니다", e.line, file);
+    }
+    if (typeof obj === "string" && e.name === "length") throw new JavaRuntimeError("Error", "문자열 길이는 length() 로 부릅니다", e.line, file);
+    throw new JavaRuntimeError("Error", "'" + e.name + "' 을(를) 읽을 수 없습니다", e.line, file);
+  },
+
+  arrayIndex(e, env) {
+    const file = env.cls.file;
+    const arr = this.eval(e.arr, env);
+    if (arr === null) throw new JavaRuntimeError("java.lang.NullPointerException", "null 배열의 값을 읽으려고 했습니다", e.line, file);
+    if (!(arr instanceof JArray)) throw new JavaRuntimeError("Error", "배열이 아닌 값에 [ ] 를 썼습니다", e.line, file);
+    const i = this.num(this.eval(e.idx, env), e.line, file) | 0;
+    if (i < 0 || i >= arr.a.length)
+      throw new JavaRuntimeError("java.lang.ArrayIndexOutOfBoundsException", "Index " + i + " out of bounds for length " + arr.a.length, e.line, file);
+    return { arr, i };
+  },
+
+  lvalue(e, env) {
+    const self = this, file = env.cls.file;
+    if (e.k === "name") {
+      const local = this.lookup(e.id, env);
+      if (local) return { type: local.type, get: () => local.v, set: v => { local.v = v; } };
+      if (env.thisObj && e.id in env.thisObj.f) {
+        const o = env.thisObj, t = o.cls.fieldTypes[e.id];
+        return { type: t, get: () => o.f[e.id], set: v => { o.f[e.id] = v; } };
+      }
+      if (env.cls && e.id in env.cls.statics) {
+        const c = env.cls, t = c.fieldTypes[e.id];
+        return { type: t, get: () => c.statics[e.id], set: v => { c.statics[e.id] = v; } };
+      }
+      throw new JavaRuntimeError("Error", "'" + e.id + "' 를 찾을 수 없습니다 (선언했는지 확인하세요)", e.line, file);
+    }
+    if (e.k === "field") {
+      const obj = this.eval(e.obj, env);
+      if (obj instanceof ClassRef) {
+        const c = this.classes.get(obj.name);
+        if (!(e.name in c.statics)) throw new JavaRuntimeError("Error", obj.name + " 에 static 필드 '" + e.name + "' 이(가) 없습니다", e.line, file);
+        return { type: c.fieldTypes[e.name], get: () => c.statics[e.name], set: v => { c.statics[e.name] = v; } };
+      }
+      if (obj === null) throw new JavaRuntimeError("java.lang.NullPointerException", "null 인 값의 '" + e.name + "' 에 값을 넣으려고 했습니다", e.line, file);
+      if (!(obj instanceof JObject) || !(e.name in obj.f)) throw new JavaRuntimeError("Error", "'" + e.name + "' 필드를 찾을 수 없습니다", e.line, file);
+      return { type: obj.cls.fieldTypes[e.name], get: () => obj.f[e.name], set: v => { obj.f[e.name] = v; } };
+    }
+    if (e.k === "index") {
+      const { arr, i } = this.arrayIndex(e, env);
+      return { type: arr.elem, get: () => arr.a[i], set: v => { arr.a[i] = v; } };
+    }
+    throw new JavaRuntimeError("Error", "여기에는 값을 넣을 수 없습니다", e.line, file);
+  },
+
+  /* ---- 메서드 호출 ---- */
+  call(e, env) {
+    const file = env.cls.file;
+    const args = e.args.map(a => this.eval(a, env));
+
+    if (e.target === null) {                                   // 같은 클래스의 메서드
+      const cands = env.cls.methods.filter(m => m.name === e.name);
+      if (!cands.length) throw new JavaRuntimeError("Error", "메서드 '" + e.name + "' 을(를) 찾을 수 없습니다", e.line, file);
+      const m = this.pickOverload(cands, args, e.line, file, "메서드 " + e.name);
+      if (!m.isStatic && !env.thisObj) throw new JavaRuntimeError("Error", "static 메서드에서 인스턴스 메서드 '" + e.name + "' 을(를) 바로 부를 수 없습니다", e.line, file);
+      return this.invoke(env.cls, m, m.isStatic ? null : env.thisObj, args, e.line);
+    }
+
+    const target = this.eval(e.target, env);
+
+    if (target === STDOUT) return this.stdout(e.name, args, e.line, file);
+    if (target instanceof LibRef) return this.libCall(target.name, e.name, args, e.line, file);
+    if (target instanceof ClassRef) {
+      const c = this.classes.get(target.name);
+      const cands = c.methods.filter(m => m.name === e.name && m.isStatic);
+      if (!cands.length) throw new JavaRuntimeError("Error", target.name + " 에 static 메서드 '" + e.name + "' 이(가) 없습니다", e.line, file);
+      return this.invoke(c, this.pickOverload(cands, args, e.line, file, e.name), null, args, e.line);
+    }
+    if (target === null) throw new JavaRuntimeError("java.lang.NullPointerException", "null 인 값의 '" + e.name + "()' 를 불렀습니다", e.line, file);
+    if (target instanceof JArray) {
+      if (e.name === "clone") return new JArray(target.elem, target.a.slice());
+      if (e.name === "length") throw new JavaRuntimeError("Error", "배열 길이는 length() 가 아니라 length 입니다", e.line, file);
+      throw new JavaRuntimeError("Error", "배열에는 '" + e.name + "()' 메서드가 없습니다", e.line, file);
+    }
+    if (typeof target === "string") return this.stringCall(target, e.name, args, e.line, file);
+    if (target instanceof JChar) throw new JavaRuntimeError("Error", "char 값에는 메서드를 부를 수 없습니다", e.line, file);
+    if (target instanceof JObject) {
+      const cands = target.cls.methods.filter(m => m.name === e.name);
+      if (!cands.length) throw new JavaRuntimeError("Error", target.cls.name + " 에 메서드 '" + e.name + "' 이(가) 없습니다", e.line, file);
+      const m = this.pickOverload(cands, args, e.line, file, e.name);
+      return this.invoke(target.cls, m, m.isStatic ? null : target, args, e.line);
+    }
+    throw new JavaRuntimeError("Error", "'" + e.name + "()' 를 부를 수 없습니다", e.line, file);
+  },
+
+  stdout(name, args, line, file) {
+    if (name === "println") { this.write(args.length ? this.str(this.printable(args[0])) : ""); this.write("\n"); return null; }
+    if (name === "print") { this.write(this.str(this.printable(args[0]))); return null; }
+    if (name === "printf" || name === "format") { this.write(this.format(args, line, file)); return null; }
+    if (name === "flush") return null;
+    throw new JavaRuntimeError("Error", "System.out." + name + "() 은 이 실행기에서 지원하지 않습니다", line, file);
+  },
+
+  printable(v) {                                   // println(char[]) 은 문자들을 그대로 출력
+    if (v instanceof JArray && v.elem.base === "char" && v.elem.dims === 0)
+      return v.a.map(c => String.fromCharCode(c.code)).join("");
+    return v;
+  },
+
+  format(args, line, file) {
+    const fmt = args[0];
+    if (typeof fmt !== "string") throw new JavaRuntimeError("Error", "printf 의 첫 인자는 문자열이어야 합니다", line, file);
+    let ai = 1, out = "";
+    for (let i = 0; i < fmt.length; i++) {
+      if (fmt[i] !== "%") { out += fmt[i]; continue; }
+      const m = /^%([-+ 0,#]*)(\d+)?(?:\.(\d+))?([dsfcbnx%])/.exec(fmt.slice(i));
+      if (!m) throw new JavaRuntimeError("java.util.UnknownFormatConversionException", "printf 형식을 이해할 수 없습니다", line, file);
+      i += m[0].length - 1;
+      const [, flags, widthS, precS, conv] = m;
+      if (conv === "%") { out += "%"; continue; }
+      if (conv === "n") { out += "\n"; continue; }
+      const v = args[ai++];
+      let s;
+      if (conv === "d") s = String(Math.trunc(this.num(v, line, file)));
+      else if (conv === "x") s = (this.num(v, line, file) >>> 0).toString(16);
+      else if (conv === "f") s = this.num(v, line, file).toFixed(precS === undefined ? 6 : +precS);
+      else if (conv === "c") s = v instanceof JChar ? String.fromCharCode(v.code) : String.fromCharCode(this.num(v, line, file));
+      else if (conv === "b") s = v === null ? "false" : (typeof v === "boolean" ? String(v) : "true");
+      else s = this.str(this.printable(v));
+      if (flags.indexOf(",") >= 0 && conv === "d") s = s.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+      const width = widthS ? +widthS : 0;
+      if (s.length < width) s = flags.indexOf("-") >= 0 ? s.padEnd(width) : (flags.indexOf("0") >= 0 && "dfx".indexOf(conv) >= 0 ? (s[0] === "-" ? "-" + s.slice(1).padStart(width - 1, "0") : s.padStart(width, "0")) : s.padStart(width));
+      out += s;
+    }
+    return out;
+  },
+
+  stringCall(s, name, args, line, file) {
+    const n = (i) => this.num(args[i], line, file) | 0;
+    switch (name) {
+      case "length": return s.length;
+      case "isEmpty": return s.length === 0;
+      case "charAt": {
+        const i = n(0);
+        if (i < 0 || i >= s.length) throw new JavaRuntimeError("java.lang.StringIndexOutOfBoundsException", "index " + i + ", length " + s.length, line, file);
+        return ch(s.charCodeAt(i));
+      }
+      case "equals": return typeof args[0] === "string" && args[0] === s;
+      case "equalsIgnoreCase": return typeof args[0] === "string" && args[0].toLowerCase() === s.toLowerCase();
+      case "indexOf": return s.indexOf(typeof args[0] === "string" ? args[0] : String.fromCharCode(this.num(args[0], line, file)));
+      case "lastIndexOf": return s.lastIndexOf(typeof args[0] === "string" ? args[0] : String.fromCharCode(this.num(args[0], line, file)));
+      case "substring": return args.length > 1 ? s.substring(n(0), n(1)) : s.substring(n(0));
+      case "toUpperCase": return s.toUpperCase();
+      case "toLowerCase": return s.toLowerCase();
+      case "trim": case "strip": return s.trim();
+      case "concat": return s + this.str(args[0]);
+      case "contains": return s.indexOf(this.str(args[0])) >= 0;
+      case "startsWith": return s.startsWith(this.str(args[0]));
+      case "endsWith": return s.endsWith(this.str(args[0]));
+      case "replace": return s.split(this.str(args[0])).join(this.str(args[1]));
+      case "repeat": return s.repeat(n(0));
+      case "compareTo": return s < args[0] ? -1 : s > args[0] ? 1 : 0;
+      case "toCharArray": return new JArray({ base: "char", dims: 0 }, s.split("").map(c => ch(c.charCodeAt(0))));
+      case "split": return new JArray({ base: "String", dims: 0 }, s.split(this.str(args[0])));
+      case "toString": return s;
+      case "hashCode": { let h = 0; for (let i = 0; i < s.length; i++) h = (Math.imul(31, h) + s.charCodeAt(i)) | 0; return h; }
+      default: throw new JavaRuntimeError("Error", "String." + name + "() 은 이 실행기에서 지원하지 않습니다", line, file);
+    }
+  },
+
+  libCall(lib, name, args, line, file) {
+    const N = (i) => this.num(args[i], line, file);
+    if (lib === "Math") {
+      switch (name) {
+        case "abs": { const v = N(0); return Number.isInteger(v) ? Math.abs(v) | 0 : Math.abs(v); }
+        case "max": return Math.max(N(0), N(1));
+        case "min": return Math.min(N(0), N(1));
+        case "pow": return Math.pow(N(0), N(1));
+        case "sqrt": return Math.sqrt(N(0));
+        case "floor": return Math.floor(N(0));
+        case "ceil": return Math.ceil(N(0));
+        case "round": return Math.round(N(0));
+        case "random": return Math.random();
+        default: throw new JavaRuntimeError("Error", "Math." + name + "() 은 이 실행기에서 지원하지 않습니다", line, file);
+      }
+    }
+    if (lib === "Integer") {
+      switch (name) {
+        case "parseInt": { const v = parseInt(this.str(args[0]), args.length > 1 ? N(1) : 10); if (isNaN(v)) throw new JavaRuntimeError("java.lang.NumberFormatException", 'For input string: "' + this.str(args[0]) + '"', line, file); return v | 0; }
+        case "toString": return String(Math.trunc(N(0)));
+        case "toBinaryString": return (N(0) >>> 0).toString(2);
+        case "toHexString": return (N(0) >>> 0).toString(16);
+        case "valueOf": return typeof args[0] === "string" ? parseInt(args[0], 10) | 0 : N(0) | 0;
+        case "max": return Math.max(N(0), N(1));
+        case "min": return Math.min(N(0), N(1));
+        default: throw new JavaRuntimeError("Error", "Integer." + name + "() 은 이 실행기에서 지원하지 않습니다", line, file);
+      }
+    }
+    if (lib === "String") {
+      if (name === "valueOf") return this.str(this.printable(args[0]));
+      if (name === "format") return this.format(args, line, file);
+      if (name === "join") return args.slice(1).map(a => this.str(a)).join(this.str(args[0]));
+      throw new JavaRuntimeError("Error", "String." + name + "() 은 이 실행기에서 지원하지 않습니다", line, file);
+    }
+    if (lib === "Character") {
+      const c = args[0] instanceof JChar ? args[0].code : this.num(args[0], line, file);
+      switch (name) {
+        case "isDigit": return c >= 48 && c <= 57;
+        case "isLetter": return /[A-Za-z]/.test(String.fromCharCode(c));
+        case "isWhitespace": return /\s/.test(String.fromCharCode(c));
+        case "toUpperCase": return ch(String.fromCharCode(c).toUpperCase().charCodeAt(0));
+        case "toLowerCase": return ch(String.fromCharCode(c).toLowerCase().charCodeAt(0));
+        case "toString": return String.fromCharCode(c);
+        default: throw new JavaRuntimeError("Error", "Character." + name + "() 은 이 실행기에서 지원하지 않습니다", line, file);
+      }
+    }
+    if (lib === "System") {
+      if (name === "currentTimeMillis" || name === "nanoTime") return 0;
+      if (name === "exit") throw { __exit: true };
+      if (name === "arraycopy") {
+        const src = args[0], sp = this.num(args[1], line, file), dst = args[2], dp = this.num(args[3], line, file), len = this.num(args[4], line, file);
+        if (!(src instanceof JArray) || !(dst instanceof JArray)) throw new JavaRuntimeError("Error", "arraycopy 에는 배열이 필요합니다", line, file);
+        const tmp = src.a.slice(sp, sp + len);
+        for (let i = 0; i < len; i++) dst.a[dp + i] = tmp[i];
+        return null;
+      }
+      throw new JavaRuntimeError("Error", "System." + name + "() 은 이 실행기에서 지원하지 않습니다", line, file);
+    }
+    if (lib === "Arrays") {
+      if (name === "toString") {
+        const a = args[0];
+        if (a === null) return "null";
+        return "[" + a.a.map(v => this.str(v)).join(", ") + "]";
+      }
+      if (name === "fill") { const a = args[0]; for (let i = 0; i < a.a.length; i++) a.a[i] = this.coerce(a.elem, args[1], line, file); return null; }
+      if (name === "copyOf") { const a = args[0], n2 = this.num(args[1], line, file); const d = a.a.slice(0, n2); while (d.length < n2) d.push(this.defaultOf(a.elem)); return new JArray(a.elem, d); }
+      throw new JavaRuntimeError("Error", "Arrays." + name + "() 은 이 실행기에서 지원하지 않습니다", line, file);
+    }
+    throw new JavaRuntimeError("Error", lib + "." + name + "() 은 이 실행기에서 지원하지 않습니다", line, file);
+  }
+});
+
+/* =============================== 4. 바깥 API ============================== */
+
+function baseName(file) { return (file || "").replace(/^.*[\\/]/, ""); }
+
+function run(sources, opts) {
+  opts = opts || {};
+  const I = new Interp(opts);
+  const t0 = Date.now();
+  let error = null;
+
+  try {
+    I.load(sources);
+    I.initStatics();
+    I.runMain(opts.mainClass);
+  } catch (ex) {
+    if (ex && ex.__exit) { /* System.exit : 정상 종료로 본다 */ }
+    else if (ex instanceof JavaSyntaxError) {
+      error = { kind: "syntax", text: baseName(ex.file) + ":" + ex.line + ": 오류: " + ex.message };
+    } else if (ex instanceof JavaRuntimeError) {
+      const head = ex.javaClass === "Error"
+        ? "오류: " + ex.message + "  (" + baseName(ex.file) + ":" + ex.line + ")"
+        : 'Exception in thread "main" ' + ex.javaClass + (ex.message ? ": " + ex.message : "");
+      const trace = I.stack.slice().reverse().map(f => "\tat " + f.cls + "." + (f.method === "<init>" ? "<init>" : f.method) + "(" + baseName(f.file) + ":" + f.line + ")");
+      error = { kind: "runtime", text: [head].concat(ex.javaClass === "Error" ? [] : trace).join("\n") };
+    } else if (ex instanceof JavaLimitError) {
+      error = { kind: "limit", text: "[실행 중단] " + ex.message };
+    } else {
+      error = { kind: "internal", text: "실행기 내부 오류: " + (ex && ex.message ? ex.message : String(ex)) };
+    }
+  }
+
+  return { output: I.out.join(""), error, ms: Date.now() - t0, steps: I.steps };
+}
+
+const JavaMini = { run, tokenize, Parser, Interp, version: "1.0" };
+
+if (typeof module !== "undefined" && module.exports) module.exports = JavaMini;
+global.JavaMini = JavaMini;
+
+})(typeof window !== "undefined" ? window : globalThis);
+</script>
 <script>
 /* ================= 공통: Java 메서드와 같은 로직 ================= */
 const TABLE = [
@@ -2698,6 +4059,7 @@ function go(n, push = true){
   document.querySelectorAll("#stepNav button").forEach(b => { if (+b.dataset.go === n) { b.setAttribute("aria-current","step"); revealInNav(b); } else b.removeAttribute("aria-current"); });
   if (push && location.hash !== `#step-${n}`) history.replaceState(null, "", `#step-${n}`);
   window.scrollTo(0, 0);
+  if (typeof autoRunStep === "function") autoRunStep(n);
 }
 window.addEventListener("hashchange", () => { const m = location.hash.match(/step-(\d+)/); if (m) go(+m[1], false); });
 
@@ -3087,7 +4449,7 @@ function clockLab(p, mode){
   const log = $(`${p}log`);
   const addLog = (t, cls) => { const l = el("div"); l.textContent = t; if (cls) l.className = cls; log.appendChild(l); while (log.childNodes.length > 150) log.removeChild(log.firstChild); log.scrollTop = log.scrollHeight; };
 
-  // DigitalClock 과 같은 연결
+  // Main.java 와 같은 연결
   function build(h, m, s, pm){
     c = { h10:new JTTL7490(0,1,0), h1:new JTTL7490(0,0,1), m10:new JTTL7490(), m1:new JTTL7490(), s10:new JTTL7490(), s1:new JTTL7490(), pm:false, was11:false };
     c.h10.setNum(Math.floor(h/10)); c.h1.setNum(h%10); c.m10.setNum(Math.floor(m/10)); c.m1.setNum(m%10); c.s10.setNum(Math.floor(s/10)); c.s1.setNum(s%10); c.pm = pm;
@@ -3169,7 +4531,185 @@ function clockLab(p, mode){
 
 /* ================= 시작 ================= */
 document.querySelectorAll("svg.fnd[data-digit]").forEach(s => renderFnd(s, TABLE[+s.dataset.digit]));
+/* ================= 코드 실행기 (javamini.js 를 사용) ================= */
+const JFILES = new Map();     // "TTL7490.java" -> { text, original, editors: [] }
+const ID2NAME = new Map();    // 원문 블록 id -> 파일 이름
+const FILE_USERS = new Map(); // 파일 이름 -> 그 파일을 쓰는 실행 블록들
+const RUN_LIMITS = { maxOutput: 160000, timeLimitMs: 4000, maxSteps: 30000000 };
+
+/* 코드가 바뀌면, 그 파일로 돌아가는 실행 결과에 '다시 실행' 표시를 남긴다 */
+function markStale(fileName, except){
+  (FILE_USERS.get(fileName) || []).forEach(box => {
+    if (box !== except && box.__ran && box.__stale) box.__stale();
+  });
+}
+
+function srcText(id){ const s = $(id); return s ? s.textContent.replace(/^\n/, "") : ""; }
+
+function jfile(name, id){
+  if (!JFILES.has(name)){ const t = srcText(id); JFILES.set(name, { text: t, original: t, editors: [] }); }
+  return JFILES.get(name);
+}
+
+function paint(codeEl, text){
+  codeEl.textContent = text + (text.endsWith("\n") ? " " : "");
+  if (window.Prism && Prism.highlightElement){ try { Prism.highlightElement(codeEl); } catch(e){} }
+}
+
+/* 뒤쪽 <pre> 에 색을 입히고, 그 위에 투명한 textarea 를 겹쳐 편집한다 */
+function makeEditor(name, f){
+  const ed = el("div", {class:"ed"});
+  const pre = el("pre", {"aria-hidden":"true"});
+  const code = el("code", {class:"language-java"});
+  pre.appendChild(code);
+  const ta = el("textarea", {spellcheck:"false", autocomplete:"off", autocorrect:"off", autocapitalize:"off", "aria-label": name + " 코드 편집"});
+  ta.value = f.text;
+  paint(code, f.text);
+
+  const me = { ta, code };
+  f.editors.push(me);
+  const sync = () => { pre.scrollTop = ta.scrollTop; pre.scrollLeft = ta.scrollLeft; };
+  let timer = 0;
+  ta.addEventListener("input", () => {
+    f.text = ta.value;
+    clearTimeout(timer);
+    timer = setTimeout(() => {
+      paint(code, f.text); sync();
+      f.editors.forEach(o => { if (o !== me && o.ta.value !== f.text){ o.ta.value = f.text; paint(o.code, f.text); } });
+      markStale(name);
+    }, 120);
+  });
+  ta.addEventListener("scroll", sync);
+  ta.addEventListener("keydown", (e) => {
+    if (e.key === "Tab"){
+      e.preventDefault();
+      const a = ta.selectionStart, b = ta.selectionEnd;
+      ta.value = ta.value.slice(0, a) + "    " + ta.value.slice(b);
+      ta.selectionStart = ta.selectionEnd = a + 4;
+      ta.dispatchEvent(new Event("input"));
+    }
+    if (e.key === "Enter" && (e.ctrlKey || e.metaKey)){
+      e.preventDefault();
+      const box = ta.closest(".runner");
+      if (box && box.__run) box.__run();
+    }
+  });
+  ed.append(pre, ta);
+  return { ed, me, repaint: () => { ta.value = f.text; paint(code, f.text); } };
+}
+
+function capOf(title, extra){
+  const cap = el("div", {class:"cap"});
+  const nm = el("span", {class:"nm"}); nm.textContent = title;
+  const tools = el("span", {class:"tools"});
+  cap.append(nm, tools);
+  return { cap, tools };
+}
+
+function buildRunners(){
+  const boxes = [...document.querySelectorAll(".runner, .srcfile")];
+  boxes.forEach(box => ID2NAME.set(box.dataset.src, box.dataset.name));
+
+  boxes.forEach(box => {
+    const name = box.dataset.name;
+    const f = jfile(name, box.dataset.src);
+    const isRunner = box.classList.contains("runner");
+
+    /* ---- 왼쪽 : 코드 (고쳐서 실행할 수 있다) ---- */
+    const codePane = el("div", {class:"pane code-pane"});
+    const { cap, tools } = capOf(name);
+    if (box.dataset.file){
+      const a = el("a", {href: box.dataset.file, target:"_blank", rel:"noopener"}); a.textContent = "전체 파일";
+      tools.appendChild(a);
+    }
+    const copyBtn = el("button", {type:"button"}); copyBtn.textContent = "복사";
+    const undoBtn = el("button", {type:"button", title:"처음 코드로 되돌립니다"}); undoBtn.textContent = "되돌리기";
+    tools.append(copyBtn, undoBtn);
+    const editor = makeEditor(name, f);
+    codePane.append(cap, editor.ed);
+
+    copyBtn.onclick = async () => {
+      try { await navigator.clipboard.writeText(f.text); copyBtn.textContent = "복사됨"; }
+      catch(e){ copyBtn.textContent = "직접 선택해 복사하세요"; }
+      setTimeout(() => copyBtn.textContent = "복사", 1600);
+    };
+    undoBtn.onclick = () => {
+      f.text = f.original;
+      f.editors.forEach(o => { o.ta.value = f.text; paint(o.code, f.text); });
+      markStale(name, box);
+      if (box.__run && box.__ran) box.__run();
+    };
+
+    if (!isRunner){                                    // main 이 없는 클래스 파일
+      const note = el("div", {class:"runner-note"});
+      note.textContent = "이 파일에는 main 이 없습니다. 아래 프로그램을 실행할 때 함께 컴파일됩니다.";
+      codePane.appendChild(note);
+      box.appendChild(codePane);
+      return;
+    }
+
+    /* ---- 오른쪽 : 실행 결과 ---- */
+    const outPane = el("div", {class:"pane out-pane"});
+    const oc = capOf("실행 결과");
+    const meta = el("span", {class:"meta"});
+    const runBtn = el("button", {type:"button", class:"run", title:"Ctrl + Enter"}); runBtn.textContent = "▶ 실행";
+    oc.tools.append(meta, runBtn);
+    const outPre = el("pre", {tabindex:"0", "aria-live":"polite"});
+    outPre.appendChild(el("span", {class:"dim"}, "▶ 실행 을 누르면 이 자리에 결과가 나옵니다."));
+    outPane.append(oc.cap, outPre);
+
+    const deps = (box.dataset.deps || "").split(/\s+/).filter(Boolean);
+    [...deps.map(id => ID2NAME.get(id)), name].forEach(fn => {
+      if (!FILE_USERS.has(fn)) FILE_USERS.set(fn, []);
+      FILE_USERS.get(fn).push(box);
+    });
+    box.__stale = () => { outPane.classList.add("stale"); meta.textContent = "코드가 바뀜 — 다시 실행"; };
+
+    const run = () => {
+      runBtn.disabled = true; runBtn.textContent = "실행 중…";
+      outPane.classList.remove("stale");
+      meta.textContent = "";
+      setTimeout(() => {
+        let r;
+        try {
+          if (!window.JavaMini) throw new Error("javamini.js 를 불러오지 못했습니다");
+          const sources = deps.map(id => ({ name: ID2NAME.get(id), code: JFILES.get(ID2NAME.get(id)).text }));
+          sources.push({ name, code: f.text });
+          r = JavaMini.run(sources, Object.assign({ mainClass: box.dataset.main }, RUN_LIMITS));
+        } catch (err){
+          r = { output: "", error: { kind: "internal", text: String(err && err.message || err) }, ms: 0 };
+        }
+        outPre.textContent = "";
+        if (r.output) outPre.appendChild(document.createTextNode(r.output));
+        if (r.error){
+          const s = el("span", {class:"err"});
+          s.textContent = (r.output && !r.output.endsWith("\n") ? "\n" : "") + r.error.text + "\n";
+          outPre.appendChild(s);
+        }
+        if (!r.output && !r.error) outPre.appendChild(el("span", {class:"dim"}, "(출력 없음)"));
+        const lines = r.output ? r.output.replace(/\n$/, "").split("\n").length : 0;
+        meta.textContent = r.ms + "ms · " + lines.toLocaleString() + "줄";
+        outPre.scrollTop = 0;
+        runBtn.disabled = false; runBtn.textContent = "▶ 실행";
+      }, 16);
+    };
+    box.__run = run;
+    runBtn.onclick = run;
+
+    box.append(codePane, outPane);
+  });
+}
+
+/* 단계를 처음 열 때 한 번 자동 실행 */
+function autoRunStep(n){
+  const sec = sections[n]; if (!sec) return;
+  sec.querySelectorAll(".runner").forEach(box => {
+    if (!box.__ran && box.__run){ box.__ran = true; box.__run(); }
+  });
+}
+
 buildCode();
+buildRunners();
 buildNav();
 [lab1, lab2, lab3, lab4, lab5, lab6, lab7, () => counterLab("l8", false), () => counterLab("l9", true), lab11, lab13, () => clockLab("l15", "ss"), () => clockLab("l16", "mmss"), () => clockLab("l17", "hhmmss")].forEach(f => { try { f(); } catch(e){ console.error(e); } });
 const start = location.hash.match(/step-(\d+)/);

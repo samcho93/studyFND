@@ -80,8 +80,11 @@ public class Step5 {
     }
 
     public static void main(String[] args) {
-        for (int n = 0; n <= 9999; n++) {
+        for (int n = 0; n <= 12; n++) {     // 0 ~ 12
             dispNum4(n);
         }
+
+        dispNum4(4567);                     // 네 자리 확인
+        dispNum4(9999);
     }
 }
