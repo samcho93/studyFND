@@ -128,12 +128,13 @@ main{grid-column:2;grid-row:1;min-width:0;overflow:auto;padding-block:36px 64px;
 .cons .err{color:#FF9BA6}
 .cons .dim{color:var(--term-dim)}
 
-.ed{position:relative;flex:1;min-height:0;overflow:hidden}
+.ed{flex:1;min-height:0;overflow:auto}
 .ed[hidden]{display:none}
-.ed pre,.ed textarea{margin:0;padding:12px 14px;font-family:var(--font-mono);font-size:13px;line-height:1.55;tab-size:4;white-space:pre;border:0}
-.ed pre{overflow:hidden;color:var(--term-ink);min-height:100%}
-.ed pre code{background:none;padding:0;font-size:inherit;color:inherit}
-.ed textarea{position:absolute;inset:0;width:100%;height:100%;overflow:auto;background:transparent;color:transparent;caret-color:var(--term-ink);resize:none;outline:none;display:block}
+.ed-in{position:relative;width:max-content;min-width:100%;min-height:100%}
+.ed pre,.ed textarea{margin:0;padding:12px 14px;font-family:var(--font-mono);font-size:13px;line-height:1.55;tab-size:4;white-space:pre;border:0;letter-spacing:normal}
+.ed pre{color:var(--term-ink);overflow:visible}
+.ed pre code{display:block;background:none;padding:0;font-size:inherit;color:inherit}
+.ed textarea{position:absolute;inset:0;width:100%;height:100%;overflow:hidden;background:transparent;color:transparent;caret-color:var(--term-ink);resize:none;outline:none;display:block}
 .ed textarea::selection{background:rgba(61,181,171,.35);color:transparent}
 .ed textarea:focus-visible{outline:2px solid var(--pcb);outline-offset:-2px}
 .edit .empty{padding:16px;color:var(--term-dim);font-family:var(--font-mono);font-size:12.5px}
@@ -349,7 +350,7 @@ details.q .a{padding:10px 14px 12px;font-size:15px}
     <li>각 단계의 코드는 <code>StepN.java</code> 하나로 완결되어 있어 복사해서 바로 실행할 수 있습니다.</li>
     <li>모든 메서드는 <code>static</code>입니다. 클래스로 나누는 작업은 다음 강좌에서 다룹니다.</li>
   </ul>
-  <div class="note"><b>화면 보는 법.</b> 왼쪽은 <b>단계 목록</b>, 가운데는 <b>강좌 내용</b>, 오른쪽은 <b>실행 결과</b>입니다. 화면 아래쪽에는 <b>자바 에디터</b>가 있습니다. 단계를 열면 그 단계의 자바 파일이 에디터에 올라오고 한 번 실행되어 오른쪽에 결과가 나옵니다.
+  <div class="note"><b>화면 보는 법.</b> 왼쪽은 <b>단계 목록</b>, 가운데는 <b>강좌 내용</b>, 오른쪽은 <b>실행 결과</b>입니다. 화면 아래쪽에는 <b>자바 에디터</b>가 있습니다. 단계를 열면 그 단계의 자바 파일이 에디터에 올라옵니다. <b>▶ 실행</b>을 누르면 그때 오른쪽에 결과가 나옵니다.
     <ul style="margin:8px 0 0">
       <li>코드를 고친 뒤 <b>▶ 실행</b>(또는 <kbd>Ctrl</kbd> + <kbd>Enter</kbd>)을 누르면 결과가 새로 나옵니다. 고치기만 하고 실행하지 않으면 결과 칸이 흐려지며 알려 줍니다.</li>
       <li>파일이 여러 개인 단계는 에디터 위쪽 <b>탭</b>으로 오갑니다. <code>TTL7490.java</code>처럼 <i>함께 컴파일</i>이라고 적힌 파일을 고치면 그 클래스를 쓰는 프로그램에 바로 반영됩니다.</li>
@@ -1334,7 +1335,7 @@ java Main</pre></div>
 
   <section class="cons" id="consPane" aria-label="실행 결과">
     <div class="bar"><span class="nm" id="outTitle">실행 결과</span><span class="sp"></span><span class="meta" id="outMeta"></span></div>
-    <pre id="outPre" tabindex="0" aria-live="polite"><span class="dim">단계를 열면 그 단계의 프로그램이 아래 에디터에 올라오고, 실행 결과가 여기에 나옵니다.</span></pre>
+    <pre id="outPre" tabindex="0" aria-live="polite"><span class="dim">단계를 열면 그 단계의 프로그램이 아래 에디터에 올라옵니다. <b>▶ 실행</b>(Ctrl + Enter)을 누르면 결과가 여기에 나옵니다.</span></pre>
   </section>
 
   <div class="split h" id="splitH" role="separator" aria-orientation="horizontal" aria-label="에디터 높이 조절" tabindex="-1"></div>
@@ -4591,7 +4592,6 @@ const PROGRAMS = new Map();   // 프로그램 id -> { id, name, main, deps:[이�
 const FILE_PROGS = new Map(); // 파일 이름 -> 그 파일을 쓰는 프로그램들
 const RUN_LIMITS = { maxOutput: 160000, timeLimitMs: 4000, maxSteps: 30000000 };
 let CURRENT = null;           // 지금 하단 에디터에 올라온 프로그램
-let ranOnce = new Set();      // 자동 실행을 이미 한 프로그램
 
 function srcText(id){ const s = $(id); return s ? s.textContent.replace(/^\n/, "") : ""; }
 
@@ -4659,7 +4659,7 @@ function buildCards(){
     open.onclick = () => {
       const sec = card.closest("section.step");
       const runnerId = [...PROGRAMS.values()].filter(p => p.step === +sec.dataset.n)[0];
-      if (runnerId) openProgram(runnerId, name, true);
+      if (runnerId) openProgram(runnerId, name);
       if (window.innerWidth <= 1100) $("edPane").scrollIntoView({ block: "nearest" });
     };
   });
@@ -4670,21 +4670,20 @@ function editorFor(name){
   const f = JFILES.get(name);
   if (f.host) return f.host;
   const ed = el("div", { class: "ed", hidden: "" });
+  const inner = el("div", { class: "ed-in" });
   const pre = el("pre", { "aria-hidden": "true" });
   const code = el("code", { class: "language-java" });
   pre.appendChild(code);
-  const ta = el("textarea", { spellcheck: "false", autocomplete: "off", autocorrect: "off", autocapitalize: "off", "aria-label": name + " 코드 편집" });
+  const ta = el("textarea", { spellcheck: "false", autocomplete: "off", autocorrect: "off", autocapitalize: "off", wrap: "off", "aria-label": name + " 코드 편집" });
   ta.value = f.text; paint(code, f.text);
   f.editors.push({ ta, code });
 
-  const sync = () => { pre.scrollTop = ta.scrollTop; pre.scrollLeft = ta.scrollLeft; };
   let timer = 0;
   ta.addEventListener("input", () => {
     f.text = ta.value;
     clearTimeout(timer);
-    timer = setTimeout(() => { paint(code, f.text); sync(); fileChanged(name, ta); }, 120);
+    timer = setTimeout(() => { paint(code, f.text); fileChanged(name, ta); }, 120);
   });
-  ta.addEventListener("scroll", sync);
   ta.addEventListener("keydown", (e) => {
     if (e.key === "Tab"){
       e.preventDefault();
@@ -4695,7 +4694,8 @@ function editorFor(name){
     }
     if (e.key === "Enter" && (e.ctrlKey || e.metaKey)){ e.preventDefault(); runCurrent(); }
   });
-  ed.append(pre, ta);
+  inner.append(pre, ta);
+  ed.appendChild(inner);
   $("edHost").appendChild(ed);
   f.host = ed;
   return ed;
@@ -4710,9 +4710,10 @@ function showFile(name){
   document.querySelectorAll(".card").forEach(c => c.classList.toggle("open", c.dataset.file === name && !c.closest("section.step").hidden));
 }
 
-function openProgram(prog, focusName, run){
+function openProgram(prog, focusName){
   const changed = !CURRENT || CURRENT.id !== prog.id;
   CURRENT = prog;
+  if (changed) clearConsole(prog);
   if (changed){
     const tabs = $("edTabs"); tabs.innerHTML = "";
     [prog.name].concat(prog.deps).forEach(fn => {
@@ -4727,10 +4728,18 @@ function openProgram(prog, focusName, run){
   showFile(focusName || prog.name);
   $("edEmpty").hidden = true;
   $("edRun").disabled = false; $("edUndo").disabled = false; $("edCopy").disabled = false;
-  if (run || !ranOnce.has(prog.id)){ ranOnce.add(prog.id); runCurrent(); }
 }
 
 /* ---------------- 오른쪽 : 실행 결과 ---------------- */
+function clearConsole(prog){
+  const cons = $("consPane");
+  cons.classList.remove("stale"); cons.dataset.ran = "";
+  $("outTitle").textContent = "실행 결과" + (prog ? " · " + prog.name : "");
+  $("outMeta").textContent = "";
+  const pre = $("outPre"); pre.textContent = "";
+  pre.appendChild(el("span", { class: "dim" }, "아래 에디터에서 <b>▶ 실행</b>(Ctrl + Enter)을 누르면 결과가 여기에 나옵니다."));
+}
+
 function markStale(){
   const c = $("consPane");
   if (c.dataset.ran === "1"){ c.classList.add("stale"); $("outMeta").textContent = "코드가 바뀜 — 다시 실행"; }
@@ -4827,7 +4836,6 @@ function initIDE(){
     f.text = f.original;
     f.editors.forEach(o => { o.ta.value = f.text; paint(o.code, f.text); });
     fileChanged(name);
-    runCurrent();
   };
   $("edCopy").onclick = async () => {
     if (!CURRENT) return;
