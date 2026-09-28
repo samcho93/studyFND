@@ -41,8 +41,6 @@ code{font-family:var(--font-mono);font-size:.88em;background:var(--sunken);paddi
 :focus-visible{outline:2px solid var(--pcb);outline-offset:2px}
 
 /* ---------- layout ---------- */
-.app{display:grid;grid-template-columns:clamp(200px,24vw,272px) minmax(0,1fr);align-items:start;min-height:100vh}
-.side{position:sticky;top:env(safe-area-inset-top,0px);height:100vh;max-height:100dvh;overflow:auto;border-right:1px solid var(--rule);background:var(--surface);padding:24px 16px}
 .brand{display:flex;gap:10px;align-items:center;padding:0 8px 18px;border-bottom:1px solid var(--rule);margin-bottom:14px}
 .brand b{font-size:15px;line-height:1.3;display:block}
 .brand small{color:var(--muted);font-size:12px}
@@ -53,7 +51,6 @@ code{font-family:var(--font-mono);font-size:.88em;background:var(--sunken);paddi
 .steps button[aria-current="step"] .t{font-weight:600}
 .steps .t small{display:block;color:var(--muted);font-family:var(--font-mono);font-size:11px}
 
-main{min-width:0;padding-block:40px 80px;padding-inline:clamp(16px,5vw,64px)}
 .page{max-width:820px;margin:0 auto}
 .step[hidden]{display:none}
 .eyebrow{font-family:var(--font-mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--pcb);font-weight:600}
@@ -91,45 +88,72 @@ table.data tr.hit td{background:var(--pcb-soft);font-weight:600}
 .token.function{color:var(--tok-fn)}
 .token.operator,.token.punctuation{color:#AEBBC8}
 
-/* ---------- 코드 실행기 ---------- */
-.runner{margin:16px 0;display:grid;grid-template-columns:minmax(0,1fr);gap:12px;align-items:start}
-.srcfile{margin:16px 0}
-.pane{background:var(--term);border:1px solid var(--term-rule);border-radius:var(--radius);min-width:0;overflow:hidden}
-.pane .cap{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:6px 10px;border-bottom:1px solid var(--term-rule);font-family:var(--font-mono);font-size:12px;color:var(--term-dim)}
-.pane .cap .nm{color:var(--term-ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.pane .cap .tools{display:flex;gap:6px;align-items:center;flex:none}
-.pane .cap a{color:inherit;font-size:12px;text-decoration:none;border-bottom:1px dotted var(--term-rule)}
-.pane .cap button{all:unset;cursor:pointer;color:var(--term-ink);font-size:12px;padding:2px 9px;border:1px solid var(--term-rule);border-radius:4px;white-space:nowrap}
-.pane .cap button:hover{border-color:var(--pcb)}
-.pane .cap button:focus-visible{outline:2px solid var(--pcb);outline-offset:1px}
-.pane .cap button.run{background:var(--pcb);border-color:var(--pcb);color:#fff;font-weight:600}
-.pane .cap button.run[disabled]{opacity:.55;cursor:default}
-.pane .cap .meta{color:var(--term-dim);font-size:11.5px;white-space:nowrap}
+/* ---------- 3분할 화면 : 메뉴 | 강좌 | 실행 결과 + 하단 에디터 ---------- */
+.app{
+  --nav:clamp(200px,20vw,264px); --out:clamp(300px,26vw,520px); --edh:min(46vh,340px);
+  display:grid;
+  grid-template-columns:var(--nav) minmax(0,1fr) 6px var(--out);
+  grid-template-rows:minmax(0,1fr) 6px var(--edh);
+  height:100vh;height:100dvh;overflow:hidden}
+.side{grid-column:1;grid-row:1 / span 3;min-width:0;overflow:auto;border-right:1px solid var(--rule);background:var(--surface);padding:24px 16px}
+main{grid-column:2;grid-row:1;min-width:0;overflow:auto;padding-block:36px 64px;padding-inline:clamp(16px,3vw,44px)}
+.split{background:var(--rule);border:0;padding:0;position:relative;touch-action:none}
+.split::after{content:"";position:absolute;inset:0;background:var(--pcb);opacity:0;transition:opacity .15s}
+.split:hover::after,.split.dragging::after{opacity:.85}
+.split.v{grid-column:3;grid-row:1;cursor:col-resize}
+.split.h{grid-column:2 / span 3;grid-row:2;cursor:row-resize}
+.cons{grid-column:4;grid-row:1;display:flex;flex-direction:column;min-width:0;overflow:hidden;background:var(--term)}
+.edit{grid-column:2 / span 3;grid-row:3;display:flex;flex-direction:column;min-height:0;overflow:hidden;background:var(--term);border-top:1px solid var(--rule)}
 
-.ed{position:relative;max-height:min(58vh,440px);overflow:hidden}
+.bar{display:flex;align-items:center;gap:10px;padding:6px 10px;border-bottom:1px solid var(--term-rule);font-family:var(--font-mono);font-size:12px;color:var(--term-dim);flex:none;min-height:36px}
+.bar .nm{color:var(--term-ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bar .sp{margin-left:auto}
+.bar .meta{color:var(--term-dim);font-size:11.5px;white-space:nowrap}
+.bar button{all:unset;cursor:pointer;color:var(--term-ink);font-size:12px;padding:3px 10px;border:1px solid var(--term-rule);border-radius:4px;white-space:nowrap}
+.bar button:hover{border-color:var(--pcb)}
+.bar button:focus-visible{outline:2px solid var(--pcb);outline-offset:1px}
+.bar button.run{background:var(--pcb);border-color:var(--pcb);color:#fff;font-weight:600}
+.bar button.run[disabled]{opacity:.55;cursor:default}
+.bar .hint{color:var(--term-dim);font-size:11px}
+
+.tabs{display:flex;gap:2px;overflow-x:auto;min-width:0;flex:1}
+.tabs button{all:unset;cursor:pointer;padding:4px 10px;border-radius:5px 5px 0 0;font-family:var(--font-mono);font-size:12px;color:var(--term-dim);white-space:nowrap;border:1px solid transparent;border-bottom:0}
+.tabs button:hover{color:var(--term-ink)}
+.tabs button[aria-selected="true"]{background:var(--term-rule);color:var(--term-ink);font-weight:600}
+.tabs button small{opacity:.6;margin-left:6px}
+
+.cons pre{margin:0;padding:12px 14px;flex:1;overflow:auto;color:var(--term-ink);font-family:var(--font-mono);font-size:12.5px;line-height:1.5;white-space:pre;tab-size:4}
+.cons.stale pre{opacity:.4}
+.cons.stale .meta{color:var(--tok-str)}
+.cons .err{color:#FF9BA6}
+.cons .dim{color:var(--term-dim)}
+
+.ed{position:relative;flex:1;min-height:0;overflow:hidden}
+.ed[hidden]{display:none}
 .ed pre,.ed textarea{margin:0;padding:12px 14px;font-family:var(--font-mono);font-size:13px;line-height:1.55;tab-size:4;white-space:pre;border:0}
 .ed pre{overflow:hidden;color:var(--term-ink);min-height:100%}
 .ed pre code{background:none;padding:0;font-size:inherit;color:inherit}
 .ed textarea{position:absolute;inset:0;width:100%;height:100%;overflow:auto;background:transparent;color:transparent;caret-color:var(--term-ink);resize:none;outline:none;display:block}
 .ed textarea::selection{background:rgba(61,181,171,.35);color:transparent}
 .ed textarea:focus-visible{outline:2px solid var(--pcb);outline-offset:-2px}
-.srcfile .ed{max-height:min(52vh,380px)}
+.edit .empty{padding:16px;color:var(--term-dim);font-family:var(--font-mono);font-size:12.5px}
 
-.out-pane pre{margin:0;padding:12px 14px;max-height:min(58vh,440px);overflow:auto;color:var(--term-ink);font-family:var(--font-mono);font-size:12.5px;line-height:1.5;white-space:pre;tab-size:4}
-.out-pane.stale pre{opacity:.45}
-.out-pane.stale .meta{color:var(--tok-str)}
-.out-pane .err{color:#FF9BA6}
-.out-pane .dim{color:var(--term-dim)}
-.runner-note{font-family:var(--font-mono);font-size:12px;color:var(--term-dim);padding:10px 12px;border-top:1px solid var(--term-rule)}
+/* 강좌 본문 안의 코드 보기 (편집은 아래 에디터에서) */
+.card{margin:16px 0;background:var(--term);border:1px solid var(--term-rule);border-radius:var(--radius);overflow:hidden}
+.card.open{border-color:var(--pcb)}
+.card .bar{border-bottom:1px solid var(--term-rule)}
+.card pre{margin:0;padding:12px 14px;max-height:360px;overflow:auto;font-family:var(--font-mono);font-size:13px;line-height:1.55;color:var(--term-ink);tab-size:4}
+.card pre code{background:none;padding:0;font-size:inherit;color:inherit}
+.card .open-badge{color:var(--pcb);font-size:11.5px;white-space:nowrap}
 
-@media (min-width:1300px){
-  .runner{grid-template-columns:minmax(0,1.02fr) minmax(0,.98fr);
-    width:min(1180px, calc(100vw - clamp(200px,24vw,272px) - 2*clamp(16px,5vw,64px)));
-    margin-left:50%;transform:translateX(-50%)}
-}
-@media (max-width:640px){
-  .ed,.out-pane pre{max-height:320px}
-  .pane .cap{flex-wrap:wrap}
+@media (max-width:1100px){
+  .app{display:flex;flex-direction:column;height:auto;min-height:100vh;overflow:visible}
+  .side{order:1;position:sticky;top:0;z-index:5;height:auto;max-height:42vh;border-right:0;border-bottom:1px solid var(--rule)}
+  main{order:2;overflow:visible;padding-inline:clamp(16px,4vw,40px)}
+  .split{display:none}
+  .edit{order:3;height:min(60vh,420px);border:1px solid var(--rule);border-radius:var(--radius);margin:0 clamp(16px,4vw,40px)}
+  .cons{order:4;height:min(52vh,380px);border:1px solid var(--rule);border-radius:var(--radius);margin:14px clamp(16px,4vw,40px) 40px}
+  .card pre{max-height:300px}
 }
 
 /* ---------- lab (interactive) ---------- */
@@ -250,21 +274,19 @@ details.q .a{padding:10px 14px 12px;font-size:15px}
 .task li{counter-increment:t;position:relative;padding-left:34px;margin:8px 0}
 .task li::before{content:counter(t);position:absolute;left:0;top:2px;width:22px;height:22px;border-radius:50%;background:var(--sunken);font:600 12px/22px var(--font-mono);text-align:center}
 
-@media (min-width:641px) and (max-width:1000px){
+@media (min-width:641px) and (max-width:1100px){
   .side{padding:18px 10px}
   .steps button{grid-template-columns:20px 1fr;gap:8px;font-size:13px}
   .steps .t small{display:none}
-  main{padding-inline:clamp(16px,3vw,32px)}
 }
 @media (max-width:640px){
-  .app{grid-template-columns:minmax(0,1fr)}
-  .side{min-width:0;position:sticky;top:env(safe-area-inset-top,0px);z-index:5;height:auto;border-right:0;border-bottom:1px solid var(--rule);padding:10px 16px}
+  .side{max-height:none;position:sticky;top:env(safe-area-inset-top,0px);z-index:5;height:auto;border-right:0;border-bottom:1px solid var(--rule);padding:10px 16px}
   .brand{display:none}
   .steps{flex-direction:row;overflow-x:auto;gap:4px}
   .steps button{grid-template-columns:22px auto;width:auto;white-space:nowrap;padding:6px 10px}
   .steps .t small{display:none}
   .steps .grp{padding:0 4px 0 10px;align-self:center;white-space:nowrap}
-  main{padding-block:24px 64px}
+  main{padding-block:24px 48px}
 }
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 </style>
@@ -327,7 +349,14 @@ details.q .a{padding:10px 14px 12px;font-size:15px}
     <li>각 단계의 코드는 <code>StepN.java</code> 하나로 완결되어 있어 복사해서 바로 실행할 수 있습니다.</li>
     <li>모든 메서드는 <code>static</code>입니다. 클래스로 나누는 작업은 다음 강좌에서 다룹니다.</li>
   </ul>
-  <div class="note"><b>페이지 안에서 바로 실행됩니다.</b> 이 강좌의 코드 상자는 모두 <b>고쳐서 실행</b>할 수 있습니다. 코드를 바꾸고 <b>▶ 실행</b>(또는 <kbd>Ctrl</kbd> + <kbd>Enter</kbd>)을 누르면 오른쪽에 결과가 나옵니다. 브라우저 안에 들어 있는 작은 Java 해석기가 돌리는 것이라 Java를 설치하지 않아도 되고, 이 강좌의 16개 프로그램은 모두 실제 JDK 17의 <code>javac</code> · <code>java</code> 결과와 한 글자까지 같은지 대조했습니다.</div>
+  <div class="note"><b>화면 보는 법.</b> 왼쪽은 <b>단계 목록</b>, 가운데는 <b>강좌 내용</b>, 오른쪽은 <b>실행 결과</b>입니다. 화면 아래쪽에는 <b>자바 에디터</b>가 있습니다. 단계를 열면 그 단계의 자바 파일이 에디터에 올라오고 한 번 실행되어 오른쪽에 결과가 나옵니다.
+    <ul style="margin:8px 0 0">
+      <li>코드를 고친 뒤 <b>▶ 실행</b>(또는 <kbd>Ctrl</kbd> + <kbd>Enter</kbd>)을 누르면 결과가 새로 나옵니다. 고치기만 하고 실행하지 않으면 결과 칸이 흐려지며 알려 줍니다.</li>
+      <li>파일이 여러 개인 단계는 에디터 위쪽 <b>탭</b>으로 오갑니다. <code>TTL7490.java</code>처럼 <i>함께 컴파일</i>이라고 적힌 파일을 고치면 그 클래스를 쓰는 프로그램에 바로 반영됩니다.</li>
+      <li>가운데 코드 상자의 <b>에디터에서 열기</b>를 누르면 그 파일이 아래 에디터에 올라옵니다. <b>되돌리기</b>는 원래 코드로 돌립니다.</li>
+      <li>칸 사이의 선을 <b>끌어서</b> 결과 칸의 너비와 에디터 높이를 바꿀 수 있습니다.</li>
+    </ul>
+    Java를 설치하지 않아도 되도록 브라우저 안의 작은 Java 해석기가 돌립니다. 이 강좌의 16개 프로그램은 모두 실제 JDK 17의 <code>javac</code> · <code>java</code> 결과와 한 글자까지 같은지 대조했습니다.</div>
   <div class="code out"><div class="cap"><span>내 컴퓨터에서 실행하려면</span></div><pre>javac -encoding UTF-8 Step1.java
 java Step1</pre></div>
 </section>
@@ -539,7 +568,7 @@ java Step1</pre></div>
   <div class="runner" data-src="src5" data-name="Step5.java" data-file="steps/Step5.java" data-main="Step5"></div>
   <p><code>char[][][] fnds = new char[4][][];</code>는 "5×5 배열 4개를 담을 칸"만 만듭니다. 실제 5×5 배열은 <code>digit()</code>이 만들어 반환하므로 뒤의 크기는 비워 둡니다.</p>
 
-  <div class="note"><b>출력량 주의.</b> <code>dispNum4</code>는 0 ~ 9999 어떤 값도 그릴 수 있지만, 전부 찍으면 60,000줄이 됩니다. 그래서 <code>main</code>은 0 ~ 12와 4567, 9999만 출력합니다. 위 코드의 반복 범위를 직접 늘려 실행해 보세요. 출력이 너무 많으면 실행기가 중간에 멈추고 알려 줍니다.</div>
+  <div class="note"><b>출력량 주의.</b> <code>dispNum4</code>는 0 ~ 9999 어떤 값도 그릴 수 있지만, 전부 찍으면 60,000줄이 됩니다. 그래서 <code>main</code>은 0 ~ 12와 4567, 9999만 출력합니다. 아래 에디터에서 반복 범위를 직접 늘려 실행해 보세요. 출력이 너무 많으면 실행기가 중간에 멈추고 알려 줍니다.</div>
 
   <h2>확인 문제</h2>
   <details class="q"><summary>num = 507 일 때 splitDigits의 결과는?</summary><div class="a"><code>{0,5,0,7}</code> — 507/1000 = 0, 507/100 = 5, 507/10 %10 = 0, 507 %10 = 7.</div></details>
@@ -975,7 +1004,7 @@ java Main</pre></div>
   <div class="runner" data-src="ct7490" data-name="Test7490.java" data-file="classes/Test7490.java" data-main="Test7490" data-deps="c7490"></div>
   <p>a에만 클럭을 넣었으므로 b는 처음 값 2를 그대로 유지하고, b를 리셋해도 a는 영향을 받지 않습니다. <code>TTL7490</code>에는 값을 읽는 <code>getNum()</code>이 없어서, 테스트 쪽에서 출력 4비트를 8·4·2·1로 더하는 <code>val()</code>을 두었습니다.</p>
 
-  <div class="note"><b>더 다듬어 볼 곳.</b> 필드에 <code>private</code>을 붙이면 <code>a.num = 5;</code> 같은 코드를 컴파일 단계에서 막을 수 있습니다. <code>setNum(int n)</code>에 <code>n % 10</code>을 붙이면 10 이상이 들어와도 0 ~ 9로 유지되고, <code>getNum()</code>을 추가하면 테스트에서 값을 바로 확인할 수 있습니다. 위 코드를 고쳐 실행해 보세요.</div>
+  <div class="note"><b>더 다듬어 볼 곳.</b> 필드에 <code>private</code>을 붙이면 <code>a.num = 5;</code> 같은 코드를 컴파일 단계에서 막을 수 있습니다. <code>setNum(int n)</code>에 <code>n % 10</code>을 붙이면 10 이상이 들어와도 0 ~ 9로 유지되고, <code>getNum()</code>을 추가하면 테스트에서 값을 바로 확인할 수 있습니다. 아래 에디터의 <code>TTL7490.java</code> 탭에서 고쳐 실행해 보세요.</div>
 
   <h2>확인 문제</h2>
   <details class="q"><summary><code>TTL7490 b = a;</code> 로 만들고 <code>b.setClock()</code>을 부르면 a는?</summary><div class="a">a도 바뀝니다. <code>new</code>를 쓰지 않았으므로 b는 새 칩이 아니라 <b>같은 객체</b>를 가리키는 또 하나의 이름입니다.</div></details>
@@ -1014,7 +1043,7 @@ java Main</pre></div>
   <div class="runner" data-src="ct7446" data-name="Test7446.java" data-file="classes/Test7446.java" data-main="Test7446" data-deps="c7490 c7446"></div>
   <p>마지막 두 줄을 보세요. 카운터는 0이 되었는데 디코더는 <code>setInput</code>을 부르기 전까지 9를 유지합니다.</p>
 
-  <div class="note"><b>파일 이름과 10 ~ 15 입력.</b> 원본 파일 이름은 <code>TTL4776.java</code>지만 안에 든 클래스는 <code>TTL7446</code>이라 <code>TTL7446.java</code>로 맞췄습니다. 또 <code>cnvt()</code>는 <code>fnd[num]</code>을 그대로 읽으므로, 10 ~ 15가 입력되면 <code>ArrayIndexOutOfBoundsException</code>이 납니다. 위 테스트 코드에 <code>decoder.setInput(new int[]{1,1,1,1});</code>를 넣고 실행해 확인한 뒤, <code>if (num &gt; 9) output = new int[7];</code>로 막아 보세요.</div>
+  <div class="note"><b>파일 이름과 10 ~ 15 입력.</b> 원본 파일 이름은 <code>TTL4776.java</code>지만 안에 든 클래스는 <code>TTL7446</code>이라 <code>TTL7446.java</code>로 맞췄습니다. 또 <code>cnvt()</code>는 <code>fnd[num]</code>을 그대로 읽으므로, 10 ~ 15가 입력되면 <code>ArrayIndexOutOfBoundsException</code>이 납니다. 아래 에디터의 <code>Test7446.java</code> 에 <code>decoder.setInput(new int[]{1,1,1,1});</code>를 넣고 실행해 확인한 뒤, <code>TTL7446.java</code> 탭에서 <code>if (num &gt; 9) output = new int[7];</code>로 막아 보세요.</div>
 
   <h2>확인 문제</h2>
   <details class="q"><summary>진리표를 <code>static</code> 필드로 옮기면 무엇이 좋아질까요?</summary><div class="a">표가 클래스에 하나만 생깁니다. 지금은 <code>cnvt()</code>를 부를 때마다 표를 새로 만들므로, 시계가 1초 움직일 때마다 7446 여섯 개가 각각 표를 만들었다 버립니다.</div></details>
@@ -1065,7 +1094,7 @@ java Main</pre></div>
   <p>숫자 모양을 만들려면 7490 → 7446 → FND를 거쳐야 하므로, 1 ~ 2단계에서 만든 클래스를 함께 씁니다.</p>
   <div class="runner" data-src="ctfnd" data-name="TestFND.java" data-file="classes/TestFND.java" data-main="TestFND" data-deps="c7490 c7446 cfnd"></div>
 
-  <div class="note"><b><code>setChar()</code>는 화면을 다시 그리지 않습니다.</b> 문자만 바꾸고 <code>cnvt()</code>를 부르지 않으므로, 다음 <code>setInput()</code> 전까지 <code>seg</code>에는 예전 문자가 남아 있습니다. 위 테스트의 두 번째와 세 번째 출력이 그 차이입니다. <code>setChar()</code> 끝에 <code>cnvt();</code> 한 줄을 넣고 다시 실행해 보세요. (<code>reset()</code>도 이름만 리셋이지 화면을 공백으로 지우는 일을 합니다.)</div>
+  <div class="note"><b><code>setChar()</code>는 화면을 다시 그리지 않습니다.</b> 문자만 바꾸고 <code>cnvt()</code>를 부르지 않으므로, 다음 <code>setInput()</code> 전까지 <code>seg</code>에는 예전 문자가 남아 있습니다. 위 테스트의 두 번째와 세 번째 출력이 그 차이입니다. 아래 에디터의 <code>FND.java</code> 탭에서 <code>setChar()</code> 끝에 <code>cnvt();</code> 한 줄을 넣고 다시 실행해 보세요. (<code>reset()</code>도 이름만 리셋이지 화면을 공백으로 지우는 일을 합니다.)</div>
 
   <h2>확인 문제</h2>
   <details class="q"><summary><code>FND[] fnds = new FND[5];</code> 바로 다음에 <code>fnds[0].dispFnd();</code> 를 부르면?</summary><div class="a"><code>NullPointerException</code>이 발생합니다. 객체 배열은 객체를 담을 <b>칸</b>만 만들고, 각 칸은 <code>null</code>입니다. <code>fnds[k] = new FND()</code>로 객체를 넣어야 합니다.</div></details>
@@ -1300,6 +1329,27 @@ java Main</pre></div>
 </section>
     </div>
   </main>
+
+  <div class="split v" id="splitV" role="separator" aria-orientation="vertical" aria-label="실행 결과 창 너비 조절" tabindex="-1"></div>
+
+  <section class="cons" id="consPane" aria-label="실행 결과">
+    <div class="bar"><span class="nm" id="outTitle">실행 결과</span><span class="sp"></span><span class="meta" id="outMeta"></span></div>
+    <pre id="outPre" tabindex="0" aria-live="polite"><span class="dim">단계를 열면 그 단계의 프로그램이 아래 에디터에 올라오고, 실행 결과가 여기에 나옵니다.</span></pre>
+  </section>
+
+  <div class="split h" id="splitH" role="separator" aria-orientation="horizontal" aria-label="에디터 높이 조절" tabindex="-1"></div>
+
+  <section class="edit" id="edPane" aria-label="자바 에디터">
+    <div class="bar">
+      <div class="tabs" id="edTabs" role="tablist"></div>
+      <span class="hint">Ctrl + Enter</span>
+      <button type="button" id="edCopy">복사</button>
+      <button type="button" id="edUndo" title="이 파일을 처음 코드로">되돌리기</button>
+      <button type="button" class="run" id="edRun">▶ 실행</button>
+    </div>
+    <div class="empty" id="edEmpty">이 단계에는 실행할 코드가 없습니다. 왼쪽 목록에서 다음 단계를 열면 그 단계의 자바 파일이 여기에 올라옵니다.</div>
+    <div id="edHost" style="flex:1;min-height:0;display:flex;flex-direction:column"></div>
+  </section>
 </div>
 
 <!-- ============ 코드 / 출력 원문 (StepN.java 에서 실행 확인) ============ -->
@@ -4058,8 +4108,10 @@ function go(n, push = true){
   sections.forEach((s,i) => s.hidden = i !== n);
   document.querySelectorAll("#stepNav button").forEach(b => { if (+b.dataset.go === n) { b.setAttribute("aria-current","step"); revealInNav(b); } else b.removeAttribute("aria-current"); });
   if (push && location.hash !== `#step-${n}`) history.replaceState(null, "", `#step-${n}`);
+  const mainEl = document.querySelector("main");
+  if (mainEl) mainEl.scrollTop = 0;
   window.scrollTo(0, 0);
-  if (typeof autoRunStep === "function") autoRunStep(n);
+  if (typeof stepOpened === "function") stepOpened(n);
 }
 window.addEventListener("hashchange", () => { const m = location.hash.match(/step-(\d+)/); if (m) go(+m[1], false); });
 
@@ -4531,23 +4583,20 @@ function clockLab(p, mode){
 
 /* ================= 시작 ================= */
 document.querySelectorAll("svg.fnd[data-digit]").forEach(s => renderFnd(s, TABLE[+s.dataset.digit]));
-/* ================= 코드 실행기 (javamini.js 를 사용) ================= */
-const JFILES = new Map();     // "TTL7490.java" -> { text, original, editors: [] }
-const ID2NAME = new Map();    // 원문 블록 id -> 파일 이름
-const FILE_USERS = new Map(); // 파일 이름 -> 그 파일을 쓰는 실행 블록들
-const RUN_LIMITS = { maxOutput: 160000, timeLimitMs: 4000, maxSteps: 30000000 };
 
-/* 코드가 바뀌면, 그 파일로 돌아가는 실행 결과에 '다시 실행' 표시를 남긴다 */
-function markStale(fileName, except){
-  (FILE_USERS.get(fileName) || []).forEach(box => {
-    if (box !== except && box.__ran && box.__stale) box.__stale();
-  });
-}
+/* ============ 코드 보기(가운데) · 에디터(하단) · 실행 결과(오른쪽) ============ */
+const JFILES = new Map();     // "TTL7490.java" -> { text, original, editors:[], views:[] }
+const ID2NAME = new Map();    // 원문 블록 id -> 파일 이름
+const PROGRAMS = new Map();   // 프로그램 id -> { id, name, main, deps:[이름], step }
+const FILE_PROGS = new Map(); // 파일 이름 -> 그 파일을 쓰는 프로그램들
+const RUN_LIMITS = { maxOutput: 160000, timeLimitMs: 4000, maxSteps: 30000000 };
+let CURRENT = null;           // 지금 하단 에디터에 올라온 프로그램
+let ranOnce = new Set();      // 자동 실행을 이미 한 프로그램
 
 function srcText(id){ const s = $(id); return s ? s.textContent.replace(/^\n/, "") : ""; }
 
 function jfile(name, id){
-  if (!JFILES.has(name)){ const t = srcText(id); JFILES.set(name, { text: t, original: t, editors: [] }); }
+  if (!JFILES.has(name)){ const t = srcText(id); JFILES.set(name, { text: t, original: t, editors: [], views: [] }); }
   return JFILES.get(name);
 }
 
@@ -4556,28 +4605,84 @@ function paint(codeEl, text){
   if (window.Prism && Prism.highlightElement){ try { Prism.highlightElement(codeEl); } catch(e){} }
 }
 
-/* 뒤쪽 <pre> 에 색을 입히고, 그 위에 투명한 textarea 를 겹쳐 편집한다 */
-function makeEditor(name, f){
-  const ed = el("div", {class:"ed"});
-  const pre = el("pre", {"aria-hidden":"true"});
-  const code = el("code", {class:"language-java"});
-  pre.appendChild(code);
-  const ta = el("textarea", {spellcheck:"false", autocomplete:"off", autocorrect:"off", autocapitalize:"off", "aria-label": name + " 코드 편집"});
-  ta.value = f.text;
-  paint(code, f.text);
+/* 파일이 바뀌면 : 본문의 코드 보기 · 다른 에디터 탭 · 실행 결과 표시를 맞춘다 */
+function fileChanged(name, from){
+  const f = JFILES.get(name);
+  f.views.forEach(v => paint(v, f.text));
+  f.editors.forEach(o => { if (o.ta !== from && o.ta.value !== f.text){ o.ta.value = f.text; paint(o.code, f.text); } });
+  if (CURRENT && (CURRENT.name === name || CURRENT.deps.indexOf(name) >= 0)) markStale();
+}
 
-  const me = { ta, code };
-  f.editors.push(me);
+/* ---------------- 가운데 : 읽기 전용 코드 보기 ---------------- */
+function buildCards(){
+  const boxes = [...document.querySelectorAll(".runner, .srcfile")];
+  boxes.forEach(box => ID2NAME.set(box.dataset.src, box.dataset.name));
+
+  boxes.forEach(box => {
+    const name = box.dataset.name;
+    const f = jfile(name, box.dataset.src);
+    const isMain = box.classList.contains("runner");
+    const step = box.closest("section.step");
+
+    if (isMain){
+      const deps = (box.dataset.deps || "").split(/\s+/).filter(Boolean).map(id => ID2NAME.get(id));
+      const prog = { id: box.dataset.src, name, main: box.dataset.main, deps, step: +step.dataset.n };
+      PROGRAMS.set(prog.id, prog);
+      [name].concat(deps).forEach(fn => {
+        if (!FILE_PROGS.has(fn)) FILE_PROGS.set(fn, []);
+        FILE_PROGS.get(fn).push(prog);
+      });
+    }
+
+    const card = el("div", { class: "card" });
+    const bar = el("div", { class: "bar" });
+    const nm = el("span", { class: "nm" }); nm.textContent = name;
+    bar.appendChild(nm);
+    if (!isMain){ const b = el("span", { class: "hint" }); b.textContent = "main 없음 · 함께 컴파일"; bar.appendChild(b); }
+    const sp = el("span", { class: "sp" }); bar.appendChild(sp);
+    if (box.dataset.file){ const a = el("a", { href: box.dataset.file, target: "_blank", rel: "noopener", style: "color:inherit;font-size:12px" }); a.textContent = "전체 파일"; bar.appendChild(a); }
+    const copy = el("button", { type: "button" }); copy.textContent = "복사";
+    const open = el("button", { type: "button", class: "run" }); open.textContent = "에디터에서 열기";
+    bar.append(copy, open);
+
+    const pre = el("pre"); const code = el("code", { class: "language-java" });
+    pre.appendChild(code); paint(code, f.text); f.views.push(code);
+    card.append(bar, pre);
+    box.replaceWith(card);
+    card.dataset.file = name;
+
+    copy.onclick = async () => {
+      try { await navigator.clipboard.writeText(f.text); copy.textContent = "복사됨"; }
+      catch(e){ copy.textContent = "직접 선택해 복사하세요"; }
+      setTimeout(() => copy.textContent = "복사", 1600);
+    };
+    open.onclick = () => {
+      const sec = card.closest("section.step");
+      const runnerId = [...PROGRAMS.values()].filter(p => p.step === +sec.dataset.n)[0];
+      if (runnerId) openProgram(runnerId, name, true);
+      if (window.innerWidth <= 1100) $("edPane").scrollIntoView({ block: "nearest" });
+    };
+  });
+}
+
+/* ---------------- 하단 : 자바 에디터 ---------------- */
+function editorFor(name){
+  const f = JFILES.get(name);
+  if (f.host) return f.host;
+  const ed = el("div", { class: "ed", hidden: "" });
+  const pre = el("pre", { "aria-hidden": "true" });
+  const code = el("code", { class: "language-java" });
+  pre.appendChild(code);
+  const ta = el("textarea", { spellcheck: "false", autocomplete: "off", autocorrect: "off", autocapitalize: "off", "aria-label": name + " 코드 편집" });
+  ta.value = f.text; paint(code, f.text);
+  f.editors.push({ ta, code });
+
   const sync = () => { pre.scrollTop = ta.scrollTop; pre.scrollLeft = ta.scrollLeft; };
   let timer = 0;
   ta.addEventListener("input", () => {
     f.text = ta.value;
     clearTimeout(timer);
-    timer = setTimeout(() => {
-      paint(code, f.text); sync();
-      f.editors.forEach(o => { if (o !== me && o.ta.value !== f.text){ o.ta.value = f.text; paint(o.code, f.text); } });
-      markStale(name);
-    }, 120);
+    timer = setTimeout(() => { paint(code, f.text); sync(); fileChanged(name, ta); }, 120);
   });
   ta.addEventListener("scroll", sync);
   ta.addEventListener("keydown", (e) => {
@@ -4588,128 +4693,153 @@ function makeEditor(name, f){
       ta.selectionStart = ta.selectionEnd = a + 4;
       ta.dispatchEvent(new Event("input"));
     }
-    if (e.key === "Enter" && (e.ctrlKey || e.metaKey)){
-      e.preventDefault();
-      const box = ta.closest(".runner");
-      if (box && box.__run) box.__run();
-    }
+    if (e.key === "Enter" && (e.ctrlKey || e.metaKey)){ e.preventDefault(); runCurrent(); }
   });
   ed.append(pre, ta);
-  return { ed, me, repaint: () => { ta.value = f.text; paint(code, f.text); } };
+  $("edHost").appendChild(ed);
+  f.host = ed;
+  return ed;
 }
 
-function capOf(title, extra){
-  const cap = el("div", {class:"cap"});
-  const nm = el("span", {class:"nm"}); nm.textContent = title;
-  const tools = el("span", {class:"tools"});
-  cap.append(nm, tools);
-  return { cap, tools };
+function showFile(name){
+  if (!CURRENT) return;
+  CURRENT.open = name;
+  [...$("edHost").children].forEach(c => { c.hidden = true; });
+  editorFor(name).hidden = false;
+  [...$("edTabs").children].forEach(b => b.setAttribute("aria-selected", String(b.dataset.file === name)));
+  document.querySelectorAll(".card").forEach(c => c.classList.toggle("open", c.dataset.file === name && !c.closest("section.step").hidden));
 }
 
-function buildRunners(){
-  const boxes = [...document.querySelectorAll(".runner, .srcfile")];
-  boxes.forEach(box => ID2NAME.set(box.dataset.src, box.dataset.name));
-
-  boxes.forEach(box => {
-    const name = box.dataset.name;
-    const f = jfile(name, box.dataset.src);
-    const isRunner = box.classList.contains("runner");
-
-    /* ---- 왼쪽 : 코드 (고쳐서 실행할 수 있다) ---- */
-    const codePane = el("div", {class:"pane code-pane"});
-    const { cap, tools } = capOf(name);
-    if (box.dataset.file){
-      const a = el("a", {href: box.dataset.file, target:"_blank", rel:"noopener"}); a.textContent = "전체 파일";
-      tools.appendChild(a);
-    }
-    const copyBtn = el("button", {type:"button"}); copyBtn.textContent = "복사";
-    const undoBtn = el("button", {type:"button", title:"처음 코드로 되돌립니다"}); undoBtn.textContent = "되돌리기";
-    tools.append(copyBtn, undoBtn);
-    const editor = makeEditor(name, f);
-    codePane.append(cap, editor.ed);
-
-    copyBtn.onclick = async () => {
-      try { await navigator.clipboard.writeText(f.text); copyBtn.textContent = "복사됨"; }
-      catch(e){ copyBtn.textContent = "직접 선택해 복사하세요"; }
-      setTimeout(() => copyBtn.textContent = "복사", 1600);
-    };
-    undoBtn.onclick = () => {
-      f.text = f.original;
-      f.editors.forEach(o => { o.ta.value = f.text; paint(o.code, f.text); });
-      markStale(name, box);
-      if (box.__run && box.__ran) box.__run();
-    };
-
-    if (!isRunner){                                    // main 이 없는 클래스 파일
-      const note = el("div", {class:"runner-note"});
-      note.textContent = "이 파일에는 main 이 없습니다. 아래 프로그램을 실행할 때 함께 컴파일됩니다.";
-      codePane.appendChild(note);
-      box.appendChild(codePane);
-      return;
-    }
-
-    /* ---- 오른쪽 : 실행 결과 ---- */
-    const outPane = el("div", {class:"pane out-pane"});
-    const oc = capOf("실행 결과");
-    const meta = el("span", {class:"meta"});
-    const runBtn = el("button", {type:"button", class:"run", title:"Ctrl + Enter"}); runBtn.textContent = "▶ 실행";
-    oc.tools.append(meta, runBtn);
-    const outPre = el("pre", {tabindex:"0", "aria-live":"polite"});
-    outPre.appendChild(el("span", {class:"dim"}, "▶ 실행 을 누르면 이 자리에 결과가 나옵니다."));
-    outPane.append(oc.cap, outPre);
-
-    const deps = (box.dataset.deps || "").split(/\s+/).filter(Boolean);
-    [...deps.map(id => ID2NAME.get(id)), name].forEach(fn => {
-      if (!FILE_USERS.has(fn)) FILE_USERS.set(fn, []);
-      FILE_USERS.get(fn).push(box);
+function openProgram(prog, focusName, run){
+  const changed = !CURRENT || CURRENT.id !== prog.id;
+  CURRENT = prog;
+  if (changed){
+    const tabs = $("edTabs"); tabs.innerHTML = "";
+    [prog.name].concat(prog.deps).forEach(fn => {
+      editorFor(fn);
+      const b = el("button", { type: "button", role: "tab", "data-file": fn, "aria-selected": "false" });
+      b.textContent = fn;
+      if (fn !== prog.name){ const s = el("small"); s.textContent = "함께 컴파일"; b.appendChild(s); }
+      b.onclick = () => showFile(fn);
+      tabs.appendChild(b);
     });
-    box.__stale = () => { outPane.classList.add("stale"); meta.textContent = "코드가 바뀜 — 다시 실행"; };
-
-    const run = () => {
-      runBtn.disabled = true; runBtn.textContent = "실행 중…";
-      outPane.classList.remove("stale");
-      meta.textContent = "";
-      setTimeout(() => {
-        let r;
-        try {
-          if (!window.JavaMini) throw new Error("javamini.js 를 불러오지 못했습니다");
-          const sources = deps.map(id => ({ name: ID2NAME.get(id), code: JFILES.get(ID2NAME.get(id)).text }));
-          sources.push({ name, code: f.text });
-          r = JavaMini.run(sources, Object.assign({ mainClass: box.dataset.main }, RUN_LIMITS));
-        } catch (err){
-          r = { output: "", error: { kind: "internal", text: String(err && err.message || err) }, ms: 0 };
-        }
-        outPre.textContent = "";
-        if (r.output) outPre.appendChild(document.createTextNode(r.output));
-        if (r.error){
-          const s = el("span", {class:"err"});
-          s.textContent = (r.output && !r.output.endsWith("\n") ? "\n" : "") + r.error.text + "\n";
-          outPre.appendChild(s);
-        }
-        if (!r.output && !r.error) outPre.appendChild(el("span", {class:"dim"}, "(출력 없음)"));
-        const lines = r.output ? r.output.replace(/\n$/, "").split("\n").length : 0;
-        meta.textContent = r.ms + "ms · " + lines.toLocaleString() + "줄";
-        outPre.scrollTop = 0;
-        runBtn.disabled = false; runBtn.textContent = "▶ 실행";
-      }, 16);
-    };
-    box.__run = run;
-    runBtn.onclick = run;
-
-    box.append(codePane, outPane);
-  });
+  }
+  showFile(focusName || prog.name);
+  $("edEmpty").hidden = true;
+  $("edRun").disabled = false; $("edUndo").disabled = false; $("edCopy").disabled = false;
+  if (run || !ranOnce.has(prog.id)){ ranOnce.add(prog.id); runCurrent(); }
 }
 
-/* 단계를 처음 열 때 한 번 자동 실행 */
-function autoRunStep(n){
-  const sec = sections[n]; if (!sec) return;
-  sec.querySelectorAll(".runner").forEach(box => {
-    if (!box.__ran && box.__run){ box.__ran = true; box.__run(); }
-  });
+/* ---------------- 오른쪽 : 실행 결과 ---------------- */
+function markStale(){
+  const c = $("consPane");
+  if (c.dataset.ran === "1"){ c.classList.add("stale"); $("outMeta").textContent = "코드가 바뀜 — 다시 실행"; }
+}
+
+function runCurrent(){
+  if (!CURRENT) return;
+  const btn = $("edRun"), cons = $("consPane"), pre = $("outPre"), meta = $("outMeta");
+  btn.disabled = true; btn.textContent = "실행 중…";
+  cons.classList.remove("stale"); meta.textContent = "";
+  $("outTitle").textContent = "실행 결과 · " + CURRENT.name;
+  setTimeout(() => {
+    let r;
+    try {
+      const sources = CURRENT.deps.map(fn => ({ name: fn, code: JFILES.get(fn).text }));
+      sources.push({ name: CURRENT.name, code: JFILES.get(CURRENT.name).text });
+      r = JavaMini.run(sources, Object.assign({ mainClass: CURRENT.main }, RUN_LIMITS));
+    } catch (err){
+      r = { output: "", error: { kind: "internal", text: String(err && err.message || err) }, ms: 0 };
+    }
+    pre.textContent = "";
+    if (r.output) pre.appendChild(document.createTextNode(r.output));
+    if (r.error){
+      const s = el("span", { class: "err" });
+      s.textContent = (r.output && !r.output.endsWith("\n") ? "\n" : "") + r.error.text + "\n";
+      pre.appendChild(s);
+    }
+    if (!r.output && !r.error) pre.appendChild(el("span", { class: "dim" }, "(출력 없음)"));
+    const lines = r.output ? r.output.replace(/\n$/, "").split("\n").length : 0;
+    meta.textContent = r.ms + "ms · " + lines.toLocaleString() + "줄";
+    pre.scrollTop = 0; cons.dataset.ran = "1";
+    btn.disabled = false; btn.textContent = "▶ 실행";
+  }, 16);
+}
+
+/* ---------------- 단계가 바뀌면 그 단계의 프로그램을 올린다 ---------------- */
+function stepOpened(n){
+  document.querySelectorAll(".card").forEach(c => c.classList.remove("open"));
+  const prog = [...PROGRAMS.values()].filter(p => p.step === n)[0];
+  if (prog) { $("edEmpty").hidden = true; openProgram(prog); }
+  else if (CURRENT) showFile(CURRENT.open || CURRENT.name);
+  else emptyEditor();
+}
+
+function emptyEditor(){
+  $("edEmpty").hidden = false;
+  $("edRun").disabled = true; $("edUndo").disabled = true; $("edCopy").disabled = true;
+}
+
+/* ---------------- 화면 나누기 손잡이 ---------------- */
+function initSplits(){
+  const app = document.querySelector(".app");
+  const get = (k) => { try { return localStorage.getItem(k); } catch(e){ return null; } };
+  const set = (k, v) => { try { localStorage.setItem(k, v); } catch(e){} };
+  const savedOut = get("fnd.out"), savedEd = get("fnd.edh");
+  if (savedOut) app.style.setProperty("--out", savedOut);
+  if (savedEd) app.style.setProperty("--edh", savedEd);
+
+  const drag = (handle, axis, prop, key) => {
+    handle.addEventListener("pointerdown", (e) => {
+      if (getComputedStyle(handle).display === "none") return;
+      e.preventDefault();
+      handle.setPointerCapture(e.pointerId);
+      handle.classList.add("dragging");
+      const move = (ev) => {
+        const r = app.getBoundingClientRect();
+        let v = axis === "x" ? r.right - ev.clientX : r.bottom - ev.clientY;
+        const max = axis === "x" ? Math.min(760, r.width - 420) : Math.min(720, r.height - 220);
+        v = Math.max(180, Math.min(max, v));
+        app.style.setProperty(prop, v + "px");
+      };
+      const up = () => {
+        handle.classList.remove("dragging");
+        handle.removeEventListener("pointermove", move);
+        handle.removeEventListener("pointerup", up);
+        set(key, app.style.getPropertyValue(prop));
+      };
+      handle.addEventListener("pointermove", move);
+      handle.addEventListener("pointerup", up);
+    });
+  };
+  drag($("splitV"), "x", "--out", "fnd.out");
+  drag($("splitH"), "y", "--edh", "fnd.edh");
+}
+
+function initIDE(){
+  buildCards();
+  initSplits();
+  emptyEditor();
+  $("edRun").onclick = runCurrent;
+  $("edUndo").onclick = () => {
+    if (!CURRENT) return;
+    const name = CURRENT.open || CURRENT.name, f = JFILES.get(name);
+    f.text = f.original;
+    f.editors.forEach(o => { o.ta.value = f.text; paint(o.code, f.text); });
+    fileChanged(name);
+    runCurrent();
+  };
+  $("edCopy").onclick = async () => {
+    if (!CURRENT) return;
+    const b = $("edCopy");
+    try { await navigator.clipboard.writeText(JFILES.get(CURRENT.open || CURRENT.name).text); b.textContent = "복사됨"; }
+    catch(e){ b.textContent = "직접 선택해 복사하세요"; }
+    setTimeout(() => b.textContent = "복사", 1600);
+  };
 }
 
 buildCode();
-buildRunners();
+initIDE();
 buildNav();
 [lab1, lab2, lab3, lab4, lab5, lab6, lab7, () => counterLab("l8", false), () => counterLab("l9", true), lab11, lab13, () => clockLab("l15", "ss"), () => clockLab("l16", "mmss"), () => clockLab("l17", "hhmmss")].forEach(f => { try { f(); } catch(e){ console.error(e); } });
 const start = location.hash.match(/step-(\d+)/);
