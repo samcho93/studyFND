@@ -953,7 +953,7 @@ java Step1</pre></div>
       <tr><td>5</td><td style="text-align:left">리셋 연결: 60진 초 카운터</td><td style="text-align:left"><code>Counter60.java</code></td></tr>
       <tr><td>6</td><td style="text-align:left">카운터 4개: MM:SS</td><td style="text-align:left"><code>ClockMMSS.java</code></td></tr>
       <tr><td>7</td><td style="text-align:left">칩 18개를 조립해 12시간제 시계 완성</td><td style="text-align:left"><code>Main.java</code></td></tr>
-      <tr><td>8</td><td style="text-align:left">칩 3개를 한 클래스로 합쳐 같은 시계 다시 만들기</td><td style="text-align:left"><code>Digit.java</code>, <code>DigitClock.java</code></td></tr>
+      <tr><td>8</td><td style="text-align:left">칩 3개를 고치지 않고 한 부품으로 감싸 같은 시계 다시 만들기</td><td style="text-align:left"><code>Digit.java</code>, <code>DigitClock.java</code></td></tr>
     </tbody>
   </table>
   </div>
@@ -1329,104 +1329,104 @@ java Main</pre></div>
     <li><code>Thread.sleep(500)</code>을 넣어 실제 시간처럼 움직이게 해 보세요. (내 컴퓨터에서 실행할 때만 동작합니다. <code>main</code>에 <code>throws InterruptedException</code>이 필요합니다)</li>
     <li>알람 시각을 저장하는 <code>setAlarm(h, m, isPm)</code>과, 그 시각이 되면 <code>true</code>를 돌려주는 <code>isAlarm()</code>을 추가해 보세요.</li>
   </ol>
-  <div class="note"><b>다음 단계.</b> 칩 세 개가 늘 한 묶음으로 다닌다면, 아예 한 클래스로 합칠 수도 있습니다. 8단계에서 같은 시계를 그렇게 다시 만들어 보고 두 방식을 비교합니다.</div>
+  <div class="note"><b>다음 단계.</b> 칩 세 개가 늘 한 묶음으로 다닌다면, 그 셋을 가진 부품 하나로 감쌀 수 있습니다. 8단계에서는 칩 코드를 고치지 않고 같은 시계를 다시 만들어 두 방식을 비교합니다.</div>
 </section>
 
 <!-- ================= 2부 8단계 : Digit ================= -->
-<section class="step" id="step-18" data-n="18" data-part="2" data-k="8" data-title="칩 3개를 한 클래스로" data-sub="class Digit" hidden>
+<section class="step" id="step-18" data-n="18" data-part="2" data-k="8" data-title="칩 3개를 한 부품으로" data-sub="class Digit" hidden>
   <div class="eyebrow">2부 · 8단계</div>
-  <h1>칩 세 개를 한 클래스로: Digit</h1>
-  <p class="lead">시계를 만들어 보면 7490 · 7446 · FND는 언제나 <b>세 개가 한 묶음</b>으로 다닙니다. 한 자리(digit)를 통째로 맡는 클래스 하나로 합치면 <code>Main</code>의 연결 코드가 3분의 1로 줄어듭니다. 대신 잃는 것도 있습니다.</p>
-  <ul class="goals"><li>여러 클래스를 하나로 합치기</li><li>출력 배열 대신 비트 하나</li><li>합치기의 장점과 대가</li></ul>
+  <h1>칩 세 개를 한 부품으로: Digit</h1>
+  <p class="lead">시계를 만들어 보면 7490 · 7446 · FND는 언제나 <b>세 개가 한 묶음</b>으로 다닙니다. 칩 클래스는 <b>한 줄도 고치지 않고</b>, 셋을 필드로 가진 클래스 하나로 감싸 봅시다. 칩을 잇던 배선이 그 클래스 안으로 들어가면서 시계 코드에서 사라집니다.</p>
+  <ul class="goals"><li>객체를 필드로 갖는 조합(composition)</li><li>가진 객체에게 넘기는 위임 메서드</li><li>배선을 안으로 숨기기</li></ul>
 
-  <h2>무엇이 어디로 가는가</h2>
+  <h2>배선은 어디로 갔나</h2>
+  <p>7단계에서는 한 자리를 움직일 때마다 칩 세 개를 직접 이어야 했습니다. 그 두 줄이 <code>Digit</code> 안의 <code>update()</code>로 들어갑니다.</p>
+  <div class="code" data-src="bitcmp" data-cap="7단계 vs 8단계"></div>
+  <p><code>Digit</code>은 스스로 세거나 그리지 않습니다. <b>가지고 있는 칩에게 넘길 뿐</b>입니다. 이렇게 자기 일을 부품에게 넘기는 메서드를 <b>위임(delegation)</b>이라고 합니다.</p>
+
   <div class="scroll">
   <table class="data">
-    <thead><tr><th>칩 3개일 때</th><th>Digit 에서는</th><th>이유</th></tr></thead>
+    <thead><tr><th>7단계 · 칩을 직접</th><th>8단계 · Digit</th></tr></thead>
     <tbody>
-      <tr><td><code>TTL7490</code>의 <code>num</code>, <code>oldclk</code></td><td>그대로 필드</td><td>세는 일과 엣지 검출은 그대로 필요하다</td></tr>
-      <tr><td><code>TTL7490</code>의 <code>output</code> : int[4]</td><td><code>bit(int i)</code> 메서드</td><td>그 배열은 <code>num</code>의 2진수였을 뿐</td></tr>
-      <tr><td><code>TTL7446</code>의 진리표</td><td><code>private static final TABLE</code></td><td>자리마다 같은 표 → 클래스에 하나</td></tr>
-      <tr><td><code>TTL7446</code>의 <code>input</code>, <code>output</code></td><td>사라짐</td><td>입력이 곧 <code>num</code>이라 표를 바로 찾는다</td></tr>
-      <tr><td><code>FND</code>의 <code>seg</code>, <code>ch</code></td><td>그대로 필드</td><td>화면은 자리마다 따로 있어야 한다</td></tr>
-      <tr><td><code>setInput()</code> 두 번</td><td>사라짐</td><td>숫자가 바뀔 때 <code>draw()</code>가 알아서 그린다</td></tr>
+      <tr><td><code>ttl7490_S1.setClock(i % 2);</code><br><code>ttl7446_S1.setInput(ttl7490_S1.getOutput());</code><br><code>cfnd_S1.setInput(ttl7446_S1.getOutput());</code></td><td><code>s1.setClock(i % 2);</code></td></tr>
+      <tr><td><code>ttl7490_S10.getOutput()[3]</code></td><td><code>s10.bit(3)</code></td></tr>
+      <tr><td><code>cfnd_S1.dispFnd(j);</code></td><td><code>s1.dispFnd(j);</code></td></tr>
+      <tr><td>칩 18개를 이름으로 구분</td><td>자리 6개</td></tr>
     </tbody>
   </table>
   </div>
 
-  <div class="uml-grid" style="grid-template-columns:minmax(0,340px)">
-    <div class="uml"><div class="nm">Digit<small>7490 + 7446 + FND</small></div><div class="f">- <b>TABLE</b> : int[][] <i>static final</i><br>- <b>num</b> : int<br>- <b>oldclk</b> : int<br>- <b>ch</b> : char<br>- <b>seg</b> : char[5][5]</div><div class="m">+ Digit()<br>+ Digit(char c)<br>+ Digit(char c, int n)<br>+ <b>setClock</b>(clk)<br>+ <b>reset</b>(R0, R1, R2)<br>+ <b>setNum</b>(n)<br>+ <b>bit</b>(i) : int<br>+ <b>getNum</b>() : int<br>- <b>draw</b>()<br>+ <b>dispFnd</b>()<br>+ <b>dispFnd</b>(line)</div></div>
+  <div class="uml-grid" style="grid-template-columns:minmax(0,360px)">
+    <div class="uml"><div class="nm">Digit<small>칩 3개를 가진 한 자리</small></div><div class="f">- <b>counter</b> : TTL7490<br>- <b>decoder</b> : TTL7446<br>- <b>fnd</b> : FND</div><div class="m">+ Digit()<br>+ Digit(char c)<br>+ Digit(char c, int n)<br>- <b>update</b>() <i>배선</i><br>+ <b>setClock</b>(clk)<br>+ <b>reset</b>(R0, R1, R2)<br>+ <b>setNum</b>(n)<br>+ <b>bit</b>(i) : int<br>+ <b>getNum</b>() : int<br>+ <b>dispFnd</b>()<br>+ <b>dispFnd</b>(line)</div></div>
   </div>
-
-  <h2>출력 4비트가 <code>bit(i)</code> 하나로</h2>
-  <p>칩을 따로 둘 때는 7490의 출력 핀 네 개를 배열로 들고 다녔습니다. 자리올림은 <code>getOutput()[3]</code>, 60진 리셋은 <code>q[2] &amp; q[1]</code>이었죠. 그런데 그 배열은 <code>num</code>을 2진수로 바꾼 것뿐이므로, 필요한 자리만 그때그때 꺼내면 됩니다.</p>
-  <div class="code" data-src="bitcmp" data-cap="배열 vs 비트"></div>
-  <p><code>num &gt;&gt; i</code>는 비트를 i칸 오른쪽으로 밀고, <code>&amp; 1</code>은 맨 오른쪽 비트만 남깁니다. Step 1의 <code>cnvtDec2BinBit</code>에서 쓴 방법 그대로입니다.</p>
 
   <h2>Digit 클래스</h2>
   <div class="srcfile" data-src="cdigit" data-name="Digit.java" data-file="classes/Digit.java"></div>
   <ul>
-    <li><b>생성자 세 개</b>: <code>new Digit()</code>, <code>new Digit('*')</code>, <code>new Digit('#', 5)</code>. 앞의 둘은 <code>this('#', 0)</code>처럼 다른 생성자에 넘겨 초기화 코드를 한 곳에 모읍니다.</li>
-    <li><b><code>draw()</code>는 private</b>: 숫자가 바뀌는 <code>setClock</code> · <code>reset</code> · <code>setNum</code> 안에서만 불립니다. 밖에서 갱신을 신경 쓸 일이 없어져, Step 12에서 본 "<code>setInput</code>을 다시 불러야 하는" 함정이 사라집니다.</li>
-    <li><b><code>setNum(n % 10)</code></b>: 10 이상이 들어와도 한 자리를 유지합니다.</li>
+    <li><b>칩은 그대로</b>: <code>TTL7490.java</code>, <code>TTL7446.java</code>, <code>FND.java</code>는 한 글자도 바뀌지 않았습니다. <code>Digit</code>은 이미 있는 <code>setClock</code>, <code>setInput</code>, <code>getOutput</code>, <code>dispFnd</code>를 부를 뿐입니다.</li>
+    <li><b><code>update()</code>는 private</b>: 값이 바뀌는 <code>setClock</code> · <code>reset</code> · <code>setNum</code> 안에서만 불립니다. Step 12에서 본 "<code>setInput</code>을 다시 불러야 하는" 함정이 이 클래스 안에 갇혀, 쓰는 쪽에서는 신경 쓸 일이 없어집니다.</li>
+    <li><b><code>bit(i)</code></b>: <code>counter.getOutput()[i]</code> 한 줄입니다. 자리올림은 <code>bit(3)</code>, 60진 리셋 검사는 <code>bit(2) &amp; bit(1)</code>로 7단계와 똑같습니다.</li>
+    <li><b><code>getNum()</code></b>: 첨부된 <code>TTL7490</code>에는 <code>getNum()</code>이 없지만, 디코더가 입력을 10진수로 읽어 두므로 <code>decoder.getNum()</code>이 곧 지금 숫자입니다.</li>
+    <li><b><code>FND</code>만 생성자에서 만드는 이유</b>: 표시 문자를 정해야 하기 때문입니다. 나머지 둘은 선언과 함께 만들어 둡니다.</li>
   </ul>
 
   <h2>시계 다시 만들기</h2>
-  <p>연결 방식은 7단계와 똑같습니다. 사라진 것은 <code>ttl7446_S1.setInput(...)</code>, <code>cfnd_S1.setInput(...)</code> 같은 <b>배선 코드</b>뿐입니다.</p>
-  <div class="runner" data-src="cdclock" data-name="DigitClock.java" data-file="classes/DigitClock.java" data-main="DigitClock" data-deps="cdigit"></div>
+  <p>연결 순서는 7단계와 똑같습니다. 사라진 것은 <code>setInput</code> 배선뿐입니다.</p>
+  <div class="runner" data-src="cdclock" data-name="DigitClock.java" data-file="classes/DigitClock.java" data-main="DigitClock" data-deps="cdigit c7490 c7446 cfnd"></div>
 
   <div class="scroll">
   <table class="data">
     <thead><tr><th></th><th>7단계 · Main.java</th><th>8단계 · DigitClock.java</th></tr></thead>
     <tbody>
-      <tr><td>만드는 객체</td><td>18개 (7490 · 7446 · FND 각 6)</td><td>6개 (Digit)</td></tr>
+      <tr><td>시계 코드가 다루는 객체</td><td>18개 (7490 · 7446 · FND 각 6)</td><td>6개 (Digit)</td></tr>
       <tr><td><code>main</code> 아래 줄 수</td><td>116줄</td><td>40줄</td></tr>
-      <tr><td>쓰는 클래스</td><td>TTL7490, TTL7446, FND</td><td>Digit</td></tr>
+      <tr><td>새로 쓴 코드</td><td>—</td><td><code>Digit.java</code> 67줄 (칩 코드는 그대로)</td></tr>
       <tr class="hit"><td>출력</td><td colspan="2">완전히 같다 — 358줄, 한 글자까지</td></tr>
     </tbody>
   </table>
   </div>
-  <div class="note"><b>같은 시계를 다르게 나눈 것입니다.</b> 왼쪽 목록에서 7단계와 8단계를 번갈아 실행해 결과를 비교해 보세요. 프로그램 구조가 달라도 화면은 똑같습니다.</div>
+  <div class="note"><b>같은 시계를 다르게 나눈 것입니다.</b> 왼쪽 목록에서 7단계와 8단계를 번갈아 실행해 결과를 비교해 보세요. 구조가 달라도 화면은 똑같습니다.</div>
 
-  <h2>합쳐서 좋은 점, 잃는 것</h2>
+  <h2>감싸서 좋은 점, 치르는 값</h2>
   <div class="scroll">
   <table class="data">
-    <thead><tr><th>좋은 점</th><th>잃는 것</th></tr></thead>
+    <thead><tr><th>좋은 점</th><th>치르는 값</th></tr></thead>
     <tbody>
       <tr>
-        <td>한 자리 = 객체 하나. 시계 코드에 <b>연결</b>만 남고 배선이 사라진다</td>
-        <td>실제 회로와 1:1로 대응하지 않는다. 데이터시트를 보며 따라 만들기 어렵다</td>
+        <td>칩 클래스를 고치지 않는다. 1 ~ 3단계에서 만든 코드가 그대로 살아 있다</td>
+        <td>클래스가 한 겹 늘어난다. 값을 한 번 꺼내려면 <code>Digit</code> → 칩으로 한 단계 더 간다</td>
       </tr>
       <tr>
-        <td>갱신 시점을 신경 쓸 필요가 없다 (<code>draw()</code>가 안에서 처리)</td>
-        <td>7446을 Active-Low 버전으로 <b>바꿔 끼우기</b> 어렵다. 칩 교체가 곧 클래스 수정이다</td>
+        <td>배선과 갱신 시점이 한 곳(<code>update()</code>)에 모인다. 빠뜨릴 곳이 없다</td>
+        <td>객체 수는 줄지 않는다. 자리 6개 안에 칩 18개가 그대로 있다</td>
       </tr>
       <tr>
-        <td>표는 <code>static</code> 하나, 화면은 숫자가 바뀔 때만 다시 그린다</td>
-        <td>한 클래스가 세 가지 일(세기 · 변환 · 표시)을 한다. 고칠 이유도 세 가지다</td>
+        <td>칩을 바꿔 끼울 수 있다. Active-Low 디코더로 교체해도 <code>Digit</code> 한 줄만 바뀐다</td>
+        <td><code>Digit</code>이 칩 세 개의 사용법을 모두 알아야 한다</td>
       </tr>
       <tr>
-        <td>쓰는 쪽 코드가 짧아 처음 보는 사람도 흐름을 읽기 쉽다</td>
-        <td>화면 없이 숫자만 세고 싶은 곳에서도 <code>char[5][5]</code>를 들고 다닌다</td>
+        <td>쓰는 쪽 코드가 짧아져, 시계 로직(자리올림 · 리셋 · AM/PM)만 남는다</td>
+        <td>칩 하나만 따로 쓰고 싶을 때는 <code>Digit</code>이 오히려 거추장스럽다</td>
       </tr>
     </tbody>
   </table>
   </div>
-  <p>정답이 하나인 문제가 아닙니다. <b>부품을 바꿔 끼울 일이 많으면</b> 칩을 따로 두는 7단계 방식이, <b>쓰는 쪽이 단순해야 하면</b> 합치는 8단계 방식이 낫습니다. 같은 프로그램을 두 가지로 만들어 보았으니 이제 고르는 기준이 생겼을 것입니다.</p>
+  <p>세 클래스의 코드를 <b>한 클래스에 통째로 옮겨</b> 합칠 수도 있습니다. 하지만 그렇게 하면 <code>cnvt()</code>가 세 번, <code>setInput()</code>과 <code>getOutput()</code>이 두 번씩 겹쳐 이름부터 정리해야 합니다. 이미 돌아가는 코드를 건드리지 않고 <b>가지고 있게만</b> 해도 같은 결과를 얻는다면, 그 편이 안전합니다.</p>
 
   <h2>확인 문제</h2>
-  <details class="q"><summary><code>bit(3)</code>이 자리올림이 되는 이유는?</summary><div class="a">0 ~ 9 중 b3이 1인 값은 8과 9뿐입니다. 9에서 0으로 넘어가는 순간 b3이 1 → 0으로 떨어지고, 다음 자리는 그 하강 엣지를 클럭으로 받아 하나 셉니다.</div></details>
-  <details class="q"><summary><code>Digit</code>에는 왜 7446의 <code>input</code> 필드가 없을까요?</summary><div class="a">입력이 곧 자기 자신의 <code>num</code>이기 때문입니다. 칩이 따로일 때는 전선으로 값을 주고받아야 했지만, 한 클래스 안에서는 <code>TABLE[num]</code>으로 바로 찾을 수 있습니다.</div></details>
-  <details class="q"><summary><code>draw()</code>를 <code>public</code>으로 열어 두면 어떤 문제가 생길까요?</summary><div class="a">당장은 아무 문제가 없지만, 밖에서 "언제 다시 그려야 하는지"를 신경 써야 할 여지가 생깁니다. 안에서 알아서 부르는 동작은 숨겨 두는 편이 쓰는 쪽을 단순하게 만듭니다.</div></details>
+  <details class="q"><summary><code>setClock()</code>에서 <code>update()</code>를 빼면 어떻게 될까요?</summary><div class="a">카운터는 계속 세지만 화면은 처음 숫자에 멈춰 있습니다. 디코더와 FND가 새 값을 받지 못하기 때문입니다. Step 12에서 본 문제와 같고, 이제는 <code>Digit</code> 안에서만 챙기면 됩니다.</div></details>
+  <details class="q"><summary><code>Digit</code>이 직접 세지 않고 <code>counter.setClock(clk)</code>을 부르는 것이 왜 나을까요?</summary><div class="a">엣지 검출 규칙이 <code>TTL7490</code> 한 곳에만 있기 때문입니다. 같은 코드를 <code>Digit</code>에도 적어 두면, 나중에 규칙을 고칠 때 두 곳을 모두 고쳐야 하고 한 곳을 잊으면 어긋납니다.</div></details>
+  <details class="q"><summary>세 클래스의 메서드를 한 클래스에 그대로 복사해 붙이면 무엇이 문제가 될까요?</summary><div class="a"><code>cnvt()</code>가 세 개(7490 · 7446 · FND), <code>setInput(int[])</code>과 <code>getOutput()</code>이 두 개씩 생깁니다. 매개변수가 같으면 오버로딩도 되지 않으므로 이름을 바꿔야 합니다. 이름을 바꾸는 순간 원본과 달라집니다.</div></details>
 
   <h2>연습 과제</h2>
   <ol class="task">
-    <li><code>setChar(char c)</code>를 추가하되, <code>FND</code>와 달리 화면까지 바로 다시 그리게 만들어 보세요.</li>
-    <li>자리 6개와 <code>apm</code>, <code>chk</code>를 필드로 가진 <code>Clock</code> 클래스를 만들고, <code>tick()</code>과 <code>display()</code>로 나눠 <code>main</code>을 열 줄 안쪽으로 줄여 보세요.</li>
+    <li><code>setChar(char c)</code>를 추가해 보세요. <code>fnd.setChar(c)</code>만 부르면 화면이 그대로인데(FND의 <code>setChar</code>가 다시 그리지 않으므로), <code>update()</code>까지 부르면 해결됩니다.</li>
+    <li>0 ~ 9 대신 <b>0과 1이 뒤집힌</b> Active-Low 디코더 <code>TTL7447</code>을 만들고, <code>Digit</code>의 <code>decoder</code> 자리에 바꿔 끼워 보세요. 시계 코드는 한 줄도 고치지 않아도 됩니다.</li>
+    <li>자리 6개와 <code>apm</code>, <code>chk</code>를 필드로 가진 <code>Clock</code> 클래스를 만들고 <code>tick()</code> · <code>display()</code>로 나눠, <code>main</code>을 열 줄 안쪽으로 줄여 보세요.</li>
     <li><code>Digit</code>을 그대로 써서 스톱워치(00:00.0 ~ )를 만들어 보세요. 1/10초 자리는 10진, 초는 60진입니다.</li>
   </ol>
 
-  <div class="note"><b>강좌를 마쳤습니다.</b> 1부에서 메서드로 만든 변환 로직이 2부에서 칩 클래스가 되었고, 칩을 조합해 시계를 만든 뒤(7단계), 세 칩을 한 부품으로 합쳐 같은 시계를 다시 만들었습니다(8단계). 같은 재료로 타이머 · 스톱워치 · 주사위 같은 회로도 만들어 보세요.</div>
+  <div class="note"><b>강좌를 마쳤습니다.</b> 1부에서 메서드로 만든 변환 로직이 2부에서 칩 클래스가 되었고, 칩을 조합해 시계를 만든 뒤(7단계), 칩을 고치지 않고 한 부품으로 감싸 같은 시계를 다시 만들었습니다(8단계). 같은 재료로 타이머 · 스톱워치 · 주사위 같은 회로도 만들어 보세요.</div>
 </section>
     </div>
   </main>
@@ -2588,40 +2588,32 @@ s10.reset(s10.getOutput()[2] & s10.getOutput()[1], 0, 0);   // R0 핀</script>
     }
 }
 </script>
-<script type="text/plain" id="bitcmp">// 칩 3개일 때 : 7490 이 내놓은 출력 배열에서 꺼내 쓴다
-int[] q = s10.getOutput();
-s10.reset(q[2] & q[1], 0, 0);
+<script type="text/plain" id="bitcmp">// 7단계 : 자리 하나를 움직이려면 칩 세 개를 직접 잇는다
+ttl7490_S1.setClock(i % 2);
+ttl7446_S1.setInput(ttl7490_S1.getOutput());
+cfnd_S1.setInput(ttl7446_S1.getOutput());
 
-// Digit 하나일 때 : 필요한 비트만 물어본다
-s10.reset(s10.bit(2) & s10.bit(1), 0, 0);
+// 8단계 : 배선은 Digit 안에 있다
+s1.setClock(i % 2);
 
-// Digit 안에서
-public int bit(int i) {
-    return (num >> i) & 1;          // 배열을 만들지 않고 i 번째 자리만
+// ---- Digit 안 ----
+public void setClock(int clk) {
+    counter.setClock(clk);      // 칩이 이미 가진 메서드를 그대로 부른다
+    update();
+}
+
+private void update() {         // 배선
+    decoder.setInput(counter.getOutput());
+    fnd.setInput(decoder.getOutput());
 }</script>
-<script type="text/plain" id="cdigit">// Digit : TTL7490 + TTL7446 + FND 를 한 클래스로 합친 '시계 한 자리'
-//   세는 일(7490) · 세그먼트로 바꾸는 일(7446) · 화면(FND) 을 모두 안에서 처리한다
+<script type="text/plain" id="cdigit">// Digit : TTL7490 · TTL7446 · FND 를 고치지 않고 그대로 가진 '시계 한 자리'
+//   칩을 필드로 두고, 칩이 이미 가진 메서드를 불러 쓴다 (조합 · composition)
+//   시계 코드에서 사라진 배선(setInput 연결)은 이 클래스 안의 update() 로 들어왔다
 class Digit {
 
-    // 0 ~ 9 의 세그먼트 표 {a,b,c,d,e,f,g}
-    //   자리마다 같은 표이므로 클래스에 하나만 둔다 (static), 바꿔 끼울 일도 없다 (final)
-    private static final int[][] TABLE = {
-        {1,1,1,1,1,1,0},  // 0
-        {0,1,1,0,0,0,0},  // 1
-        {1,1,0,1,1,0,1},  // 2
-        {1,1,1,1,0,0,1},  // 3
-        {0,1,1,0,0,1,1},  // 4
-        {1,0,1,1,0,1,1},  // 5
-        {1,0,1,1,1,1,1},  // 6
-        {1,1,1,0,0,1,0},  // 7
-        {1,1,1,1,1,1,1},  // 8
-        {1,1,1,1,0,1,1}   // 9
-    };
-
-    private int num;                        // 지금 숫자 0 ~ 9   (7490 의 num)
-    private int oldclk;                     // 직전 클럭          (7490 의 oldclk)
-    private char ch;                        // 켜진 칸에 찍을 문자 (FND 의 ch)
-    private char[][] seg = new char[5][5];  // 화면               (FND 의 seg)
+    private TTL7490 counter = new TTL7490();   // 세는 칩
+    private TTL7446 decoder = new TTL7446();   // 숫자 -> 세그먼트
+    private FND     fnd;                       // 화면 (문자를 정해야 하므로 생성자에서)
 
     // ---- 생성자 ----
     Digit() {
@@ -2633,81 +2625,52 @@ class Digit {
     }
 
     Digit(char c, int n) {
-        ch = c;
-        oldclk = 0;
-        setNum(n);
+        fnd = new FND(c);
+        counter.setNum(n);
+        update();
     }
 
-    // ---- 입력 핀 ----
-    // 클럭이 1 -> 0 으로 떨어질 때만 하나 센다
+    // ---- 배선 : 카운터 -> 디코더 -> 화면 ----
+    //   7단계에서 main 에 늘어놓던 두 줄이 여기로 들어왔다
+    private void update() {
+        decoder.setInput(counter.getOutput());
+        fnd.setInput(decoder.getOutput());
+    }
+
+    // ---- 입력 핀 : 칩에게 그대로 넘기고, 바뀐 값을 화면까지 흘려보낸다 ----
     public void setClock(int clk) {
-        if (clk == 0 && oldclk == 1) {
-            if (++num == 10) num = 0;
-            draw();
-        }
-        oldclk = clk;
+        counter.setClock(clk);
+        update();
     }
 
-    // R0 -> 0, R1 -> 1, R2 -> 2
     public void reset(int R0, int R1, int R2) {
-        if (R0 == 1)      num = 0;
-        else if (R1 == 1) num = 1;
-        else if (R2 == 1) num = 2;
-        draw();
+        counter.reset(R0, R1, R2);
+        update();
     }
 
     public void setNum(int n) {
-        num = n % 10;
-        draw();
+        counter.setNum(n);
+        update();
     }
 
     // ---- 출력 핀 ----
-    // 7490 의 출력 4비트는 결국 num 의 2진수였다. 배열을 들고 있을 필요 없이 한 자리만 꺼낸다.
-    //   bit(3) : 자리올림,  bit(2) & bit(1) : 6 인지 검사
+    // 자리올림은 bit(3), 60진 리셋 검사는 bit(2) & bit(1)
     public int bit(int i) {
-        return (num >> i) & 1;
+        return counter.getOutput()[i];
     }
 
+    // TTL7490 에는 getNum() 이 없지만, 디코더가 입력을 10진수로 읽어 둔다
     public int getNum() {
-        return num;
+        return decoder.getNum();
     }
 
     // ---- 화면 ----
-    // 숫자가 바뀔 때마다 표를 보고 5x5 를 다시 그린다 (7446 -> FND 가 여기서 한 번에 끝난다)
-    private void draw() {
-        for (int i = 0; i < 5; i++)
-            for (int j = 0; j < 5; j++)
-                seg[i][j] = ' ';
-
-        int[] s = TABLE[num];
-
-        if (s[0] == 1) for (int i = 0; i < 5; i++) seg[0][i]   = ch;  // a
-        if (s[1] == 1) for (int i = 0; i < 3; i++) seg[i][4]   = ch;  // b
-        if (s[2] == 1) for (int i = 0; i < 3; i++) seg[i+2][4] = ch;  // c
-        if (s[3] == 1) for (int i = 0; i < 5; i++) seg[4][i]   = ch;  // d
-        if (s[4] == 1) for (int i = 0; i < 3; i++) seg[i+2][0] = ch;  // e
-        if (s[5] == 1) for (int i = 0; i < 3; i++) seg[i][0]   = ch;  // f
-        if (s[6] == 1) for (int i = 0; i < 5; i++) seg[2][i]   = ch;  // g
-    }
-
-    // 한 자리 전체 출력 (세로 5줄)
     public void dispFnd() {
-        for (int i = 0; i < 5; i++) {
-            for (int j = 0; j < 5; j++) {
-                System.out.print(seg[i][j]);
-            }
-            System.out.println("");
-        }
-
-        System.out.println("");
+        fnd.dispFnd();
     }
 
-    // line 번째 줄만 출력 (여러 자리를 가로로 이어 붙일 때)
     public void dispFnd(int line) {
-        for (int j = 0; j < 5; j++) {
-            System.out.print(seg[line][j]);
-        }
-        System.out.print(" ");
+        fnd.dispFnd(line);
     }
 }
 </script>
