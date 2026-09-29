@@ -44,6 +44,11 @@ code{font-family:var(--font-mono);font-size:.88em;background:var(--sunken);paddi
 .brand{display:flex;gap:10px;align-items:center;padding:0 8px 18px;border-bottom:1px solid var(--rule);margin-bottom:14px}
 .brand b{font-size:15px;line-height:1.3;display:block}
 .brand small{color:var(--muted);font-size:12px}
+.tabbar{display:flex;gap:4px;margin:0 6px 12px;background:var(--sunken);padding:3px;border-radius:9px}
+.tabbar button{all:unset;flex:1;text-align:center;cursor:pointer;padding:7px 6px;border-radius:7px;font-size:13px;font-weight:600;color:var(--muted);white-space:nowrap}
+.tabbar button:hover{color:var(--ink)}
+.tabbar button[aria-selected="true"]{background:var(--surface);color:var(--ink);box-shadow:0 1px 2px rgba(0,0,0,.10)}
+.tabbar button:focus-visible{outline:2px solid var(--pcb);outline-offset:1px}
 .steps{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:2px}
 .steps button{all:unset;box-sizing:border-box;width:100%;display:grid;grid-template-columns:26px 1fr;gap:10px;align-items:center;padding:8px;border-radius:var(--radius);cursor:pointer;font-size:14px;line-height:1.35;color:var(--ink)}
 .steps button:hover{background:var(--sunken)}
@@ -300,6 +305,7 @@ details.q .a{padding:10px 14px 12px;font-size:15px}
       <svg class="fnd" data-digit="8" width="26" height="40" aria-hidden="true"></svg>
       <div><b>FND 카운터 만들기</b><small>Java 메서드와 클래스로 만드는 디지털 회로</small></div>
     </div>
+    <div class="tabbar" id="sideTabs" role="tablist" aria-label="메뉴 탭"></div>
     <nav aria-label="강좌 단계"><ol class="steps" id="stepNav"></ol></nav>
   </aside>
   <main>
@@ -1431,7 +1437,7 @@ java Main</pre></div>
 
 <!-- ================= 도전문제 1 ================= -->
 <section class="step" id="step-19" data-n="19" data-part="3" data-k="1" data-title="8×8 글자 만들기" data-sub="char[8][8]" hidden>
-  <div class="eyebrow">도전문제 1</div>
+  <div class="eyebrow">문제 1 · 1단계</div>
   <h1>8×8 배열에 '가' 그리기</h1>
   <p class="lead">FND는 5×5로 숫자를 그렸습니다. 이번에는 <b>8×8</b> <code>char</code> 배열에 한글 '가'를 그립니다. 글자 부분은 <code>'#'</code>, 빈 곳은 <code>' '</code>입니다. 다음 도전에서 이 글자를 뒤집고 돌립니다.</p>
   <ul class="goals"><li>2차원 배열의 행(i)과 열(j)</li><li>선을 긋듯 채우는 반복문</li><li>배열을 만들어 돌려주는 메서드</li></ul>
@@ -1484,7 +1490,7 @@ java Main</pre></div>
 
 <!-- ================= 도전문제 2 ================= -->
 <section class="step" id="step-20" data-n="20" data-part="3" data-k="2" data-title="뒤집고 돌리기" data-sub="index 바꾸기" hidden>
-  <div class="eyebrow">도전문제 2</div>
+  <div class="eyebrow">문제 1 · 2단계</div>
   <h1>같은 배열을 뒤집고 돌려서 출력하기</h1>
   <p class="lead">배열은 <b>하나도 고치지 않습니다</b>. 출력하는 자리는 그대로 두고 <b>읽어 오는 칸의 번호만</b> 바꾸면 상하반전 · 좌우반전 · 90도 회전이 모두 됩니다. 2중 for문과 인덱스 계산만으로 푸는 문제입니다.</p>
   <ul class="goals"><li>인덱스 뒤집기 <code>7 - i</code></li><li>행과 열 바꾸기 <code>a[j][i]</code></li><li>회전 = 뒤집기 + 바꾸기</li></ul>
@@ -4554,7 +4560,37 @@ const digitSvg = (w, h) => { const s = document.createElementNS(SVGNS,"svg"); s.
 const sections = [...document.querySelectorAll("section.step")];
 const STOPPERS = [];
 
-const GROUPS = { "1": "1부 · 메서드로 만들기", "2": "2부 · 클래스로 만들기", "3": "도전문제" };
+const TABS = [
+  { id: "course",    label: "강좌",     parts: ["1", "2"] },
+  { id: "challenge", label: "도전문제", parts: ["3"] }
+];
+const GROUPS = { "1": "1부 · 메서드로 만들기", "2": "2부 · 클래스로 만들기", "3": "문제 1 · 8×8 글자 뒤집기" };
+const tabOf = (part) => (TABS.filter(t => t.parts.indexOf(part) >= 0)[0] || TABS[0]).id;
+let curTab = "course", curStep = 0;
+const lastStep = {};        // 탭마다 마지막으로 보던 단계
+
+function buildTabs(){
+  const bar = $("sideTabs");
+  TABS.forEach(t => {
+    const b = el("button", { type: "button", role: "tab", "data-tab": t.id, "aria-selected": String(t.id === curTab) });
+    b.textContent = t.label;
+    b.onclick = () => selectTab(t.id, true);
+    bar.appendChild(b);
+  });
+}
+
+/* 탭 고르기 : 그 탭의 단계만 목록에 남긴다. jump 이면 그 탭의 첫 단계로 이동 */
+function selectTab(id, jump){
+  curTab = id;
+  document.querySelectorAll("#sideTabs button").forEach(b => b.setAttribute("aria-selected", String(b.dataset.tab === id)));
+  document.querySelectorAll("#stepNav li").forEach(li => { li.hidden = li.dataset.tab !== id; });
+  if (jump && tabOf(sections[curStep].dataset.part || "1") !== id){
+    const first = sections.filter(sec => tabOf(sec.dataset.part || "1") === id)[0];
+    const back = lastStep[id];
+    if (back != null) go(back);
+    else if (first) go(+first.dataset.n);
+  }
+}
 
 function buildNav(){
   const nav = $("stepNav");
@@ -4562,9 +4598,10 @@ function buildNav(){
   sections.forEach((sec) => {
     const n = +sec.dataset.n;
     const part = sec.dataset.part || "1";
-    if (part !== lastPart){ nav.appendChild(el("li", {class:"grp", role:"presentation"}, GROUPS[part] || "")); lastPart = part; }
+    if (part !== lastPart){ const g = el("li", {class:"grp", role:"presentation"}, GROUPS[part] || ""); g.dataset.tab = tabOf(part); nav.appendChild(g); lastPart = part; }
     const k = sec.dataset.k != null ? +sec.dataset.k : n;   // 아이콘에 표시할 숫자 (부마다 0부터)
-    const li = el("li"); const b = el("button", {type:"button", "data-go": n});
+    const li = el("li"); li.dataset.tab = tabOf(part);
+    const b = el("button", {type:"button", "data-go": n});
     const svg = digitSvg(18, 28); renderFnd(svg, TABLE[k % 10]);
     const t = el("span", {class:"t"}, `${sec.dataset.title}<small>${sec.dataset.sub}</small>`);
     b.append(svg, t);
@@ -4590,6 +4627,10 @@ function go(n, push = true){
   STOPPERS.forEach(f => f());              // 다른 단계로 가면 자동 실행 중인 실습 정지
   sections.forEach((s,i) => s.hidden = i !== n);
   document.querySelectorAll("#stepNav button").forEach(b => { if (+b.dataset.go === n) { b.setAttribute("aria-current","step"); revealInNav(b); } else b.removeAttribute("aria-current"); });
+  curStep = n;
+  const nTab = tabOf(sections[n].dataset.part || "1");
+  lastStep[nTab] = n;
+  if (typeof selectTab === "function") selectTab(nTab, false);
   if (push && location.hash !== `#step-${n}`) history.replaceState(null, "", `#step-${n}`);
   const mainEl = document.querySelector("main");
   if (mainEl) mainEl.scrollTop = 0;
@@ -5347,6 +5388,7 @@ function initIDE(){
 buildCode();
 initIDE();
 buildNav();
+buildTabs();
 [lab1, lab2, lab3, lab4, lab5, lab6, lab7, () => counterLab("l8", false), () => counterLab("l9", true), lab11, lab13, () => clockLab("l15", "ss"), () => clockLab("l16", "mmss"), () => clockLab("l17", "hhmmss")].forEach(f => { try { f(); } catch(e){ console.error(e); } });
 const start = location.hash.match(/step-(\d+)/);
 go(start ? +start[1] : 0, false);
