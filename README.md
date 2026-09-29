@@ -24,7 +24,7 @@ GitHub Pages를 켜면(Settings → Pages → `main` 브랜치, `/ (root)`) 웹�
   지원하지 않는 것: 상속, 인터페이스, 제네릭, `try`/`catch`, `switch`, 실수 연산, 스레드, 파일 입출력.
 - 끝나지 않는 반복문이나 너무 많은 출력은 실행기가 스스로 멈추고 알려 줍니다(4초 · 16만 자).
 
-실행기가 진짜 Java와 같은 결과를 내는지는, 이 저장소의 **22개 프로그램 전부**를 JDK 17의 `javac` · `java`로 돌린 출력과 한 글자까지 대조해 확인했습니다.
+실행기가 진짜 Java와 같은 결과를 내는지는, 이 저장소의 **23개 프로그램 전부**를 JDK 17의 `javac` · `java`로 돌린 출력과 한 글자까지 대조해 확인했습니다.
 
 ## 강좌 구성
 
@@ -61,10 +61,12 @@ GitHub Pages를 켜면(Settings → Pages → `main` 브랜치, `/ (root)`) 웹�
 
 | 도전 | 내용 | 파일 |
 |---|---|---|
-| 1 | 8×8 `char` 배열에 '가' 그리기 (`'#'`과 `' '`) | `Letter.java`, `Normal.java` |
+| 1 | 8×8 `char` 배열에 '가' 그리기 (`'#'`과 `' '`) — 획을 긋는 방법과 표로 적어 두는 방법 | `Letter.java`, `LetterTable.java`, `Normal.java` |
 | 2 | 같은 배열을 뒤집고 돌려서 출력하기 | `FlipUpDown.java`, `FlipLeftRight.java`, `RotateRight.java`, `RotateLeft.java` |
 
 다섯 가지 출력의 뼈대는 모두 같고, `System.out.print()`가 읽는 칸만 다릅니다. 배열을 새로 만들거나 값을 옮기지 않습니다.
+
+글자를 만드는 방법은 두 가지를 나란히 보여 줍니다. `Letter`는 가로획·세로획을 반복문으로 긋고, `LetterTable`은 7446 진리표처럼 8×8 모양을 **0과 1 표로 그대로 적어 둡니다**(소스에서 글자 모양이 그대로 보입니다). 둘 다 `char[8][8]`을 돌려주므로 도전 2의 코드는 어느 쪽을 써도 그대로 동작합니다.
 
 두 단계 모두 **격자 그림**이 함께 있습니다. 도전 1에서는 획 이름에 마우스를 올리면 그 반복문이 채우는 칸이 켜지고, 도전 2에서는 원본과 출력 격자를 나란히 놓고 출력 칸을 가리키면 원본의 어느 칸에서 읽어 오는지 짝을 지어 보여 줍니다. 줄 단위로 따라가면 회전에서 출력의 한 **줄**이 원본의 한 **열**에서 온다는 것이 눈에 들어옵니다.
 
@@ -97,7 +99,8 @@ GitHub Pages를 켜면(Settings → Pages → `main` 브랜치, `/ (root)`) 웹�
     ├── DigitClock.java Digit 6개로 만든 같은 시계
     └── ... 테스트 프로그램
 └── challenge/          도전문제 (8×8 글자 뒤집고 돌리기)
-    ├── Letter.java     8×8 배열에 '가'
+    ├── Letter.java     8×8 배열에 '가' (획을 그어 채우기)
+    ├── LetterTable.java 같은 글자를 0/1 표로 미리 적어 두기
     ├── Normal.java     정상 출력
     ├── FlipUpDown.java · FlipLeftRight.java
     └── RotateRight.java · RotateLeft.java
