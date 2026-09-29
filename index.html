@@ -162,6 +162,26 @@ main{grid-column:2;grid-row:1;min-width:0;overflow:auto;padding-block:36px 64px;
   .card pre{max-height:300px}
 }
 
+/* ---------- 인덱스 격자 그림 ---------- */
+.cellgrid{max-width:100%;height:auto;font-family:var(--font-mono)}
+.cellgrid .ax{fill:var(--muted);font-size:10px;text-anchor:middle}
+.cellgrid .cell rect{fill:var(--paper);stroke:var(--rule);stroke-width:1}
+.cellgrid .cell.on rect{fill:var(--sunken)}
+.cellgrid .cell .ch{fill:var(--ink);font-size:12px;font-weight:600}
+.cellgrid .cell.row rect{fill:var(--pcb-soft)}
+.cellgrid .cell.row.on rect{fill:var(--pcb-soft);stroke:var(--pcb)}
+.cellgrid .cell.hi rect{fill:var(--led);stroke:var(--led)}
+.cellgrid .cell.hi .ch{fill:#fff}
+.figrow{display:flex;gap:18px;align-items:flex-start;flex-wrap:wrap}
+.figcol{display:flex;flex-direction:column;gap:6px;min-width:0}
+.figcol .cap{font-size:12px;color:var(--muted);font-family:var(--font-mono)}
+.figarrow{align-self:center;font-size:22px;color:var(--pcb);padding-top:40px}
+.btn small{display:block;font-family:var(--font-mono);font-size:11px;color:var(--muted);font-weight:400;margin-top:2px}
+.btn.primary small{color:var(--pcb-ink);opacity:.85}
+.btn.stroke{text-align:left;line-height:1.35}
+.btn.stroke.act{border-color:var(--led);box-shadow:inset 0 0 0 1px var(--led)}
+.mapline{font-family:var(--font-mono);font-size:14px;background:var(--sunken);padding:8px 12px;border-radius:var(--radius);display:inline-block}
+
 /* ---------- lab (interactive) ---------- */
 .lab{background:var(--surface);border:1px solid var(--rule);border-radius:10px;padding:20px;margin:18px 0}
 .lab-h{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap;margin-bottom:14px}
@@ -286,6 +306,7 @@ details.q .a{padding:10px 14px 12px;font-size:15px}
   .steps .t small{display:none}
 }
 @media (max-width:640px){
+  .figarrow{transform:rotate(90deg);padding:4px 0}
   .card .bar{flex-wrap:wrap;row-gap:6px}
   .card .bar .hint{display:none}
   .side{max-height:none;position:sticky;top:env(safe-area-inset-top,0px);z-index:5;height:auto;border-right:0;border-bottom:1px solid var(--rule);padding:10px 16px}
@@ -1455,6 +1476,18 @@ java Main</pre></div>
     <li><b>가로획</b>: 행(i)을 고정하고 열(j)만 움직인다 → <code>for (int j = 0; j &lt;= 4; j++) a[1][j] = '#';</code></li>
     <li><b>세로획</b>: 열(j)을 고정하고 행(i)만 움직인다 → <code>for (int i = 1; i &lt;= 6; i++) a[i][4] = '#';</code></li>
   </ul>
+
+  <div class="lab" id="lab19">
+    <div class="lab-h"><b>그림으로 보기</b><span>획 이름에 마우스를 올리면 그 칸이 켜집니다</span></div>
+    <div class="figrow">
+      <div class="figcol">
+        <span class="cap">a[행][열] — 위 번호가 열(j), 왼쪽 번호가 행(i)</span>
+        <div id="l19grid"></div>
+      </div>
+      <div class="figcol" style="gap:8px;flex:1" id="l19strokes"></div>
+    </div>
+    <p style="margin:14px 0 0;font-size:14px;color:var(--muted)">획 하나가 반복문 하나입니다. 가로획은 <code>a[1][j]</code>처럼 <b>앞 번호가 고정</b>, 세로획은 <code>a[i][4]</code>처럼 <b>뒤 번호가 고정</b>됩니다.</p>
+  </div>
   <div class="scroll">
   <table class="data">
     <thead><tr><th>획</th><th>어디를</th><th>코드</th></tr></thead>
@@ -1503,6 +1536,30 @@ java Main</pre></div>
     <li><b><code>a[j][i]</code></b> : 행과 열을 맞바꾸는 것(전치). 가로로 놓인 획이 세로로 섭니다.</li>
     <li><b>회전</b> = 두 가지를 함께 쓴 것입니다. 바꾸고(<code>j</code>, <code>i</code>) 한쪽을 뒤집으면(<code>7 -</code>) 90도가 됩니다.</li>
   </ul>
+
+  <div class="lab" id="lab20">
+    <div class="lab-h"><b>그림으로 보기</b><span>출력 칸에 마우스를 올리면 원본의 어느 칸을 읽는지 보입니다</span></div>
+    <div class="segbtns" id="l20modes" style="margin-bottom:14px"></div>
+    <div class="figrow">
+      <div class="figcol">
+        <span class="cap">원본 배열 a — 바뀌지 않는다</span>
+        <div id="l20src"></div>
+      </div>
+      <div class="figarrow" aria-hidden="true">→</div>
+      <div class="figcol">
+        <span class="cap">출력 — 읽는 칸만 바꾼 결과</span>
+        <div id="l20out"></div>
+      </div>
+    </div>
+    <div class="row" style="margin-top:14px;gap:10px;align-items:center">
+      <span class="lbl">출력 줄 따라가기</span>
+      <button class="btn" id="l20prev" type="button">← 이전 줄</button>
+      <button class="btn" id="l20next" type="button">다음 줄 →</button>
+      <span class="arr" id="l20expr"></span>
+    </div>
+    <p class="mapline" id="l20map" style="margin-top:12px"></p>
+    <p style="margin:12px 0 0;font-size:14px;color:var(--muted)">연한 칸이 지금 보고 있는 <b>한 줄</b>입니다. 회전을 고르면 출력의 한 <b>줄</b>이 원본의 한 <b>열</b>에서 온다는 것이 한눈에 보입니다.</p>
+  </div>
 
   <div class="scroll">
   <table class="data">
@@ -4556,6 +4613,169 @@ function initFnd(svg){
 function renderFnd(svg, seg){ initFnd(svg); svg._segs.forEach((p,i) => p.classList.toggle("lit", !!seg[i])); }
 const digitSvg = (w, h) => { const s = document.createElementNS(SVGNS,"svg"); s.setAttribute("class","fnd"); s.setAttribute("width",w); s.setAttribute("height",h); s.setAttribute("aria-hidden","true"); return s; };
 
+
+/* ================= 도전문제 : 인덱스 그림 ================= */
+const GA_STROKES = [
+  { id: "ga1", name: "ㄱ 가로획", code: "for (int j = 0; j <= 4; j++) a[1][j] = '#';", cells: () => { const c = []; for (let j = 0; j <= 4; j++) c.push([1, j]); return c; } },
+  { id: "ga2", name: "ㄱ 세로획", code: "for (int i = 1; i <= 6; i++) a[i][4] = '#';", cells: () => { const c = []; for (let i = 1; i <= 6; i++) c.push([i, 4]); return c; } },
+  { id: "ga3", name: "ㅏ 세로획", code: "for (int i = 0; i <= 7; i++) a[i][6] = '#';", cells: () => { const c = []; for (let i = 0; i <= 7; i++) c.push([i, 6]); return c; } },
+  { id: "ga4", name: "ㅏ 곁줄기", code: "a[4][7] = '#';", cells: () => [[4, 7]] }
+];
+
+function gaGrid(){
+  const a = Array.from({ length: 8 }, () => Array(8).fill(" "));
+  GA_STROKES.forEach(s => s.cells().forEach(([i, j]) => a[i][j] = "#"));
+  return a;
+}
+
+/* 8x8 칸 그림 : 행·열 번호가 붙은 격자 */
+function cellGrid(a, opt){
+  opt = opt || {};
+  const S = 21, P = 17;                       // 칸 크기, 번호 자리
+  const svg = document.createElementNS(SVGNS, "svg");
+  svg.setAttribute("class", "cellgrid");
+  svg.setAttribute("viewBox", `0 0 ${P + 8 * S + 1} ${P + 8 * S + 1}`);
+  svg.setAttribute("width", P + 8 * S + 1);
+  svg.setAttribute("role", "img");
+  if (opt.title) svg.setAttribute("aria-label", opt.title);
+
+  const mk = (tag, attrs, text) => {
+    const e = document.createElementNS(SVGNS, tag);
+    for (const k in attrs) e.setAttribute(k, attrs[k]);
+    if (text != null) e.textContent = text;
+    svg.appendChild(e);
+    return e;
+  };
+
+  for (let j = 0; j < 8; j++) mk("text", { x: P + j * S + S / 2, y: 12, class: "ax" }, j);
+  for (let i = 0; i < 8; i++) mk("text", { x: 8, y: P + i * S + S / 2 + 4, class: "ax" }, i);
+
+  svg._cells = [];
+  for (let i = 0; i < 8; i++){
+    svg._cells[i] = [];
+    for (let j = 0; j < 8; j++){
+      const g = document.createElementNS(SVGNS, "g");
+      g.setAttribute("class", "cell" + (a[i][j] === "#" ? " on" : ""));
+      const r = document.createElementNS(SVGNS, "rect");
+      r.setAttribute("x", P + j * S); r.setAttribute("y", P + i * S);
+      r.setAttribute("width", S - 1); r.setAttribute("height", S - 1);
+      g.appendChild(r);
+      if (a[i][j] === "#"){
+        const t = document.createElementNS(SVGNS, "text");
+        t.setAttribute("x", P + j * S + S / 2 - 0.5); t.setAttribute("y", P + i * S + S / 2 + 4);
+        t.setAttribute("text-anchor", "middle"); t.setAttribute("class", "ch");
+        t.textContent = "#";
+        g.appendChild(t);
+      }
+      svg.appendChild(g);
+      svg._cells[i][j] = g;
+      if (opt.onHover){
+        g.addEventListener("mouseenter", () => opt.onHover(i, j));
+        g.addEventListener("mouseleave", () => opt.onHover(null));
+        g.addEventListener("click", () => opt.onHover(i, j, true));
+      }
+    }
+  }
+  svg._mark = (list, cls) => {
+    svg._cells.forEach(row => row.forEach(g => g.classList.remove(cls)));
+    (list || []).forEach(([i, j]) => { if (svg._cells[i] && svg._cells[i][j]) svg._cells[i][j].classList.add(cls); });
+  };
+  return svg;
+}
+
+/* ---------- 도전 1 : 획 긋기 그림 ---------- */
+function labGa(){
+  const host = $("l19grid"); if (!host) return;
+  const a = gaGrid();
+  const svg = cellGrid(a, { title: "8×8 배열에 그린 '가'" });
+  host.appendChild(svg);
+
+  const list = $("l19strokes");
+  GA_STROKES.forEach(st => {
+    const b = el("button", { type: "button", class: "btn stroke" });
+    b.innerHTML = `<b>${st.name}</b><small>${st.code.replace(/</g, "&lt;")}</small>`;
+    const on = () => { svg._mark(st.cells(), "hi"); b.classList.add("act"); };
+    const off = () => { svg._mark([], "hi"); b.classList.remove("act"); };
+    b.addEventListener("mouseenter", on);
+    b.addEventListener("mouseleave", off);
+    b.addEventListener("focus", on);
+    b.addEventListener("blur", off);
+    b.addEventListener("click", on);
+    list.appendChild(b);
+  });
+}
+
+/* ---------- 도전 2 : 읽는 칸 그림 ---------- */
+const IDX_MODES = [
+  { label: "정상",        expr: "a[i][j]",     map: (i, j) => [i, j] },
+  { label: "상하 반전",   expr: "a[7 - i][j]", map: (i, j) => [7 - i, j] },
+  { label: "좌우 반전",   expr: "a[i][7 - j]", map: (i, j) => [i, 7 - j] },
+  { label: "시계 90°",    expr: "a[7 - j][i]", map: (i, j) => [7 - j, i] },
+  { label: "반시계 90°",  expr: "a[j][7 - i]", map: (i, j) => [j, 7 - i] }
+];
+
+function labIndex(){
+  if (!$("l20src")) return;
+  const a = gaGrid();
+  let mode = 0, row = 0, pinned = null;
+
+  const out = () => {
+    const o = Array.from({ length: 8 }, () => Array(8).fill(" "));
+    for (let i = 0; i < 8; i++) for (let j = 0; j < 8; j++){
+      const [si, sj] = IDX_MODES[mode].map(i, j);
+      o[i][j] = a[si][sj];
+    }
+    return o;
+  };
+
+  let srcSvg, outSvg;
+  const draw = () => {
+    $("l20src").innerHTML = ""; $("l20out").innerHTML = "";
+    srcSvg = cellGrid(a, { title: "원본 배열 a", onHover: (i, j, click) => { if (i === null) { if (!pinned) show(null); return; } } });
+    outSvg = cellGrid(out(), { title: "출력", onHover: (i, j, click) => {
+      if (i === null) { if (!pinned) show(null); return; }
+      if (click) pinned = pinned && pinned[0] === i && pinned[1] === j ? null : [i, j];
+      show(i, j);
+    } });
+    $("l20src").appendChild(srcSvg); $("l20out").appendChild(outSvg);
+    show(pinned ? pinned[0] : null, pinned ? pinned[1] : null);
+  };
+
+  const show = (i, j) => {
+    const m = IDX_MODES[mode];
+    const rowCells = [], srcRowCells = [];
+    for (let c = 0; c < 8; c++){ rowCells.push([row, c]); srcRowCells.push(m.map(row, c)); }
+    srcSvg._mark(srcRowCells, "row"); outSvg._mark(rowCells, "row");
+    if (i == null){
+      srcSvg._mark([], "hi"); outSvg._mark([], "hi");
+      $("l20map").textContent = `출력 ${row}번째 줄 ← ${m.expr.replace("i", row)} (j = 0 … 7)`;
+      return;
+    }
+    const [si, sj] = m.map(i, j);
+    outSvg._mark([[i, j]], "hi"); srcSvg._mark([[si, sj]], "hi");
+    $("l20map").textContent = `출력[${i}][${j}]  ←  a[${si}][${sj}]     ( ${m.expr} 에 i = ${i}, j = ${j} )`;
+  };
+
+  const modes = $("l20modes");
+  IDX_MODES.forEach((m, k) => {
+    const b = el("button", { type: "button", class: "btn" + (k === 0 ? " primary" : "") });
+    b.innerHTML = `${m.label}<small>${m.expr}</small>`;
+    b.onclick = () => {
+      mode = k; pinned = null;
+      [...modes.children].forEach((x, n) => x.classList.toggle("primary", n === k));
+      $("l20expr").textContent = IDX_MODES[k].expr;
+      draw();
+    };
+    modes.appendChild(b);
+  });
+
+  $("l20prev").onclick = () => { row = (row + 7) % 8; pinned = null; show(null); };
+  $("l20next").onclick = () => { row = (row + 1) % 8; pinned = null; show(null); };
+
+  $("l20expr").textContent = IDX_MODES[0].expr;
+  draw();
+}
+
 /* ================= 단계 이동 ================= */
 const sections = [...document.querySelectorAll("section.step")];
 const STOPPERS = [];
@@ -5389,7 +5609,7 @@ buildCode();
 initIDE();
 buildNav();
 buildTabs();
-[lab1, lab2, lab3, lab4, lab5, lab6, lab7, () => counterLab("l8", false), () => counterLab("l9", true), lab11, lab13, () => clockLab("l15", "ss"), () => clockLab("l16", "mmss"), () => clockLab("l17", "hhmmss")].forEach(f => { try { f(); } catch(e){ console.error(e); } });
+[lab1, lab2, lab3, lab4, lab5, lab6, lab7, () => counterLab("l8", false), () => counterLab("l9", true), lab11, lab13, labGa, labIndex, () => clockLab("l15", "ss"), () => clockLab("l16", "mmss"), () => clockLab("l17", "hhmmss")].forEach(f => { try { f(); } catch(e){ console.error(e); } });
 const start = location.hash.match(/step-(\d+)/);
 go(start ? +start[1] : 0, false);
 </script>
