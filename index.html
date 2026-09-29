@@ -202,13 +202,11 @@ main{grid-column:2;grid-row:1;min-width:0;overflow:auto;padding-block:36px 64px;
 .bitbox{background:var(--term);color:var(--term-ink);font-family:var(--font-mono);font-size:12.5px;line-height:1.85;padding:14px 16px;border-radius:var(--radius);overflow-x:auto;white-space:pre;margin:0}
 .bitbox .bl{color:var(--term-dim)}
 .bitbox .bn{color:var(--tok-str)}
+.bitbox .bo{color:var(--tok-type)}
 .bitbox b.nib{color:#fff;background:var(--led);border-radius:3px;padding:1px 2px;font-weight:700}
 details.fold{border:1px dashed var(--rule);border-radius:var(--radius);margin:16px 0;background:var(--surface)}
-details.fold>summary{cursor:pointer;padding:11px 14px;font-size:14px;font-weight:600;color:var(--muted);list-style:none;display:flex;gap:8px;align-items:center}
+details.fold>summary{cursor:default;padding:11px 14px;font-size:14px;font-weight:600;color:var(--muted);list-style:none;display:flex;gap:8px;align-items:center}
 details.fold>summary::-webkit-details-marker{display:none}
-details.fold>summary::before{content:"▸";color:var(--pcb);font-size:13px}
-details.fold[open]>summary::before{content:"▾"}
-details.fold>summary:hover{color:var(--ink)}
 details.fold>summary:focus-visible{outline:2px solid var(--pcb);outline-offset:-2px}
 details.fold .card{margin:0 12px 12px}
 .blank{background:var(--warn-bg);color:var(--warn-ink);border:1px dashed var(--warn-rule);border-radius:4px;padding:0 6px;font-family:var(--font-mono)}
@@ -1905,6 +1903,7 @@ java Main</pre></div>
     <div class="lab-h"><b>그림으로 보기</b><span>한 단계씩 누르면 n 값이 어떻게 바뀌는지 보입니다</span></div>
     <div class="arow" id="l24row"></div>
     <div class="stepmsg" id="l24msg"></div>
+    <pre class="bitbox" id="l24bits" style="margin-top:10px"></pre>
     <div class="row" style="margin-top:12px;gap:8px;align-items:center">
       <button class="btn" id="l24prev" type="button">← 이전</button>
       <button class="btn primary" id="l24next" type="button">다음 →</button>
@@ -1912,7 +1911,7 @@ java Main</pre></div>
       <button class="btn" id="l24reset" type="button">처음으로</button>
       <span class="stepcnt" id="l24cnt"></span>
     </div>
-    <p style="margin:12px 0 0;font-size:14px;color:var(--muted)">오른쪽 위 <code>n = 0x…</code>가 <b>진짜 변수 값</b>입니다. 칸처럼 보이지만 실제로는 정수 하나가 바뀌고 있을 뿐입니다. 문제 2의 버블 정렬과 순서는 똑같고, 배열 대신 비트 연산을 쓴다는 점만 다릅니다.</p>
+    <p style="margin:12px 0 0;font-size:14px;color:var(--muted)">아래 검은 칸에 그 단계에서 <b>실제로 실행되는 비트 연산</b>이 값과 함께 나옵니다. 붉은 4비트가 지금 다루는 니블입니다. 오른쪽 위 <code>n = 0x…</code>가 <b>진짜 변수 값</b>입니다. 칸처럼 보이지만 실제로는 정수 하나가 바뀌고 있을 뿐입니다. 문제 2의 버블 정렬과 순서는 똑같고, 배열 대신 비트 연산을 쓴다는 점만 다릅니다.</p>
   </div>
 
   <h2>실습 코드 — 빈칸 네 곳</h2>
@@ -1922,20 +1921,20 @@ java Main</pre></div>
     <li><b>②  set</b> 과 <b>③  swap</b> 을 채우면 — <code>0 &lt;-&gt; 7</code> 줄에서 양 끝이 바뀝니다.</li>
     <li><b>④  sort</b> 를 채우면 — 마지막 줄이 <code>오름차순 정렬 완료</code>가 됩니다.</li>
   </ol>
-  <p style="font-size:14px;color:var(--muted)">이 파일은 <b>화면 아래 에디터에 이미 올라와 있습니다</b>. 거기서 바로 고치고 <b>▶ 실행</b>하면 됩니다. 아래 상자는 전체 코드를 다시 훑어보고 싶을 때만 펼치세요.</p>
-  <details class="fold">
-    <summary>실습 코드 펼쳐 보기 — NibbleSort.java</summary>
+  <p style="font-size:14px;color:var(--muted)">이 파일은 <b>화면 아래 에디터에 이미 올라와 있습니다</b>. 거기서 바로 고치고 <b>▶ 실행</b>하면 됩니다.</p>
+  <details class="fold" data-lock="1">
+    <summary>NibbleSort.java</summary>
     <div class="runner" data-src="chnib" data-name="NibbleSort.java" data-file="challenge/NibbleSort.java" data-main="NibbleSort"></div>
   </details>
 
   <div class="note"><b>씨앗값(seed).</b> <code>makeRandom(20260929)</code>은 실행할 때마다 <b>같은</b> 숫자를 만듭니다. 결과를 비교하기 쉽도록 고정해 둔 것이고, 다른 값을 넣으면 다른 배치가 나옵니다. 진짜 무작위가 필요하면 <code>(int)(Math.random() * 10)</code>을 쓰면 됩니다.</div>
 
-  <h2>막히면 여기를 펼쳐 보세요</h2>
-  <details class="q"><summary>빈칸 ① — 니블 꺼내기</summary><div class="a"><code>return (n &gt;&gt; s) &amp; MASK;</code><br><br><code>s</code>만큼 오른쪽으로 밀면 원하는 니블이 맨 아래로 내려옵니다. 그 위에 남아 있는 비트를 <code>&amp; MASK</code>로 잘라 냅니다. 두 연산의 <b>순서를 바꾸면</b> 엉뚱한 값이 나옵니다.</div></details>
-  <details class="q"><summary>빈칸 ② — 니블 넣기</summary><div class="a"><code>return (n &amp; ~(MASK &lt;&lt; s)) | (d &lt;&lt; s);</code><br><br>왼쪽 괄호가 <b>자리 비우기</b>, 오른쪽이 <b>값 끼워 넣기</b>입니다. <code>MASK &lt;&lt; s</code>는 그 자리만 1, <code>~</code>를 붙이면 그 자리만 0이 되어 AND로 지워집니다.</div></details>
-  <details class="q"><summary>빈칸 ③ — 두 니블 교환</summary><div class="a"><code>int t = get(n, i);<br>n = set(n, i, get(n, j));<br>n = set(n, j, t);<br>return n;</code><br><br>먼저 꺼내 두지 않고 <code>set</code>부터 하면 값이 덮여 사라집니다. 문제 2에서 <code>int t = a[i];</code>로 자리를 바꾸던 것과 같은 이유입니다.<br><br>비트만으로 하는 방법도 있습니다: <code>int x = get(n,i) ^ get(n,j);</code> 를 두 자리에 각각 XOR 하면 임시 변수 없이 교환됩니다.</div></details>
-  <details class="q"><summary>빈칸 ④ — 버블 정렬</summary><div class="a"><code>if (get(n, k) &gt; get(n, k + 1)) n = swap(n, k, k + 1);</code><br><br><code>swap</code>은 <b>바뀐 n 을 돌려주는</b> 메서드이므로 <code>n =</code> 으로 다시 받아야 합니다. 받지 않으면 아무 일도 일어나지 않습니다.</div></details>
-  <details class="q"><summary>정답을 맞췄는지 확인하기</summary><div class="a">씨앗값 <code>20260929</code>이면 처음이 <code>8 0 0 3 6 5 1 5</code>(<code>0x80036515</code>), 정렬 후가 <code>0 0 1 3 5 5 6 8</code>(<code>0x00135568</code>)입니다. 마지막 줄에 <code>오름차순 정렬 완료</code>가 나오면 성공입니다.</div></details>
+  <h2>참고</h2>
+  <details class="q" data-lock="1"><summary>빈칸 ①</summary><div class="a"><code>return (n &gt;&gt; s) &amp; MASK;</code><br><br><code>s</code>만큼 오른쪽으로 밀면 원하는 니블이 맨 아래로 내려옵니다. 그 위에 남아 있는 비트를 <code>&amp; MASK</code>로 잘라 냅니다. 두 연산의 <b>순서를 바꾸면</b> 엉뚱한 값이 나옵니다.</div></details>
+  <details class="q" data-lock="1"><summary>빈칸 ②</summary><div class="a"><code>return (n &amp; ~(MASK &lt;&lt; s)) | (d &lt;&lt; s);</code><br><br>왼쪽 괄호가 <b>자리 비우기</b>, 오른쪽이 <b>값 끼워 넣기</b>입니다. <code>MASK &lt;&lt; s</code>는 그 자리만 1, <code>~</code>를 붙이면 그 자리만 0이 되어 AND로 지워집니다.</div></details>
+  <details class="q" data-lock="1"><summary>빈칸 ③</summary><div class="a"><code>int t = get(n, i);<br>n = set(n, i, get(n, j));<br>n = set(n, j, t);<br>return n;</code><br><br>먼저 꺼내 두지 않고 <code>set</code>부터 하면 값이 덮여 사라집니다. 문제 2에서 <code>int t = a[i];</code>로 자리를 바꾸던 것과 같은 이유입니다.<br><br>비트만으로 하는 방법도 있습니다: <code>int x = get(n,i) ^ get(n,j);</code> 를 두 자리에 각각 XOR 하면 임시 변수 없이 교환됩니다.</div></details>
+  <details class="q" data-lock="1"><summary>빈칸 ④</summary><div class="a"><code>if (get(n, k) &gt; get(n, k + 1)) n = swap(n, k, k + 1);</code><br><br><code>swap</code>은 <b>바뀐 n 을 돌려주는</b> 메서드이므로 <code>n =</code> 으로 다시 받아야 합니다. 받지 않으면 아무 일도 일어나지 않습니다.</div></details>
+  <details class="q" data-lock="1"><summary>실행 결과</summary><div class="a">씨앗값 <code>20260929</code>이면 처음이 <code>8 0 0 3 6 5 1 5</code>(<code>0x80036515</code>), 정렬 후가 <code>0 0 1 3 5 5 6 8</code>(<code>0x00135568</code>)입니다. 마지막 줄에 <code>오름차순 정렬 완료</code>가 나오면 성공입니다.</div></details>
 
   <h2>확인 문제</h2>
   <details class="q"><summary><code>swap</code>에서 <code>set</code>을 두 번 부를 때 순서를 바꾸면?</summary><div class="a">임시 변수에 먼저 담아 두었다면 순서를 바꿔도 결과는 같습니다. 담아 두지 않고 <code>set(n, i, get(n, j))</code> → <code>set(n, j, get(n, i))</code>로 하면, 두 번째 <code>get</code>이 <b>이미 바뀐 값</b>을 읽어 두 자리가 같은 값이 됩니다.</div></details>
@@ -5443,6 +5442,22 @@ function cellGrid(a, opt){
 }
 
 /* ---------- 도전 1 : 획 긋기 그림 ---------- */
+/* 접힌 상자는 Ctrl(⌘) + 더블클릭으로만 열린다 */
+function lockFolds(){
+  document.querySelectorAll("details[data-lock]").forEach(d => {
+    const sum = d.querySelector("summary");
+    if (!sum || sum.__locked) return;
+    sum.__locked = true;
+    sum.addEventListener("click", e => { if (!d.__allow) e.preventDefault(); });
+    sum.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") e.preventDefault(); });
+    sum.addEventListener("dblclick", e => {
+      e.preventDefault();
+      if (!(e.ctrlKey || e.metaKey)) return;
+      d.__allow = true; d.open = !d.open; d.__allow = false;
+    });
+  });
+}
+
 function labGa(){
   const host = $("l19grid"); if (!host) return;
   const a = gaGrid();
@@ -5649,7 +5664,7 @@ function binarySteps(a, key){
 }
 
 /* ---- 단계 재생기 ---- */
-function stepper(id, build, labels){
+function stepper(id, build, labels, extra){
   const host = $(id + "row"), msg = $(id + "msg"), cnt = $(id + "cnt");
   let steps = [], at = 0, timer = 0;
 
@@ -5658,6 +5673,7 @@ function stepper(id, build, labels){
     drawRow(host, st);
     msg.textContent = st.msg;
     cnt.textContent = labels(st);
+    if (extra) extra(st);
     $(id + "prev").disabled = at === 0;
     $(id + "next").disabled = at >= steps.length - 1;
     if (at >= steps.length - 1) stop();
@@ -5734,7 +5750,8 @@ const bin32 = (n) => ((n >>> 0).toString(2).padStart(32, "0").match(/.{4}/g));
 
 /* 32비트를 4비트씩 끊어 보여 준다. hl 은 강조할 니블 번호(0 = 맨 왼쪽) */
 function bitLine(label, v, hl, note){
-  const groups = bin32(v).map((g, i) => (hl != null && i === hl) ? '<b class="nib">' + g + "</b>" : g).join(" ");
+  const hls = hl == null ? [] : (Array.isArray(hl) ? hl : [hl]);
+  const groups = bin32(v).map((g, i) => hls.indexOf(i) >= 0 ? '<b class="nib">' + g + "</b>" : g).join(" ");
   const w = 18 - [...label].reduce((t, ch) => t + (ch.charCodeAt(0) > 0x2000 ? 2 : 1), 0);
   return '<span class="bl">' + label + " ".repeat(Math.max(1, w)) + "</span>" + groups + (note ? '<span class="bn">  ' + note + "</span>" : "");
 }
@@ -5813,30 +5830,49 @@ function nibSortSteps(){
   const out = [];
   const arr = () => { const a = []; for (let k = 0; k < 8; k++) a.push(nibGet(n, k)); return a; };
   const tail = (t) => { const f = []; for (let x = 8 - t; x < 8; x++) f.push(x); return f; };
+  const sh = (k) => (7 - k) * 4;
 
-  out.push({ a: arr(), hex: hex8(n), msg: "시작 — 니블 8개가 int 하나에 들어 있다" });
+  out.push({ a: arr(), n: n, hex: hex8(n), msg: "시작 — 니블 8개가 int 하나에 들어 있다",
+             ops: ["makeRandom() 이 채워 둔 상태", "n = 0x" + hex8(n) + "  (십진수로도 정수 하나일 뿐이다)"] });
 
   for (let p = 0; p < 7; p++){
     for (let k = 0; k < 7 - p; k++){
       const x = nibGet(n, k), y = nibGet(n, k + 1);
-      out.push({ a: arr(), hex: hex8(n), cmp: [k, k + 1], fixed: tail(p),
-                 msg: "get 으로 꺼내 비교 : [" + k + "] " + x + " vs [" + (k + 1) + "] " + y });
+      out.push({ a: arr(), n: n, hex: hex8(n), cmp: [k, k + 1], fixed: tail(p), hl: [k, k + 1],
+                 msg: "이웃한 [" + k + "] " + x + " 와 [" + (k + 1) + "] " + y + " 를 꺼내 비교",
+                 ops: ["get(n, " + k + ")  →  (n >> " + sh(k) + ") & 0xF  =  " + x,
+                       "get(n, " + (k + 1) + ")  →  (n >> " + sh(k + 1) + ") & 0xF  =  " + y,
+                       x > y ? "" + x + " > " + y + "  →  교환한다"
+                             : "" + x + " <= " + y + "  →  그대로 둔다"] });
       if (x > y){
+        const before = n;
         n = nibSet(nibSet(n, k, y), k + 1, x);
-        out.push({ a: arr(), hex: hex8(n), swap: [k, k + 1], fixed: tail(p),
-                   msg: "왼쪽이 크다 → swap : 두 자리를 비우고 값을 바꿔 넣는다" });
+        out.push({ a: arr(), n: n, hex: hex8(n), swap: [k, k + 1], fixed: tail(p), hl: [k, k + 1],
+                   msg: "swap — 자리를 비우고(AND) 값을 끼워 넣는다(OR)",
+                   ops: ["int t = get(n, " + k + ");            // t = " + x,
+                         "n = set(n, " + k + ", " + y + ")   →  (n & ~(0xF << " + sh(k) + ")) | (" + y + " << " + sh(k) + ")",
+                         "n = set(n, " + (k + 1) + ", " + x + ")   →  (n & ~(0xF << " + sh(k + 1) + ")) | (" + x + " << " + sh(k + 1) + ")",
+                         "0x" + hex8(before) + "  →  0x" + hex8(n)] });
       }
     }
-    out.push({ a: arr(), hex: hex8(n), fixed: tail(p + 1),
-               msg: p + "바퀴 끝 — 오른쪽 끝 " + nibGet(n, 7 - p) + " 확정" });
+    out.push({ a: arr(), n: n, hex: hex8(n), fixed: tail(p + 1), hl: [7 - p],
+               msg: p + "바퀴 끝 — 오른쪽 끝 " + nibGet(n, 7 - p) + " 확정",
+               ops: ["안쪽 for 의 범위가 한 칸 줄어든다 : k < 7 - " + p,
+                     "확정된 자리는 다시 건드리지 않는다"] });
   }
-  out.push({ a: arr(), hex: hex8(n), fixed: tail(8), msg: "정렬 끝 — n 하나만으로 끝냈다" });
+  out.push({ a: arr(), n: n, hex: hex8(n), fixed: tail(8), msg: "정렬 끝 — n 하나만으로 끝냈다",
+             ops: ["배열도, 복사본도 쓰지 않았다", "바뀐 것은 정수 n 의 비트뿐이다"] });
   return out;
 }
 
 function nibLab(){
   if (!$("l24row")) return;
-  const ui = stepper("l24", nibSortSteps, st => "n = 0x" + st.hex);
+  const showBits = (st) => {
+    const lines = [bitLine("n", st.n, st.hl, "0x" + st.hex)];
+    (st.ops || []).forEach(o => { if (o) lines.push('<span class="bo">' + o.replace(/</g, "&lt;") + "</span>"); });
+    $("l24bits").innerHTML = lines.join("\n");
+  };
+  const ui = stepper("l24", nibSortSteps, st => "n = 0x" + st.hex, showBits);
   ui.reset();
 }
 
@@ -6673,7 +6709,7 @@ buildCode();
 initIDE();
 buildNav();
 buildTabs();
-[lab1, lab2, lab3, lab4, lab5, lab6, lab7, () => counterLab("l8", false), () => counterLab("l9", true), lab11, lab13, labGa, labIndex, sortLab, searchLab, nibMapFig, bitLab, nibLab, () => clockLab("l15", "ss"), () => clockLab("l16", "mmss"), () => clockLab("l17", "hhmmss")].forEach(f => { try { f(); } catch(e){ console.error(e); } });
+[lab1, lab2, lab3, lab4, lab5, lab6, lab7, () => counterLab("l8", false), () => counterLab("l9", true), lab11, lab13, labGa, labIndex, sortLab, searchLab, nibMapFig, bitLab, nibLab, lockFolds, () => clockLab("l15", "ss"), () => clockLab("l16", "mmss"), () => clockLab("l17", "hhmmss")].forEach(f => { try { f(); } catch(e){ console.error(e); } });
 const start = location.hash.match(/step-(\d+)/);
 go(start ? +start[1] : 0, false);
 </script>
