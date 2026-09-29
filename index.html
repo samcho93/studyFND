@@ -203,6 +203,14 @@ main{grid-column:2;grid-row:1;min-width:0;overflow:auto;padding-block:36px 64px;
 .bitbox .bl{color:var(--term-dim)}
 .bitbox .bn{color:var(--tok-str)}
 .bitbox b.nib{color:#fff;background:var(--led);border-radius:3px;padding:1px 2px;font-weight:700}
+details.fold{border:1px dashed var(--rule);border-radius:var(--radius);margin:16px 0;background:var(--surface)}
+details.fold>summary{cursor:pointer;padding:11px 14px;font-size:14px;font-weight:600;color:var(--muted);list-style:none;display:flex;gap:8px;align-items:center}
+details.fold>summary::-webkit-details-marker{display:none}
+details.fold>summary::before{content:"▸";color:var(--pcb);font-size:13px}
+details.fold[open]>summary::before{content:"▾"}
+details.fold>summary:hover{color:var(--ink)}
+details.fold>summary:focus-visible{outline:2px solid var(--pcb);outline-offset:-2px}
+details.fold .card{margin:0 12px 12px}
 .blank{background:var(--warn-bg);color:var(--warn-ink);border:1px dashed var(--warn-rule);border-radius:4px;padding:0 6px;font-family:var(--font-mono)}
 
 /* ---------- lab (interactive) ---------- */
@@ -1914,7 +1922,11 @@ java Main</pre></div>
     <li><b>②  set</b> 과 <b>③  swap</b> 을 채우면 — <code>0 &lt;-&gt; 7</code> 줄에서 양 끝이 바뀝니다.</li>
     <li><b>④  sort</b> 를 채우면 — 마지막 줄이 <code>오름차순 정렬 완료</code>가 됩니다.</li>
   </ol>
-  <div class="runner" data-src="chnib" data-name="NibbleSort.java" data-file="challenge/NibbleSort.java" data-main="NibbleSort"></div>
+  <p style="font-size:14px;color:var(--muted)">이 파일은 <b>화면 아래 에디터에 이미 올라와 있습니다</b>. 거기서 바로 고치고 <b>▶ 실행</b>하면 됩니다. 아래 상자는 전체 코드를 다시 훑어보고 싶을 때만 펼치세요.</p>
+  <details class="fold">
+    <summary>실습 코드 펼쳐 보기 — NibbleSort.java</summary>
+    <div class="runner" data-src="chnib" data-name="NibbleSort.java" data-file="challenge/NibbleSort.java" data-main="NibbleSort"></div>
+  </details>
 
   <div class="note"><b>씨앗값(seed).</b> <code>makeRandom(20260929)</code>은 실행할 때마다 <b>같은</b> 숫자를 만듭니다. 결과를 비교하기 쉽도록 고정해 둔 것이고, 다른 값을 넣으면 다른 배치가 나옵니다. 진짜 무작위가 필요하면 <code>(int)(Math.random() * 10)</code>을 쓰면 됩니다.</div>
 
