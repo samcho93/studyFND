@@ -182,6 +182,22 @@ main{grid-column:2;grid-row:1;min-width:0;overflow:auto;padding-block:36px 64px;
 .btn.stroke.act{border-color:var(--led);box-shadow:inset 0 0 0 1px var(--led)}
 .mapline{font-family:var(--font-mono);font-size:14px;background:var(--sunken);padding:8px 12px;border-radius:var(--radius);display:inline-block}
 
+/* ---------- 1차원 배열 그림 (정렬 · 검색) ---------- */
+.arow{display:flex;gap:6px;flex-wrap:wrap}
+.acell{position:relative;min-width:54px;text-align:center;border:1px solid var(--rule);border-radius:var(--radius);padding:8px 6px 5px;background:var(--paper);font-family:var(--font-mono);transition:background .12s,border-color .12s,opacity .12s}
+.acell b{display:block;font-size:16px;line-height:1.2}
+.acell small{display:block;font-size:10px;color:var(--muted)}
+.acell small.tag{color:var(--led);font-weight:700;letter-spacing:.02em}
+.acell.fixed{background:var(--sunken);color:var(--muted)}
+.acell.out{opacity:.3}
+.acell.cmp{border-color:var(--pcb);background:var(--pcb-soft)}
+.acell.swap{border-color:var(--led);background:var(--led-glow)}
+.acell.mid{border-color:var(--led)}
+.acell.found{border-color:var(--led);background:var(--led)}
+.acell.found b,.acell.found small{color:#fff}
+.stepmsg{font-family:var(--font-mono);font-size:13.5px;background:var(--sunken);padding:9px 12px;border-radius:var(--radius);margin-top:14px;min-height:38px}
+.stepcnt{font-family:var(--font-mono);font-size:12px;color:var(--muted)}
+
 /* ---------- lab (interactive) ---------- */
 .lab{background:var(--surface);border:1px solid var(--rule);border-radius:10px;padding:20px;margin:18px 0}
 .lab-h{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap;margin-bottom:14px}
@@ -386,7 +402,7 @@ details.q .a{padding:10px 14px 12px;font-size:15px}
       <li>가운데 코드 상자에서도 바로 <b>▶ 실행</b>할 수 있습니다. <code>TTL7490.java</code>처럼 main 이 없는 클래스는 <b>▶ 함께 실행</b>이 되어, 그 클래스를 쓰는 이 단계의 프로그램이 실행됩니다. <b>에디터에서 열기</b>는 실행하지 않고 파일만 아래 에디터로 올립니다. <b>되돌리기</b>는 원래 코드로 돌립니다.</li>
       <li>칸 사이의 선을 <b>끌어서</b> 결과 칸의 너비와 에디터 높이를 바꿀 수 있습니다.</li>
     </ul>
-    Java를 설치하지 않아도 되도록 브라우저 안의 작은 Java 해석기가 돌립니다. 이 강좌의 23개 프로그램은 모두 실제 JDK 17의 <code>javac</code> · <code>java</code> 결과와 한 글자까지 같은지 대조했습니다.</div>
+    Java를 설치하지 않아도 되도록 브라우저 안의 작은 Java 해석기가 돌립니다. 이 강좌의 27개 프로그램은 모두 실제 JDK 17의 <code>javac</code> · <code>java</code> 결과와 한 글자까지 같은지 대조했습니다.</div>
   <div class="code out"><div class="cap"><span>내 컴퓨터에서 실행하려면</span></div><pre>javac -encoding UTF-8 Step1.java
 java Step1</pre></div>
 </section>
@@ -1643,6 +1659,159 @@ java Main</pre></div>
 
   <div class="note"><b>어디에 쓰이나.</b> 이미지 회전, 화면 회전, 테트리스 블록 돌리기, 행렬 전치가 모두 같은 계산입니다. 인덱스를 다루는 감각이 붙으면 그대로 옮겨 쓸 수 있습니다.</div>
 </section>
+
+<!-- ================= 문제 2 · 1단계 : 정렬 ================= -->
+<section class="step" id="step-21" data-n="21" data-part="4" data-k="1" data-title="정렬" data-sub="selection · bubble" hidden>
+  <div class="eyebrow">문제 2 · 1단계</div>
+  <h1>1차원 배열 정렬하기</h1>
+  <p class="lead">흩어져 있는 숫자 8개를 작은 값부터 늘어놓습니다. 정렬이 하는 일은 결국 <b>두 가지</b>뿐입니다 — 두 값을 <b>비교</b>하고, 필요하면 자리를 <b>교환</b>합니다. 가장 많이 쓰이는 기본 방법 두 가지를 봅니다.</p>
+  <ul class="goals"><li>비교와 교환</li><li>확정된 구간이 늘어나는 흐름</li><li>2중 for문의 안쪽 범위</li></ul>
+
+  <div class="sig">int[] a = {29, 10, 14, 37, 13, 25, 8, 42};</div>
+
+  <h2>두 값을 바꾸려면 임시 변수가 필요하다</h2>
+  <p>정렬의 모든 동작은 이 세 줄 위에 있습니다. <code>a[i] = a[j]</code>를 먼저 하면 <code>a[i]</code>에 있던 값이 사라지므로, <b>빈 손</b>을 하나 마련해야 합니다.</p>
+  <div class="code" data-src="swapcode" data-cap="자리 바꾸기"></div>
+
+  <h2>방법 1 · 선택 정렬</h2>
+  <p><b>"남은 칸 중 가장 작은 값을 찾아 맨 앞자리와 바꾼다."</b> 한 바퀴에 한 자리씩, 앞에서부터 확정됩니다. 사람이 카드를 정리할 때 가장 작은 것부터 골라 놓는 방식과 같습니다.</p>
+  <ul>
+    <li>바깥 for(<code>i</code>): 지금 채울 자리</li>
+    <li>안쪽 for(<code>j = i + 1</code>): <b>아직 정해지지 않은 칸</b>만 훑는다 — 그래서 <code>i + 1</code>부터</li>
+    <li>가장 작은 값은 <b>번호만</b>(<code>min</code>) 기억해 두었다가 마지막에 한 번만 교환한다</li>
+  </ul>
+
+  <h2>방법 2 · 버블 정렬</h2>
+  <p><b>"이웃한 두 칸을 비교해 큰 값을 뒤로 밀어낸다."</b> 한 바퀴 돌면 가장 큰 값이 거품처럼 맨 뒤로 올라가 확정됩니다.</p>
+  <ul>
+    <li>바깥 for(<code>pass</code>): 몇 바퀴째인가</li>
+    <li>안쪽 for(<code>j</code>): <code>0</code>부터 <code>length - 1 - pass</code>까지 — 이미 확정된 <b>뒤쪽</b>은 건드리지 않는다</li>
+    <li>한 바퀴 동안 교환이 한 번도 없으면 이미 정렬된 것이므로 <code>break</code></li>
+  </ul>
+
+  <div class="lab" id="lab21">
+    <div class="lab-h"><b>그림으로 보기</b><span>한 단계씩 눌러 비교와 교환을 따라가 보세요</span></div>
+    <div class="segbtns" id="l21modes" style="margin-bottom:14px"></div>
+    <div class="arow" id="l21row"></div>
+    <div class="stepmsg" id="l21msg"></div>
+    <div class="row" style="margin-top:12px;gap:8px;align-items:center">
+      <button class="btn" id="l21prev" type="button">← 이전</button>
+      <button class="btn primary" id="l21next" type="button">다음 →</button>
+      <button class="btn" id="l21play" type="button">▶ 자동</button>
+      <button class="btn" id="l21reset" type="button">처음으로</button>
+      <span class="stepcnt" id="l21cnt"></span>
+    </div>
+    <p style="margin:12px 0 0;font-size:14px;color:var(--muted)">연한 초록은 <b>지금 비교하는 두 칸</b>, 붉은색은 <b>교환</b>, 회색은 <b>확정된 칸</b>입니다. 선택 정렬은 앞에서부터, 버블 정렬은 뒤에서부터 확정되는 것을 보세요.</p>
+  </div>
+
+  <h2>선택 정렬 코드</h2>
+  <div class="runner" data-src="chsel" data-name="SelectionSort.java" data-file="challenge/SelectionSort.java" data-main="SelectionSort"></div>
+
+  <h2>버블 정렬 코드</h2>
+  <div class="runner" data-src="chbub" data-name="BubbleSort.java" data-file="challenge/BubbleSort.java" data-main="BubbleSort"></div>
+
+  <h2>둘의 차이</h2>
+  <div class="scroll">
+  <table class="data">
+    <thead><tr><th></th><th>선택 정렬</th><th>버블 정렬</th></tr></thead>
+    <tbody>
+      <tr><td>비교 횟수 (8개)</td><td>28번</td><td>28번</td></tr>
+      <tr class="hit"><td>교환 횟수 (위 예제)</td><td><b>5번</b></td><td><b>13번</b></td></tr>
+      <tr><td>확정되는 쪽</td><td>앞에서부터</td><td>뒤에서부터</td></tr>
+      <tr><td>이미 정렬된 배열</td><td>그래도 28번 비교</td><td>7번 비교하고 바로 끝</td></tr>
+      <tr><td>한 줄 요약</td><td>가장 작은 것을 골라 온다</td><td>이웃끼리 밀어낸다</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>둘 다 비교 횟수는 <code>n(n-1)/2</code>로 같습니다. 8개면 28번, 100개면 4,950번 — 개수가 2배가 되면 시간은 <b>약 4배</b>가 됩니다. 이런 방식을 O(n²)이라고 부르고, 자료가 커지면 퀵 정렬 · 병합 정렬처럼 더 빠른 방법을 씁니다.</p>
+  <div class="note"><b>실제로 쓸 때는.</b> Java에는 <code>Arrays.sort(a)</code>가 이미 있습니다. 그래도 이 두 가지를 직접 만들어 보는 이유는, 정렬이 <b>비교와 교환의 반복</b>이라는 것과 2중 for문의 범위를 잡는 감각을 얻기 위해서입니다.</div>
+
+  <h2>확인 문제</h2>
+  <details class="q"><summary>선택 정렬의 안쪽 for를 <code>j = 0</code>부터 돌리면?</summary><div class="a">이미 확정된 앞쪽 칸까지 다시 보게 되어, 가장 작은 값이 계속 <code>0</code>번 칸으로 잡힙니다. 정렬이 진행되지 않습니다. <b>남은 구간</b>만 보는 것이 핵심입니다.</div></details>
+  <details class="q"><summary>버블 정렬의 안쪽 조건 <code>j &lt; a.length - 1 - pass</code>에서 <code>- pass</code>를 빼면?</summary><div class="a">결과는 맞지만, 이미 확정된 뒤쪽을 매번 다시 비교하므로 헛일을 합니다. <code>- 1</code>까지 빼면 <code>a[j + 1]</code>이 배열 밖으로 나가 <code>ArrayIndexOutOfBoundsException</code>이 납니다.</div></details>
+  <details class="q"><summary>교환할 때 <code>int t = a[i];</code> 없이 <code>a[i] = a[j]; a[j] = a[i];</code> 로 쓰면?</summary><div class="a">두 칸이 모두 <code>a[j]</code> 값이 됩니다. 첫 줄에서 <code>a[i]</code>의 원래 값이 덮여 사라지기 때문입니다.</div></details>
+
+  <h2>연습 과제</h2>
+  <ol class="task">
+    <li>큰 값부터(내림차순) 정렬하도록 부등호를 바꿔 보세요.</li>
+    <li>선택 정렬에서 가장 <b>큰</b> 값을 찾아 뒤에서부터 채우도록 바꿔 보세요.</li>
+    <li>이름(문자열) 대신 점수 배열을 정렬하면서, 같은 순서로 이름 배열도 함께 옮겨 보세요. (두 배열을 나란히 교환)</li>
+    <li>정렬하기 전과 후의 비교 · 교환 횟수를 세어, 이미 정렬된 배열에서 두 방법이 얼마나 차이 나는지 확인해 보세요.</li>
+  </ol>
+</section>
+
+<!-- ================= 문제 2 · 2단계 : 검색 ================= -->
+<section class="step" id="step-22" data-n="22" data-part="4" data-k="2" data-title="검색" data-sub="linear · binary" hidden>
+  <div class="eyebrow">문제 2 · 2단계</div>
+  <h1>1차원 배열에서 값 찾기</h1>
+  <p class="lead">배열에서 특정 값이 <b>몇 번 칸에 있는지</b> 찾습니다. 방법은 두 가지입니다. 앞에서부터 하나씩 보거나, <b>정렬해 두었다면</b> 절반씩 잘라 가며 찾습니다.</p>
+  <ul class="goals"><li>찾으면 번호, 없으면 -1</li><li>정렬이 만드는 차이</li><li>lo · mid · hi 로 구간 좁히기</li></ul>
+
+  <h2>방법 1 · 순차 검색</h2>
+  <p>0번 칸부터 차례로 비교하다가 같은 값을 만나면 그 번호를 돌려주고 끝냅니다. 끝까지 없으면 <code>-1</code>입니다. <b>정렬되어 있지 않아도</b> 쓸 수 있는 유일한 방법입니다.</p>
+  <ul>
+    <li>운이 좋으면 1번, 나쁘면 <code>n</code>번 비교 — 평균 <code>n / 2</code>번</li>
+    <li><code>return</code>이 반복문을 즉시 끝냅니다. 찾은 뒤에도 계속 도는 낭비가 없습니다</li>
+  </ul>
+
+  <h2>방법 2 · 이진 검색</h2>
+  <p>가운데 값과 비교해 <b>절반을 통째로 버립니다</b>. 찾는 값이 가운데보다 크면 왼쪽 절반은 볼 필요가 없습니다. 단, <b>배열이 정렬되어 있어야</b> 성립합니다 — 그래서 1단계에서 정렬을 먼저 배웠습니다.</p>
+  <ul>
+    <li><code>lo</code>, <code>hi</code>: 아직 남은 구간의 양 끝. <code>mid = (lo + hi) / 2</code></li>
+    <li>가운데가 작으면 <code>lo = mid + 1</code>, 크면 <code>hi = mid - 1</code></li>
+    <li><code>lo &gt; hi</code>가 되면 남은 구간이 없다는 뜻 → 없는 값</li>
+  </ul>
+
+  <div class="lab" id="lab22">
+    <div class="lab-h"><b>그림으로 보기</b><span>같은 정렬된 배열에서 두 방법을 비교해 보세요</span></div>
+    <div class="segbtns" id="l22modes" style="margin-bottom:10px"></div>
+    <div class="row" style="gap:8px;align-items:center;margin-bottom:14px"><span class="lbl">찾을 값</span><span class="segbtns" id="l22keys"></span></div>
+    <div class="arow" id="l22row"></div>
+    <div class="stepmsg" id="l22msg"></div>
+    <div class="row" style="margin-top:12px;gap:8px;align-items:center">
+      <button class="btn" id="l22prev" type="button">← 이전</button>
+      <button class="btn primary" id="l22next" type="button">다음 →</button>
+      <button class="btn" id="l22play" type="button">▶ 자동</button>
+      <button class="btn" id="l22reset" type="button">처음으로</button>
+      <span class="stepcnt" id="l22cnt"></span>
+    </div>
+    <p style="margin:12px 0 0;font-size:14px;color:var(--muted)">이진 검색에서 흐리게 바뀐 칸은 <b>버려진 구간</b>입니다. 42를 찾을 때 순차는 8번, 이진은 2번이면 끝나는 것을 비교해 보세요.</p>
+  </div>
+
+  <h2>순차 검색 코드</h2>
+  <div class="runner" data-src="chlin" data-name="LinearSearch.java" data-file="challenge/LinearSearch.java" data-main="LinearSearch"></div>
+
+  <h2>이진 검색 코드</h2>
+  <div class="runner" data-src="chbin" data-name="BinarySearch.java" data-file="challenge/BinarySearch.java" data-main="BinarySearch"></div>
+
+  <h2>얼마나 차이 날까</h2>
+  <div class="scroll">
+  <table class="data">
+    <thead><tr><th>배열 크기</th><th>순차 검색 (최악)</th><th>이진 검색 (최악)</th></tr></thead>
+    <tbody>
+      <tr><td>8개</td><td>8번</td><td>3번</td></tr>
+      <tr><td>1,000개</td><td>1,000번</td><td>10번</td></tr>
+      <tr class="hit"><td>100만 개</td><td>1,000,000번</td><td><b>20번</b></td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>한 단계마다 후보가 절반으로 줄기 때문에, 크기가 2배가 되어도 단계는 <b>한 번</b>만 늘어납니다(O(log n)). 대신 정렬해 두는 비용이 듭니다. <b>한 번 만들어 여러 번 찾는</b> 자료라면 정렬해 두고 이진 검색이, <b>자주 바뀌고 가끔 찾는</b> 자료라면 순차 검색이 낫습니다.</p>
+
+  <h2>확인 문제</h2>
+  <details class="q"><summary>정렬되지 않은 배열에 이진 검색을 쓰면?</summary><div class="a">엉뚱한 절반을 버려서, 값이 있는데도 못 찾을 수 있습니다. 위 코드의 배열을 <code>{29, 10, 14, ...}</code>처럼 섞어 놓고 25를 찾아 보세요.</div></details>
+  <details class="q"><summary><code>while (lo &lt;= hi)</code>를 <code>while (lo &lt; hi)</code>로 바꾸면?</summary><div class="a">남은 칸이 하나일 때(<code>lo == hi</code>) 비교하지 못하고 끝나므로, 그 칸에 있는 값을 못 찾습니다. 42나 8처럼 끝에 있는 값에서 바로 드러납니다.</div></details>
+  <details class="q"><summary>찾는 값이 여러 개 있으면 어느 것을 돌려줄까요?</summary><div class="a">순차 검색은 <b>가장 앞</b>의 것을, 이진 검색은 <b>먼저 걸린</b> 것을 돌려줍니다. 첫 번째 위치가 필요하면 찾은 뒤 왼쪽으로 더 훑어야 합니다.</div></details>
+
+  <h2>연습 과제</h2>
+  <ol class="task">
+    <li>찾는 값이 없을 때 <b>어디에 넣어야 정렬이 유지되는지</b>(삽입 위치)를 돌려주도록 이진 검색을 고쳐 보세요. 힌트: 반복이 끝난 뒤의 <code>lo</code>.</li>
+    <li>두 방법의 비교 횟수를 모든 값(8 ~ 42)에 대해 세어 평균을 내 보세요.</li>
+    <li>1단계의 정렬을 먼저 돌린 뒤 이진 검색을 하는 프로그램으로 합쳐 보세요.</li>
+    <li>이진 검색을 <code>while</code> 대신 재귀 메서드로 바꿔 보세요.</li>
+  </ol>
+
+  <div class="note"><b>정렬과 검색은 짝입니다.</b> 정렬은 그 자체가 목적이라기보다, <b>찾기 쉽게 만들어 두는 일</b>인 경우가 많습니다. 전화번호부가 가나다순인 이유와 같습니다.</div>
+</section>
     </div>
   </main>
 
@@ -2811,6 +2980,185 @@ for (int i = 0; i < 8; i++) {          // i = 출력할 행
     }
     System.out.println();
 }</script>
+<script type="text/plain" id="swapcode">int t = a[i];      // 1) i 자리 값을 잠시 맡아 둔다
+a[i] = a[j];       // 2) j 자리 값을 i 로 옮기고
+a[j] = t;          // 3) 맡아 둔 값을 j 자리에 넣는다</script>
+<script type="text/plain" id="chsel">// 선택 정렬 : 남은 칸 중에서 가장 작은 값을 찾아 맨 앞자리와 바꾼다
+//   한 바퀴 돌 때마다 앞에서부터 한 자리씩 확정된다
+public class SelectionSort {
+
+    // 자리 맞춰 출력하기 (8 -> "  8", 42 -> " 42")
+    static String pad(int v) {
+        if (v < 10)  return "  " + v;
+        if (v < 100) return " " + v;
+        return "" + v;
+    }
+
+    // fixed : 앞쪽으로 확정된 칸 수. 그 뒤에 | 를 찍는다
+    static void show(int[] a, int fixed) {
+        for (int i = 0; i < a.length; i++) {
+            System.out.print(pad(a[i]));
+            if (i == fixed - 1) System.out.print("  |");
+        }
+        System.out.println();
+    }
+
+    public static void main(String[] args) {
+        int[] a = {29, 10, 14, 37, 13, 25, 8, 42};
+        int cmp = 0, swap = 0;
+
+        System.out.print("처음        ");
+        show(a, 0);
+
+        for (int i = 0; i < a.length - 1; i++) {
+            int min = i;                       // 지금까지 가장 작은 값이 있는 칸
+
+            for (int j = i + 1; j < a.length; j++) {
+                cmp++;                         // 비교 한 번
+                if (a[j] < a[min]) min = j;    // 더 작은 값을 찾으면 기억만 해 둔다
+            }
+
+            if (min != i) {                    // 찾은 값을 i 번 자리와 교환
+                int t = a[i];
+                a[i] = a[min];
+                a[min] = t;
+                swap++;
+            }
+
+            System.out.print(pad(i) + "번 확정  ");
+            show(a, i + 1);
+        }
+
+        System.out.println();
+        System.out.println("비교 " + cmp + "번, 교환 " + swap + "번");
+    }
+}
+</script>
+<script type="text/plain" id="chbub">// 버블 정렬 : 이웃한 두 칸을 비교해 큰 값을 뒤로 밀어낸다
+//   한 바퀴 돌면 가장 큰 값이 맨 뒤에 확정된다
+public class BubbleSort {
+
+    static String pad(int v) {
+        if (v < 10)  return "  " + v;
+        if (v < 100) return " " + v;
+        return "" + v;
+    }
+
+    // fixed : 뒤쪽으로 확정된 칸 수. 그 앞에 | 를 찍는다
+    static void show(int[] a, int fixed) {
+        for (int i = 0; i < a.length; i++) {
+            if (i == a.length - fixed) System.out.print("  |");
+            System.out.print(pad(a[i]));
+        }
+        System.out.println();
+    }
+
+    public static void main(String[] args) {
+        int[] a = {29, 10, 14, 37, 13, 25, 8, 42};
+        int cmp = 0, swap = 0;
+
+        System.out.print("처음        ");
+        show(a, 0);
+
+        for (int pass = 0; pass < a.length - 1; pass++) {
+            boolean moved = false;             // 이번 바퀴에 교환이 있었나
+
+            for (int j = 0; j < a.length - 1 - pass; j++) {
+                cmp++;                         // 이웃끼리 비교
+                if (a[j] > a[j + 1]) {         // 왼쪽이 더 크면 자리를 바꾼다
+                    int t = a[j];
+                    a[j] = a[j + 1];
+                    a[j + 1] = t;
+                    swap++;
+                    moved = true;
+                }
+            }
+
+            System.out.print(pad(pass) + "바퀴    ");
+            show(a, pass + 1);
+
+            if (moved == false) {              // 한 번도 안 바꿨으면 이미 정렬된 것
+                System.out.println("교환이 없었으므로 여기서 끝");
+                break;
+            }
+        }
+
+        System.out.println();
+        System.out.println("비교 " + cmp + "번, 교환 " + swap + "번");
+    }
+}
+</script>
+<script type="text/plain" id="chlin">// 순차 검색 : 앞에서부터 하나씩 비교한다
+//   배열이 정렬되어 있지 않아도 쓸 수 있다
+public class LinearSearch {
+
+    // 찾으면 그 칸 번호, 없으면 -1
+    static int find(int[] a, int key) {
+        for (int i = 0; i < a.length; i++) {
+            System.out.println("   " + i + "번 칸 " + a[i] + " 와 비교");
+            if (a[i] == key) return i;         // 찾는 순간 끝낸다
+        }
+
+        return -1;
+    }
+
+    public static void main(String[] args) {
+        // 순차 검색은 정렬이 필요 없지만, 이진 검색과 나란히 비교하려고 같은 배열을 쓴다
+        int[] a = {8, 10, 13, 14, 25, 29, 37, 42};
+        int[] keys = {8, 25, 42, 99};          // 맨 앞 · 가운데 · 맨 뒤 · 없는 값
+
+        for (int k = 0; k < keys.length; k++) {
+            System.out.println(keys[k] + " 찾기");
+            int at = find(a, keys[k]);
+
+            if (at >= 0) System.out.println("   -> " + at + "번 칸에서 찾음 (비교 " + (at + 1) + "번)");
+            else         System.out.println("   -> 없음 (-1), 비교 " + a.length + "번");
+
+            System.out.println();
+        }
+    }
+}
+</script>
+<script type="text/plain" id="chbin">// 이진 검색 : 가운데 값과 비교해 찾는 구간을 절반씩 버린다
+//   배열이 반드시 '정렬되어 있어야' 쓸 수 있다
+public class BinarySearch {
+
+    static int find(int[] a, int key) {
+        int lo = 0;                 // 남은 구간의 왼쪽 끝
+        int hi = a.length - 1;      // 남은 구간의 오른쪽 끝
+        int step = 0;
+
+        while (lo <= hi) {
+            int mid = (lo + hi) / 2;
+            step++;
+
+            System.out.println("   " + step + "단계  lo=" + lo + " mid=" + mid + " hi=" + hi
+                             + "   가운데 " + a[mid] + " 와 비교");
+
+            if (a[mid] == key) return mid;     // 찾았다
+            if (a[mid] < key)  lo = mid + 1;   // 찾는 값이 더 크다 -> 오른쪽 절반만 남긴다
+            else               hi = mid - 1;   // 찾는 값이 더 작다 -> 왼쪽 절반만 남긴다
+        }
+
+        return -1;                             // 구간이 비면 없는 값
+    }
+
+    public static void main(String[] args) {
+        int[] a = {8, 10, 13, 14, 25, 29, 37, 42};   // 정렬해 둔 배열
+        int[] keys = {8, 25, 42, 99};          // 순차 검색과 같은 값으로 비교
+
+        for (int k = 0; k < keys.length; k++) {
+            System.out.println(keys[k] + " 찾기");
+            int at = find(a, keys[k]);
+
+            if (at >= 0) System.out.println("   -> " + at + "번 칸에서 찾음");
+            else         System.out.println("   -> 없음 (-1)");
+
+            System.out.println();
+        }
+    }
+}
+</script>
 <script type="text/plain" id="strtable">// 문자열 한 줄이 배열의 한 행
 static final String[] GA = {
     "      # ",
@@ -4879,15 +5227,194 @@ function labIndex(){
   draw();
 }
 
+
+/* ================= 문제 2 : 정렬 · 검색 그림 ================= */
+const SORT_DATA = [29, 10, 14, 37, 13, 25, 8, 42];
+const SEARCH_DATA = [8, 10, 13, 14, 25, 29, 37, 42];
+
+function drawRow(host, st){
+  host.innerHTML = "";
+  st.a.forEach((v, i) => {
+    const c = el("div", { class: "acell" });
+    const b = el("b"); b.textContent = v;
+    const s = el("small"); s.textContent = "[" + i + "]";
+    c.append(b, s);
+    if (st.fixed && st.fixed.indexOf(i) >= 0) c.classList.add("fixed");
+    if (st.out && st.out.indexOf(i) >= 0) c.classList.add("out");
+    if (st.cmp && st.cmp.indexOf(i) >= 0) c.classList.add("cmp");
+    if (st.swap && st.swap.indexOf(i) >= 0) c.classList.add("swap");
+    if (st.mid === i) c.classList.add("mid");
+    if (st.found === i) c.classList.add("found");
+    if (st.tag && st.tag[i]){ const t = el("small", { class: "tag" }); t.textContent = st.tag[i]; c.appendChild(t); }
+    host.appendChild(c);
+  });
+}
+
+/* ---- 정렬 단계 만들기 ---- */
+function selectionSteps(src){
+  const a = src.slice(), out = [];
+  let cmp = 0, swap = 0;
+  const head = (k) => { const f = []; for (let x = 0; x < k; x++) f.push(x); return f; };
+
+  for (let i = 0; i < a.length - 1; i++){
+    let min = i;
+    out.push({ a: a.slice(), fixed: head(i), cmp: [i], cmpN: cmp, swapN: swap,
+               msg: "[" + i + "] 자리를 정할 차례. 남은 칸에서 가장 작은 값을 찾는다" });
+    for (let j = i + 1; j < a.length; j++){
+      cmp++;
+      out.push({ a: a.slice(), fixed: head(i), cmp: [min, j], cmpN: cmp, swapN: swap,
+                 msg: "[" + j + "] " + a[j] + " 와 지금까지 가장 작은 [" + min + "] " + a[min] + " 비교" });
+      if (a[j] < a[min]) min = j;
+    }
+    if (min !== i){
+      const t = a[i]; a[i] = a[min]; a[min] = t; swap++;
+      out.push({ a: a.slice(), fixed: head(i), swap: [i, min], cmpN: cmp, swapN: swap,
+                 msg: "가장 작은 " + a[i] + " 를 [" + i + "] 자리와 교환" });
+    } else {
+      out.push({ a: a.slice(), fixed: head(i), cmp: [i], cmpN: cmp, swapN: swap,
+                 msg: "[" + i + "] " + a[i] + " 가 이미 가장 작다. 교환 없음" });
+    }
+  }
+  out.push({ a: a.slice(), fixed: head(a.length), cmpN: cmp, swapN: swap, msg: "정렬 끝" });
+  return out;
+}
+
+function bubbleSteps(src){
+  const a = src.slice(), out = [];
+  let cmp = 0, swap = 0;
+  const tail = (k) => { const f = []; for (let x = a.length - k; x < a.length; x++) f.push(x); return f; };
+
+  for (let p = 0; p < a.length - 1; p++){
+    let moved = false;
+    for (let j = 0; j < a.length - 1 - p; j++){
+      cmp++;
+      out.push({ a: a.slice(), fixed: tail(p), cmp: [j, j + 1], cmpN: cmp, swapN: swap,
+                 msg: "이웃한 [" + j + "] " + a[j] + " 와 [" + (j + 1) + "] " + a[j + 1] + " 비교" });
+      if (a[j] > a[j + 1]){
+        const t = a[j]; a[j] = a[j + 1]; a[j + 1] = t; swap++; moved = true;
+        out.push({ a: a.slice(), fixed: tail(p), swap: [j, j + 1], cmpN: cmp, swapN: swap,
+                   msg: "왼쪽이 더 크므로 교환 → 큰 값이 한 칸 뒤로" });
+      }
+    }
+    out.push({ a: a.slice(), fixed: tail(p + 1), cmpN: cmp, swapN: swap,
+               msg: p + "바퀴 끝 — 맨 뒤 " + a[a.length - 1 - p] + " 확정" });
+    if (!moved){
+      out.push({ a: a.slice(), fixed: tail(a.length), cmpN: cmp, swapN: swap, msg: "교환이 없었으므로 정렬 끝" });
+      return out;
+    }
+  }
+  out.push({ a: a.slice(), fixed: tail(a.length), cmpN: cmp, swapN: swap, msg: "정렬 끝" });
+  return out;
+}
+
+/* ---- 검색 단계 만들기 ---- */
+function linearSteps(a, key){
+  const out = [];
+  for (let i = 0; i < a.length; i++){
+    const st = { a: a, cmp: [i], cmpN: i + 1, msg: "[" + i + "] " + a[i] + " 와 " + key + " 비교" };
+    if (a[i] === key){ st.found = i; st.msg = "[" + i + "] 에서 찾음 — 비교 " + (i + 1) + "번"; out.push(st); return out; }
+    out.push(st);
+  }
+  out.push({ a: a, cmpN: a.length, msg: "끝까지 못 찾음 — 없음(-1), 비교 " + a.length + "번" });
+  return out;
+}
+
+function binarySteps(a, key){
+  const out = [];
+  let lo = 0, hi = a.length - 1, n = 0;
+  while (lo <= hi){
+    const mid = Math.floor((lo + hi) / 2); n++;
+    const gone = [], tag = {};
+    for (let i = 0; i < a.length; i++) if (i < lo || i > hi) gone.push(i);
+    const add = (i, s) => tag[i] = tag[i] ? tag[i] + "·" + s : s;
+    add(lo, "lo"); add(hi, "hi"); add(mid, "mid");
+    const st = { a: a, out: gone, mid: mid, tag: tag, cmpN: n,
+                 msg: n + "단계 — 가운데 [" + mid + "] " + a[mid] + " 와 " + key + " 비교" };
+    if (a[mid] === key){ st.found = mid; st.msg = "[" + mid + "] 에서 찾음 — " + n + "단계"; out.push(st); return out; }
+    st.msg += a[mid] < key ? "  →  더 크다, 왼쪽 절반 버림" : "  →  더 작다, 오른쪽 절반 버림";
+    out.push(st);
+    if (a[mid] < key) lo = mid + 1; else hi = mid - 1;
+  }
+  const all = []; for (let i = 0; i < a.length; i++) all.push(i);
+  out.push({ a: a, out: all, cmpN: n, msg: "남은 구간이 없음 — 없음(-1), " + n + "단계" });
+  return out;
+}
+
+/* ---- 단계 재생기 ---- */
+function stepper(id, build, labels){
+  const host = $(id + "row"), msg = $(id + "msg"), cnt = $(id + "cnt");
+  let steps = [], at = 0, timer = 0;
+
+  const show = () => {
+    const st = steps[Math.min(at, steps.length - 1)];
+    drawRow(host, st);
+    msg.textContent = st.msg;
+    cnt.textContent = labels(st);
+    $(id + "prev").disabled = at === 0;
+    $(id + "next").disabled = at >= steps.length - 1;
+    if (at >= steps.length - 1) stop();
+  };
+  const stop = () => { if (timer){ clearInterval(timer); timer = 0; $(id + "play").textContent = "▶ 자동"; } };
+  const reset = () => { steps = build(); at = 0; show(); };
+
+  $(id + "prev").onclick = () => { stop(); if (at > 0){ at--; show(); } };
+  $(id + "next").onclick = () => { stop(); if (at < steps.length - 1){ at++; show(); } };
+  $(id + "reset").onclick = () => { stop(); reset(); };
+  $(id + "play").onclick = () => {
+    if (timer) { stop(); return; }
+    if (at >= steps.length - 1) at = 0;
+    $(id + "play").textContent = "■ 멈춤";
+    timer = setInterval(() => { if (at < steps.length - 1){ at++; show(); } else stop(); }, 650);
+  };
+  STOPPERS.push(stop);
+  return { reset, stop };
+}
+
+function sortLab(){
+  if (!$("l21row")) return;
+  let mode = 0;
+  const builds = [() => selectionSteps(SORT_DATA), () => bubbleSteps(SORT_DATA)];
+  const ui = stepper("l21", () => builds[mode](), st => "비교 " + st.cmpN + "번 · 교환 " + st.swapN + "번");
+  const box = $("l21modes");
+  ["선택 정렬", "버블 정렬"].forEach((name, k) => {
+    const b = el("button", { type: "button", class: "btn" + (k === 0 ? " primary" : "") });
+    b.textContent = name;
+    b.onclick = () => { mode = k; [...box.children].forEach((x, n) => x.classList.toggle("primary", n === k)); ui.stop(); ui.reset(); };
+    box.appendChild(b);
+  });
+  ui.reset();
+}
+
+function searchLab(){
+  if (!$("l22row")) return;
+  let mode = 0, key = 25;
+  const ui = stepper("l22", () => (mode === 0 ? linearSteps(SEARCH_DATA, key) : binarySteps(SEARCH_DATA, key)),
+                     st => (mode === 0 ? "비교 " : "단계 ") + st.cmpN + "번");
+  const box = $("l22modes"), keys = $("l22keys");
+  ["순차 검색", "이진 검색"].forEach((name, k) => {
+    const b = el("button", { type: "button", class: "btn" + (k === 0 ? " primary" : "") });
+    b.textContent = name;
+    b.onclick = () => { mode = k; [...box.children].forEach((x, n) => x.classList.toggle("primary", n === k)); ui.stop(); ui.reset(); };
+    box.appendChild(b);
+  });
+  [8, 25, 42, 99].forEach((v, k) => {
+    const b = el("button", { type: "button", class: "btn" + (v === 25 ? " primary" : "") });
+    b.innerHTML = v + (v === 99 ? "<small>없는 값</small>" : v === 8 ? "<small>맨 앞</small>" : v === 42 ? "<small>맨 뒤</small>" : "<small>가운데</small>");
+    b.onclick = () => { key = v; [...keys.children].forEach((x, n) => x.classList.toggle("primary", n === k)); ui.stop(); ui.reset(); };
+    keys.appendChild(b);
+  });
+  ui.reset();
+}
+
 /* ================= 단계 이동 ================= */
 const sections = [...document.querySelectorAll("section.step")];
 const STOPPERS = [];
 
 const TABS = [
   { id: "course",    label: "강좌",     parts: ["1", "2"] },
-  { id: "challenge", label: "도전문제", parts: ["3"] }
+  { id: "challenge", label: "도전문제", parts: ["3", "4"] }
 ];
-const GROUPS = { "1": "1부 · 메서드로 만들기", "2": "2부 · 클래스로 만들기", "3": "문제 1 · 8×8 글자 뒤집기" };
+const GROUPS = { "1": "1부 · 메서드로 만들기", "2": "2부 · 클래스로 만들기", "3": "문제 1 · 8×8 글자 뒤집기", "4": "문제 2 · 정렬과 검색" };
 const tabOf = (part) => (TABS.filter(t => t.parts.indexOf(part) >= 0)[0] || TABS[0]).id;
 let curTab = "course", curStep = 0;
 const lastStep = {};        // 탭마다 마지막으로 보던 단계
@@ -5712,7 +6239,7 @@ buildCode();
 initIDE();
 buildNav();
 buildTabs();
-[lab1, lab2, lab3, lab4, lab5, lab6, lab7, () => counterLab("l8", false), () => counterLab("l9", true), lab11, lab13, labGa, labIndex, () => clockLab("l15", "ss"), () => clockLab("l16", "mmss"), () => clockLab("l17", "hhmmss")].forEach(f => { try { f(); } catch(e){ console.error(e); } });
+[lab1, lab2, lab3, lab4, lab5, lab6, lab7, () => counterLab("l8", false), () => counterLab("l9", true), lab11, lab13, labGa, labIndex, sortLab, searchLab, () => clockLab("l15", "ss"), () => clockLab("l16", "mmss"), () => clockLab("l17", "hhmmss")].forEach(f => { try { f(); } catch(e){ console.error(e); } });
 const start = location.hash.match(/step-(\d+)/);
 go(start ? +start[1] : 0, false);
 </script>

@@ -24,7 +24,7 @@ GitHub Pages를 켜면(Settings → Pages → `main` 브랜치, `/ (root)`) 웹�
   지원하지 않는 것: 상속, 인터페이스, 제네릭, `try`/`catch`, `switch`, 실수 연산, 스레드, 파일 입출력.
 - 끝나지 않는 반복문이나 너무 많은 출력은 실행기가 스스로 멈추고 알려 줍니다(4초 · 16만 자).
 
-실행기가 진짜 Java와 같은 결과를 내는지는, 이 저장소의 **23개 프로그램 전부**를 JDK 17의 `javac` · `java`로 돌린 출력과 한 글자까지 대조해 확인했습니다.
+실행기가 진짜 Java와 같은 결과를 내는지는, 이 저장소의 **27개 프로그램 전부**를 JDK 17의 `javac` · `java`로 돌린 출력과 한 글자까지 대조해 확인했습니다.
 
 ## 강좌 구성
 
@@ -63,6 +63,15 @@ GitHub Pages를 켜면(Settings → Pages → `main` 브랜치, `/ (root)`) 웹�
 |---|---|---|
 | 1 | 8×8 `char` 배열에 '가' 그리기 (`'#'`과 `' '`) — 획을 긋는 방법과 표로 적어 두는 방법 | `Letter.java`, `LetterTable.java`, `Normal.java` |
 | 2 | 같은 배열을 뒤집고 돌려서 출력하기 | `FlipUpDown.java`, `FlipLeftRight.java`, `RotateRight.java`, `RotateLeft.java` |
+
+**문제 2 · 정렬과 검색** — 1차원 배열의 기본기입니다. 가장 많이 쓰이는 방법을 둘씩 골랐습니다.
+
+| 단계 | 내용 | 파일 |
+|---|---|---|
+| 1 | 정렬 — 선택 정렬(앞에서 확정), 버블 정렬(뒤에서 확정) | `SelectionSort.java`, `BubbleSort.java` |
+| 2 | 검색 — 순차 검색, 이진 검색(정렬된 배열에서 절반씩 버리기) | `LinearSearch.java`, `BinarySearch.java` |
+
+두 단계 모두 **한 단계씩 따라가는 그림**이 있습니다. 정렬에서는 비교 중인 두 칸·교환·확정된 구간이 색으로 구분되고, 검색에서는 `lo`·`mid`·`hi`와 버려진 구간이 보입니다. 같은 배열 `{8, 10, 13, 14, 25, 29, 37, 42}`에서 42를 찾으면 순차는 8번, 이진은 2번입니다.
 
 다섯 가지 출력의 뼈대는 모두 같고, `System.out.print()`가 읽는 칸만 다릅니다. 배열을 새로 만들거나 값을 옮기지 않습니다.
 
@@ -103,7 +112,9 @@ GitHub Pages를 켜면(Settings → Pages → `main` 브랜치, `/ (root)`) 웹�
     ├── LetterTable.java 같은 글자를 0/1 표로 미리 적어 두기
     ├── Normal.java     정상 출력
     ├── FlipUpDown.java · FlipLeftRight.java
-    └── RotateRight.java · RotateLeft.java
+    ├── RotateRight.java · RotateLeft.java
+    ├── SelectionSort.java · BubbleSort.java      정렬
+    └── LinearSearch.java · BinarySearch.java     검색
 ```
 
 ## 내 컴퓨터에서 실행하기
