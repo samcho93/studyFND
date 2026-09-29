@@ -24,7 +24,7 @@ GitHub Pages를 켜면(Settings → Pages → `main` 브랜치, `/ (root)`) 웹�
   지원하지 않는 것: 상속, 인터페이스, 제네릭, `try`/`catch`, `switch`, 실수 연산, 스레드, 파일 입출력.
 - 끝나지 않는 반복문이나 너무 많은 출력은 실행기가 스스로 멈추고 알려 줍니다(4초 · 16만 자).
 
-실행기가 진짜 Java와 같은 결과를 내는지는, 이 저장소의 **17개 프로그램 전부**를 JDK 17의 `javac` · `java`로 돌린 출력과 한 글자까지 대조해 확인했습니다.
+실행기가 진짜 Java와 같은 결과를 내는지는, 이 저장소의 **22개 프로그램 전부**를 JDK 17의 `javac` · `java`로 돌린 출력과 한 글자까지 대조해 확인했습니다.
 
 ## 강좌 구성
 
@@ -55,6 +55,27 @@ GitHub Pages를 켜면(Settings → Pages → `main` 브랜치, `/ (root)`) 웹�
 | 7 | 칩 18개 조립: 12시간제 시계, AM/PM | `Main.java` |
 | 8 | 칩 3개를 고치지 않고 한 부품으로 감싸 같은 시계 다시 만들기 | `Digit.java`, `DigitClock.java` |
 
+### 도전문제 (`challenge/`)
+
+왼쪽 메뉴의 세 번째 묶음입니다. 2차원 배열의 **인덱스 조작**만으로 푸는 문제입니다.
+
+| 도전 | 내용 | 파일 |
+|---|---|---|
+| 1 | 8×8 `char` 배열에 '가' 그리기 (`'#'`과 `' '`) | `Letter.java`, `Normal.java` |
+| 2 | 같은 배열을 뒤집고 돌려서 출력하기 | `FlipUpDown.java`, `FlipLeftRight.java`, `RotateRight.java`, `RotateLeft.java` |
+
+다섯 가지 출력의 뼈대는 모두 같고, `System.out.print()`가 읽는 칸만 다릅니다. 배열을 새로 만들거나 값을 옮기지 않습니다.
+
+| 출력 | 읽는 칸 |
+|---|---|
+| 정상 | `a[i][j]` |
+| 상하 반전 | `a[7 - i][j]` |
+| 좌우 반전 | `a[i][7 - j]` |
+| 시계 방향 90° | `a[7 - j][i]` |
+| 반시계 방향 90° | `a[j][7 - i]` |
+
+출력 방식마다 파일이 따로 있고, 페이지에서 각각 **▶ 실행** 버튼으로 돌려 볼 수 있습니다.
+
 `TTL7490.java`, `TTL7446.java`, `FND.java`, `Main.java`는 강좌를 만든 원본 코드 그대로입니다. 나머지(`Test*.java`, `Counter*.java`, `ClockMMSS.java`, `Digit.java`, `DigitClock.java`)는 각 단계를 확인하려고 강좌에서 만든 프로그램입니다.
 
 ## 폴더 구조
@@ -65,7 +86,7 @@ GitHub Pages를 켜면(Settings → Pages → `main` 브랜치, `/ (root)`) 웹�
 ├── steps/              1부 예제 (파일 하나로 실행)
 │   ├── Step1.java
 │   └── ... Step9.java
-└── classes/            2부 예제 (폴더 전체를 함께 컴파일)
+├── classes/            2부 예제 (폴더 전체를 함께 컴파일)
     ├── TTL7490.java
     ├── TTL7446.java
     ├── FND.java
@@ -73,6 +94,11 @@ GitHub Pages를 켜면(Settings → Pages → `main` 브랜치, `/ (root)`) 웹�
     ├── Digit.java      칩 3개를 가진 '한 자리' 클래스
     ├── DigitClock.java Digit 6개로 만든 같은 시계
     └── ... 테스트 프로그램
+└── challenge/          도전문제 (8×8 글자 뒤집고 돌리기)
+    ├── Letter.java     8×8 배열에 '가'
+    ├── Normal.java     정상 출력
+    ├── FlipUpDown.java · FlipLeftRight.java
+    └── RotateRight.java · RotateLeft.java
 ```
 
 ## 내 컴퓨터에서 실행하기
@@ -96,6 +122,14 @@ java Main
 ```
 
 `Test7490`, `Test7446`, `TestFND`, `Counter100`, `Counter60`, `ClockMMSS`도 같은 방식으로 실행할 수 있습니다.
+
+**도전문제**: `challenge` 폴더도 함께 컴파일합니다.
+
+```bash
+cd challenge
+javac -encoding UTF-8 *.java
+java RotateRight
+```
 
 ## 참고
 

@@ -359,7 +359,7 @@ details.q .a{padding:10px 14px 12px;font-size:15px}
       <li>가운데 코드 상자에서도 바로 <b>▶ 실행</b>할 수 있습니다. <code>TTL7490.java</code>처럼 main 이 없는 클래스는 <b>▶ 함께 실행</b>이 되어, 그 클래스를 쓰는 이 단계의 프로그램이 실행됩니다. <b>에디터에서 열기</b>는 실행하지 않고 파일만 아래 에디터로 올립니다. <b>되돌리기</b>는 원래 코드로 돌립니다.</li>
       <li>칸 사이의 선을 <b>끌어서</b> 결과 칸의 너비와 에디터 높이를 바꿀 수 있습니다.</li>
     </ul>
-    Java를 설치하지 않아도 되도록 브라우저 안의 작은 Java 해석기가 돌립니다. 이 강좌의 17개 프로그램은 모두 실제 JDK 17의 <code>javac</code> · <code>java</code> 결과와 한 글자까지 같은지 대조했습니다.</div>
+    Java를 설치하지 않아도 되도록 브라우저 안의 작은 Java 해석기가 돌립니다. 이 강좌의 22개 프로그램은 모두 실제 JDK 17의 <code>javac</code> · <code>java</code> 결과와 한 글자까지 같은지 대조했습니다.</div>
   <div class="code out"><div class="cap"><span>내 컴퓨터에서 실행하려면</span></div><pre>javac -encoding UTF-8 Step1.java
 java Step1</pre></div>
 </section>
@@ -1427,6 +1427,121 @@ java Main</pre></div>
   </ol>
 
   <div class="note"><b>강좌를 마쳤습니다.</b> 1부에서 메서드로 만든 변환 로직이 2부에서 칩 클래스가 되었고, 칩을 조합해 시계를 만든 뒤(7단계), 칩을 고치지 않고 한 부품으로 감싸 같은 시계를 다시 만들었습니다(8단계). 같은 재료로 타이머 · 스톱워치 · 주사위 같은 회로도 만들어 보세요.</div>
+</section>
+
+<!-- ================= 도전문제 1 ================= -->
+<section class="step" id="step-19" data-n="19" data-part="3" data-k="1" data-title="8×8 글자 만들기" data-sub="char[8][8]" hidden>
+  <div class="eyebrow">도전문제 1</div>
+  <h1>8×8 배열에 '가' 그리기</h1>
+  <p class="lead">FND는 5×5로 숫자를 그렸습니다. 이번에는 <b>8×8</b> <code>char</code> 배열에 한글 '가'를 그립니다. 글자 부분은 <code>'#'</code>, 빈 곳은 <code>' '</code>입니다. 다음 도전에서 이 글자를 뒤집고 돌립니다.</p>
+  <ul class="goals"><li>2차원 배열의 행(i)과 열(j)</li><li>선을 긋듯 채우는 반복문</li><li>배열을 만들어 돌려주는 메서드</li></ul>
+
+  <h2>문제</h2>
+  <ol class="task">
+    <li><code>char[8][8]</code> 배열을 만들고 전부 <code>' '</code>로 채우세요.</li>
+    <li>ㄱ과 ㅏ의 획이 지나는 칸을 <code>'#'</code>로 바꿔 '가' 모양을 만드세요.</li>
+    <li>2중 for문으로 한 줄씩 출력하세요.</li>
+  </ol>
+
+  <h2>획을 어떻게 놓을까</h2>
+  <p>글자를 한 칸씩 찍으려 하면 64번을 적어야 합니다. 획은 <b>가로줄 아니면 세로줄</b>이므로, 한 줄을 반복문 하나로 그으면 짧아집니다.</p>
+  <ul>
+    <li><b>가로획</b>: 행(i)을 고정하고 열(j)만 움직인다 → <code>for (int j = 0; j &lt;= 4; j++) a[1][j] = '#';</code></li>
+    <li><b>세로획</b>: 열(j)을 고정하고 행(i)만 움직인다 → <code>for (int i = 1; i &lt;= 6; i++) a[i][4] = '#';</code></li>
+  </ul>
+  <div class="scroll">
+  <table class="data">
+    <thead><tr><th>획</th><th>어디를</th><th>코드</th></tr></thead>
+    <tbody>
+      <tr><td>ㄱ 가로</td><td>1행, 0 ~ 4열</td><td><code>a[1][j] = '#'</code></td></tr>
+      <tr><td>ㄱ 세로</td><td>1 ~ 6행, 4열</td><td><code>a[i][4] = '#'</code></td></tr>
+      <tr><td>ㅏ 세로</td><td>0 ~ 7행, 6열</td><td><code>a[i][6] = '#'</code></td></tr>
+      <tr><td>ㅏ 곁줄기</td><td>4행, 7열</td><td><code>a[4][7] = '#'</code></td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h2>글자 클래스</h2>
+  <div class="srcfile" data-src="chletter" data-name="Letter.java" data-file="challenge/Letter.java"></div>
+
+  <h2>그대로 출력하기</h2>
+  <p>행(i)을 바깥, 열(j)을 안쪽에 두고 <code>a[i][j]</code>를 찍은 뒤 한 행이 끝나면 줄을 바꿉니다. 도전 2의 <b>출발점</b>이 되는 코드입니다.</p>
+  <div class="runner" data-src="chnormal" data-name="Normal.java" data-file="challenge/Normal.java" data-main="Normal" data-deps="chletter"></div>
+
+  <div class="note"><b>빈칸도 문자입니다.</b> <code>' '</code>를 찍지 않고 건너뛰면 글자가 왼쪽으로 몰립니다. 8칸을 모두 출력해야 모양이 유지됩니다.</div>
+
+  <h2>확인 문제</h2>
+  <details class="q"><summary><code>a[1][4]</code>와 <code>a[4][1]</code>은 같은 칸일까요?</summary><div class="a">다릅니다. 앞이 <b>행</b>, 뒤가 <b>열</b>입니다. <code>a[1][4]</code>는 2번째 줄의 5번째 칸, <code>a[4][1]</code>은 5번째 줄의 2번째 칸입니다.</div></details>
+  <details class="q"><summary>빈칸으로 채우는 첫 반복문을 빼먹으면?</summary><div class="a"><code>char</code> 배열의 기본값은 <code>'\0'</code>(코드값 0)이라 콘솔에 아무것도 없거나 네모가 찍힙니다. 5×5 FND에서 <code>seg</code>를 공백으로 먼저 채운 이유와 같습니다.</div></details>
+
+  <h2>연습 과제</h2>
+  <ol class="task">
+    <li>'나', '다'처럼 다른 글자를 <code>Letter</code>에 추가해 보세요. (<code>static char[][] na()</code>)</li>
+    <li>글자 문자를 <code>'#'</code> 대신 매개변수로 받는 <code>ga(char c)</code>로 바꿔 보세요.</li>
+    <li>8×8 대신 <code>n×n</code>으로 크기를 받아 만들어 보세요.</li>
+  </ol>
+</section>
+
+<!-- ================= 도전문제 2 ================= -->
+<section class="step" id="step-20" data-n="20" data-part="3" data-k="2" data-title="뒤집고 돌리기" data-sub="index 바꾸기" hidden>
+  <div class="eyebrow">도전문제 2</div>
+  <h1>같은 배열을 뒤집고 돌려서 출력하기</h1>
+  <p class="lead">배열은 <b>하나도 고치지 않습니다</b>. 출력하는 자리는 그대로 두고 <b>읽어 오는 칸의 번호만</b> 바꾸면 상하반전 · 좌우반전 · 90도 회전이 모두 됩니다. 2중 for문과 인덱스 계산만으로 푸는 문제입니다.</p>
+  <ul class="goals"><li>인덱스 뒤집기 <code>7 - i</code></li><li>행과 열 바꾸기 <code>a[j][i]</code></li><li>회전 = 뒤집기 + 바꾸기</li></ul>
+
+  <h2>핵심: 읽는 칸만 바꾼다</h2>
+  <p>다섯 가지 출력의 뼈대는 <b>완전히 같습니다</b>. 바뀌는 것은 <code>System.out.print(...)</code> 안의 칸 번호 하나뿐입니다.</p>
+  <div class="code" data-src="idxskel" data-cap="공통 뼈대"></div>
+  <ul>
+    <li><b><code>7 - i</code></b> : 번호를 거꾸로 세는 것. 0↔7, 1↔6, 2↔5 … 끝에서부터 읽으므로 <b>뒤집힙니다</b>.</li>
+    <li><b><code>a[j][i]</code></b> : 행과 열을 맞바꾸는 것(전치). 가로로 놓인 획이 세로로 섭니다.</li>
+    <li><b>회전</b> = 두 가지를 함께 쓴 것입니다. 바꾸고(<code>j</code>, <code>i</code>) 한쪽을 뒤집으면(<code>7 -</code>) 90도가 됩니다.</li>
+  </ul>
+
+  <div class="scroll">
+  <table class="data">
+    <thead><tr><th>출력</th><th>읽는 칸</th><th>왜</th></tr></thead>
+    <tbody>
+      <tr><td>정상</td><td><code>a[i][j]</code></td><td>그대로</td></tr>
+      <tr><td>상하 반전</td><td><code>a[7 - i][j]</code></td><td>행 번호만 거꾸로 → 위아래가 바뀜</td></tr>
+      <tr><td>좌우 반전</td><td><code>a[i][7 - j]</code></td><td>열 번호만 거꾸로 → 좌우가 바뀜</td></tr>
+      <tr class="hit"><td>시계 방향 90°</td><td><code>a[7 - j][i]</code></td><td>행·열을 바꾸고 <b>행</b>을 거꾸로</td></tr>
+      <tr class="hit"><td>반시계 방향 90°</td><td><code>a[j][7 - i]</code></td><td>행·열을 바꾸고 <b>열</b>을 거꾸로</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <div class="note"><b>새 배열이 필요 없습니다.</b> 값을 옮겨 담지 않고 <b>읽는 순서</b>만 바꾸므로, 배열은 하나뿐이고 추가 메모리도 쓰지 않습니다. 회전한 배열을 따로 보관해야 할 때만 새 배열에 담으면 됩니다.</div>
+
+  <h2>1. 상하 반전 <code>a[7 - i][j]</code></h2>
+  <p>맨 아래 줄부터 거꾸로 읽어 출력합니다. 열은 건드리지 않습니다.</p>
+  <div class="runner" data-src="chflipud" data-name="FlipUpDown.java" data-file="challenge/FlipUpDown.java" data-main="FlipUpDown" data-deps="chletter"></div>
+
+  <h2>2. 좌우 반전 <code>a[i][7 - j]</code></h2>
+  <p>줄 순서는 그대로, 각 줄을 오른쪽 끝에서부터 읽습니다. ㄱ과 ㅏ의 자리가 서로 바뀝니다.</p>
+  <div class="runner" data-src="chfliplr" data-name="FlipLeftRight.java" data-file="challenge/FlipLeftRight.java" data-main="FlipLeftRight" data-deps="chletter"></div>
+
+  <h2>3. 시계 방향 90° <code>a[7 - j][i]</code></h2>
+  <p>출력의 첫 줄은 원본의 <b>첫 열</b>을 아래에서 위로 읽은 것입니다. 원본에서 가로로 누운 ㄱ의 획이 세로로 섭니다.</p>
+  <div class="runner" data-src="chrotr" data-name="RotateRight.java" data-file="challenge/RotateRight.java" data-main="RotateRight" data-deps="chletter"></div>
+
+  <h2>4. 반시계 방향 90° <code>a[j][7 - i]</code></h2>
+  <p>시계 방향과 <b>어느 쪽을 거꾸로 세느냐</b>만 다릅니다. 두 코드를 나란히 놓고 <code>7 -</code>의 위치를 비교해 보세요.</p>
+  <div class="runner" data-src="chrotl" data-name="RotateLeft.java" data-file="challenge/RotateLeft.java" data-main="RotateLeft" data-deps="chletter"></div>
+
+  <h2>확인 문제</h2>
+  <details class="q"><summary>시계 방향 90°를 두 번 하면 어떤 식이 될까요?</summary><div class="a">180° 회전이고, <code>a[7 - i][7 - j]</code>입니다. 행과 열을 <b>모두</b> 거꾸로 세면 됩니다. 상하 반전과 좌우 반전을 함께 한 것과 같습니다.</div></details>
+  <details class="q"><summary><code>a[j][i]</code>만 쓰면 무엇이 될까요?</summary><div class="a">왼쪽 위에서 오른쪽 아래로 가는 대각선을 기준으로 뒤집은 모양(전치)입니다. 회전이 아니라 거울에 비친 모양이 됩니다. 회전이 되려면 한쪽을 <code>7 -</code>로 거꾸로 세야 합니다.</div></details>
+  <details class="q"><summary>배열이 8×8이 아니라 8×5(행 8, 열 5)라면?</summary><div class="a">반전은 그대로지만 회전은 결과가 <b>5×8</b>이 됩니다. 바깥 for는 <code>a[0].length</code>(열 수), 안쪽 for는 <code>a.length</code>(행 수)만큼 돌아야 하고, <code>7</code> 대신 <code>a.length - 1</code>처럼 길이에서 빼야 합니다.</div></details>
+
+  <h2>연습 과제</h2>
+  <ol class="task">
+    <li><code>7</code>을 모두 <code>a.length - 1</code>로 바꿔, 크기가 달라져도 되는 코드로 만드세요.</li>
+    <li>출력 방식을 번호로 받아 한 곳에서 처리하는 <code>void print(char[][] a, int mode)</code>를 만들어 보세요.</li>
+    <li>180° 회전과 대각선 뒤집기(전치)를 추가해 보세요.</li>
+    <li>글자 두 개를 가로로 나란히 출력해 보세요. (한 줄씩 이어 붙이기 — 2부의 <code>dispFnd(line)</code>과 같은 방법입니다)</li>
+  </ol>
+
+  <div class="note"><b>어디에 쓰이나.</b> 이미지 회전, 화면 회전, 테트리스 블록 돌리기, 행렬 전치가 모두 같은 계산입니다. 인덱스를 다루는 감각이 붙으면 그대로 옮겨 쓸 수 있습니다.</div>
 </section>
     </div>
   </main>
@@ -2584,6 +2699,120 @@ s10.reset(s10.getOutput()[2] & s10.getOutput()[1], 0, 0);   // R0 핀</script>
                 }
                 System.out.println();
             }
+        }
+    }
+}
+</script>
+<script type="text/plain" id="idxskel">char[][] a = Letter.ga();
+
+for (int i = 0; i < 8; i++) {          // i = 출력할 행
+    for (int j = 0; j < 8; j++) {      // j = 출력할 열
+        System.out.print( a[ ? ][ ? ] );   // <-- 여기 두 칸만 바뀐다
+    }
+    System.out.println();
+}</script>
+<script type="text/plain" id="chletter">// Letter : 8x8 char 배열에 '가' 를 그려 두는 클래스
+//   글자 부분은 '#', 빈 곳은 ' ' 로 채운다
+class Letter {
+
+    static char[][] ga() {
+        char[][] a = new char[8][8];
+
+        // 1) 먼저 전부 빈칸
+        for (int i = 0; i < 8; i++) {
+            for (int j = 0; j < 8; j++) {
+                a[i][j] = ' ';
+            }
+        }
+
+        // 2) ㄱ : 가로획(1행) + 세로획(4열)
+        for (int j = 0; j <= 4; j++) a[1][j] = '#';
+        for (int i = 1; i <= 6; i++) a[i][4] = '#';
+
+        // 3) ㅏ : 세로획(6열) + 오른쪽으로 뻗는 짧은 획
+        for (int i = 0; i <= 7; i++) a[i][6] = '#';
+        a[4][7] = '#';
+
+        return a;
+    }
+}
+</script>
+<script type="text/plain" id="chnormal">// 도전 : 정상 출력 — 글자를 그대로 출력한다
+//   출력하는 자리(i행 j열)는 그대로 두고, 읽어 오는 칸만 바꾼다
+public class Normal {
+
+    public static void main(String[] args) {
+        char[][] a = Letter.ga();
+
+        for (int i = 0; i < 8; i++) {          // i = 출력할 행
+            for (int j = 0; j < 8; j++) {      // j = 출력할 열
+                System.out.print(a[i][j]);
+            }
+            System.out.println();
+        }
+    }
+}
+</script>
+<script type="text/plain" id="chflipud">// 도전 : 상하 반전 — 위아래를 뒤집어 출력한다
+//   출력하는 자리(i행 j열)는 그대로 두고, 읽어 오는 칸만 바꾼다
+public class FlipUpDown {
+
+    public static void main(String[] args) {
+        char[][] a = Letter.ga();
+
+        for (int i = 0; i < 8; i++) {          // i = 출력할 행
+            for (int j = 0; j < 8; j++) {      // j = 출력할 열
+                System.out.print(a[7 - i][j]);
+            }
+            System.out.println();
+        }
+    }
+}
+</script>
+<script type="text/plain" id="chfliplr">// 도전 : 좌우 반전 — 좌우를 뒤집어 출력한다
+//   출력하는 자리(i행 j열)는 그대로 두고, 읽어 오는 칸만 바꾼다
+public class FlipLeftRight {
+
+    public static void main(String[] args) {
+        char[][] a = Letter.ga();
+
+        for (int i = 0; i < 8; i++) {          // i = 출력할 행
+            for (int j = 0; j < 8; j++) {      // j = 출력할 열
+                System.out.print(a[i][7 - j]);
+            }
+            System.out.println();
+        }
+    }
+}
+</script>
+<script type="text/plain" id="chrotr">// 도전 : 시계 방향 90도 — 오른쪽으로 90도 돌려 출력한다
+//   출력하는 자리(i행 j열)는 그대로 두고, 읽어 오는 칸만 바꾼다
+public class RotateRight {
+
+    public static void main(String[] args) {
+        char[][] a = Letter.ga();
+
+        for (int i = 0; i < 8; i++) {          // i = 출력할 행
+            for (int j = 0; j < 8; j++) {      // j = 출력할 열
+                System.out.print(a[7 - j][i]);
+            }
+            System.out.println();
+        }
+    }
+}
+</script>
+<script type="text/plain" id="chrotl">// 도전 : 반시계 방향 90도 — 왼쪽으로 90도 돌려 출력한다
+//   출력하는 자리(i행 j열)는 그대로 두고, 읽어 오는 칸만 바꾼다
+public class RotateLeft {
+
+    public static void main(String[] args) {
+        char[][] a = Letter.ga();
+
+        for (int i = 0; i < 8; i++) {          // i = 출력할 행
+            for (int j = 0; j < 8; j++) {      // j = 출력할 열
+                System.out.print(a[j][7 - i]);
+            }
+            System.out.println();
         }
     }
 }
@@ -4325,13 +4554,15 @@ const digitSvg = (w, h) => { const s = document.createElementNS(SVGNS,"svg"); s.
 const sections = [...document.querySelectorAll("section.step")];
 const STOPPERS = [];
 
+const GROUPS = { "1": "1부 · 메서드로 만들기", "2": "2부 · 클래스로 만들기", "3": "도전문제" };
+
 function buildNav(){
   const nav = $("stepNav");
   let lastPart = null;
   sections.forEach((sec) => {
     const n = +sec.dataset.n;
     const part = sec.dataset.part || "1";
-    if (part !== lastPart){ nav.appendChild(el("li", {class:"grp", role:"presentation"}, part === "1" ? "1부 · 메서드로 만들기" : "2부 · 클래스로 만들기")); lastPart = part; }
+    if (part !== lastPart){ nav.appendChild(el("li", {class:"grp", role:"presentation"}, GROUPS[part] || "")); lastPart = part; }
     const k = sec.dataset.k != null ? +sec.dataset.k : n;   // 아이콘에 표시할 숫자 (부마다 0부터)
     const li = el("li"); const b = el("button", {type:"button", "data-go": n});
     const svg = digitSvg(18, 28); renderFnd(svg, TABLE[k % 10]);
@@ -4879,6 +5110,7 @@ function buildCards(){
       const deps = (box.dataset.deps || "").split(/\s+/).filter(Boolean).map(id => ID2NAME.get(id));
       const prog = { id: box.dataset.src, name, main: box.dataset.main, deps, step: +step.dataset.n };
       PROGRAMS.set(prog.id, prog);
+      box.__prog = prog;
       [name].concat(deps).forEach(fn => {
         if (!FILE_PROGS.has(fn)) FILE_PROGS.set(fn, []);
         FILE_PROGS.get(fn).push(prog);
@@ -4901,6 +5133,7 @@ function buildCards(){
     const pre = el("pre"); const code = el("code", { class: "language-java" });
     pre.appendChild(code); paint(code, f.text); f.views.push(code);
     card.append(bar, pre);
+    card.__prog = box.__prog;
     box.replaceWith(card);
     card.dataset.file = name;
 
@@ -4910,8 +5143,10 @@ function buildCards(){
       setTimeout(() => copy.textContent = "복사", 1600);
     };
     const progOfCard = () => {
+      if (card.__prog) return card.__prog;                       // 실행 파일 카드는 자기 프로그램
       const sec = card.closest("section.step");
-      return [...PROGRAMS.values()].filter(p => p.step === +sec.dataset.n)[0];
+      const here = [...PROGRAMS.values()].filter(p => p.step === +sec.dataset.n);
+      return here.filter(p => p.deps.indexOf(name) >= 0)[0] || here[0];   // 함께 쓰이는 프로그램
     };
     open.onclick = () => {
       const prog = progOfCard();
