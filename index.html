@@ -198,6 +198,13 @@ main{grid-column:2;grid-row:1;min-width:0;overflow:auto;padding-block:36px 64px;
 .stepmsg{font-family:var(--font-mono);font-size:13.5px;background:var(--sunken);padding:9px 12px;border-radius:var(--radius);margin-top:14px;min-height:38px}
 .stepcnt{font-family:var(--font-mono);font-size:12px;color:var(--muted)}
 
+/* ---------- 비트 그림 ---------- */
+.bitbox{background:var(--term);color:var(--term-ink);font-family:var(--font-mono);font-size:12.5px;line-height:1.85;padding:14px 16px;border-radius:var(--radius);overflow-x:auto;white-space:pre;margin:0}
+.bitbox .bl{color:var(--term-dim)}
+.bitbox .bn{color:var(--tok-str)}
+.bitbox b.nib{color:#fff;background:var(--led);border-radius:3px;padding:1px 2px;font-weight:700}
+.blank{background:var(--warn-bg);color:var(--warn-ink);border:1px dashed var(--warn-rule);border-radius:4px;padding:0 6px;font-family:var(--font-mono)}
+
 /* ---------- lab (interactive) ---------- */
 .lab{background:var(--surface);border:1px solid var(--rule);border-radius:10px;padding:20px;margin:18px 0}
 .lab-h{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap;margin-bottom:14px}
@@ -402,7 +409,7 @@ details.q .a{padding:10px 14px 12px;font-size:15px}
       <li>가운데 코드 상자에서도 바로 <b>▶ 실행</b>할 수 있습니다. <code>TTL7490.java</code>처럼 main 이 없는 클래스는 <b>▶ 함께 실행</b>이 되어, 그 클래스를 쓰는 이 단계의 프로그램이 실행됩니다. <b>에디터에서 열기</b>는 실행하지 않고 파일만 아래 에디터로 올립니다. <b>되돌리기</b>는 원래 코드로 돌립니다.</li>
       <li>칸 사이의 선을 <b>끌어서</b> 결과 칸의 너비와 에디터 높이를 바꿀 수 있습니다.</li>
     </ul>
-    Java를 설치하지 않아도 되도록 브라우저 안의 작은 Java 해석기가 돌립니다. 이 강좌의 27개 프로그램은 모두 실제 JDK 17의 <code>javac</code> · <code>java</code> 결과와 한 글자까지 같은지 대조했습니다.</div>
+    Java를 설치하지 않아도 되도록 브라우저 안의 작은 Java 해석기가 돌립니다. 이 강좌의 29개 프로그램은 모두 실제 JDK 17의 <code>javac</code> · <code>java</code> 결과와 한 글자까지 같은지 대조했습니다.</div>
   <div class="code out"><div class="cap"><span>내 컴퓨터에서 실행하려면</span></div><pre>javac -encoding UTF-8 Step1.java
 java Step1</pre></div>
 </section>
@@ -1812,6 +1819,128 @@ java Main</pre></div>
 
   <div class="note"><b>정렬과 검색은 짝입니다.</b> 정렬은 그 자체가 목적이라기보다, <b>찾기 쉽게 만들어 두는 일</b>인 경우가 많습니다. 전화번호부가 가나다순인 이유와 같습니다.</div>
 </section>
+
+<!-- ================= 문제 3 · 1단계 : 니블과 비트 연산 ================= -->
+<section class="step" id="step-23" data-n="23" data-part="5" data-k="1" data-title="니블과 비트 연산" data-sub="&amp; | ^ ~ &lt;&lt; &gt;&gt;" hidden>
+  <div class="eyebrow">문제 3 · 1단계</div>
+  <h1>int 하나에 숫자 여덟 개</h1>
+  <p class="lead"><code>int</code>는 32비트입니다. 4비트씩 끊으면 <b>니블(nibble) 8개</b>가 되고, 니블 하나에 0 ~ 15를 담을 수 있습니다. 0 ~ 9만 쓰면 <b>배열 없이</b> 변수 하나에 숫자 8개를 넣을 수 있습니다. 다음 단계에서 이 상태 그대로 정렬합니다.</p>
+  <ul class="goals"><li>니블 자리와 시프트 값</li><li>꺼내기 = 밀기 + 마스크</li><li>넣기 = 비우기 + 끼워넣기</li></ul>
+
+  <div class="lab" id="lab23a">
+    <div class="lab-h"><b>니블 지도</b><span>왼쪽이 0번. s 는 그 니블이 시작하는 비트 위치</span></div>
+    <div class="arow" id="l23map"></div>
+    <p class="mapline" id="l23hex" style="margin-top:12px"></p>
+    <p style="margin:12px 0 0;font-size:14px;color:var(--muted)">k 번 니블은 <code>s = (7 - k) * 4</code> 번째 비트에서 시작합니다. 문제 1에서 <code>7 - i</code>로 인덱스를 뒤집던 것과 같은 계산입니다.</p>
+  </div>
+
+  <h2>쓸 연산은 다섯 가지뿐</h2>
+  <div class="scroll">
+  <table class="data">
+    <thead><tr><th>연산</th><th>하는 일</th><th>여기서 쓰는 곳</th></tr></thead>
+    <tbody>
+      <tr><td><code>&amp;</code> AND</td><td>둘 다 1인 자리만 1</td><td><b>필요한 비트만 남긴다</b> — <code>x &amp; 0xF</code></td></tr>
+      <tr><td><code>|</code> OR</td><td>하나라도 1이면 1</td><td><b>비운 자리에 값을 끼워 넣는다</b></td></tr>
+      <tr><td><code>~</code> NOT</td><td>0과 1을 뒤집는다</td><td><b>마스크를 뒤집어</b> 지울 자리를 만든다</td></tr>
+      <tr><td><code>&lt;&lt;</code> 왼쪽 시프트</td><td>비트를 왼쪽으로 민다</td><td>값을 <b>제자리로</b> 옮긴다 — <code>d &lt;&lt; s</code></td></tr>
+      <tr><td><code>&gt;&gt;</code> 오른쪽 시프트</td><td>비트를 오른쪽으로 민다</td><td>읽을 니블을 <b>맨 아래로</b> 내린다</td></tr>
+      <tr><td><code>^</code> XOR</td><td>다르면 1</td><td>두 번 하면 제자리 — 교환 기법에 쓰인다</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <div class="note"><b>마스크(mask)</b>란 "어느 자리를 건드릴지" 표시한 비트 묶음입니다. <code>0xF</code>는 <code>0000 1111</code>, 즉 <b>니블 하나</b>를 덮는 마스크입니다. <code>0xF &lt;&lt; s</code>로 원하는 자리로 옮겨 쓰고, <code>~</code>로 뒤집으면 <b>그 자리만 지우는</b> 마스크가 됩니다.</div>
+
+  <div class="lab" id="lab23b">
+    <div class="lab-h"><b>그림으로 보기</b><span>32비트를 4비트씩 끊어 보여 줍니다</span></div>
+    <div class="segbtns" id="l23modes" style="margin-bottom:10px"></div>
+    <div class="row" style="gap:10px;align-items:center;margin-bottom:6px"><span class="lbl">니블 번호 k</span><span class="segbtns" id="l23k"></span></div>
+    <div class="row" style="gap:10px;align-items:center;margin-bottom:12px" id="l23dwrap"><span class="lbl">넣을 값 d</span><span class="segbtns" id="l23d"></span></div>
+    <pre class="bitbox" id="l23lines"></pre>
+    <p style="margin:12px 0 0;font-size:14px;color:var(--muted)">붉게 표시된 4비트가 지금 다루는 니블입니다. <b>꺼내기</b>는 밀어서 맨 아래로 내린 뒤 <code>&amp; 0xF</code>로 나머지를 잘라 내고, <b>넣기</b>는 그 자리를 <code>~</code> 마스크로 비운 뒤 <code>|</code>로 끼워 넣습니다. 맨 위 니블이 8 이상이면 <code>n</code>이 음수라 <code>&gt;&gt;</code>가 위쪽을 1로 채우는데(두 번째 줄), <code>&amp; 0xF</code>가 그 위를 모두 잘라 내므로 결과는 안전합니다.</p>
+  </div>
+
+  <h2>연산 확인 프로그램</h2>
+  <p>각 연산이 실제로 어떻게 동작하는지 2진수로 찍어 봅니다. 값을 바꿔 가며 실행해 보세요.</p>
+  <div class="runner" data-src="chbit" data-name="BitOps.java" data-file="challenge/BitOps.java" data-main="BitOps"></div>
+
+  <h2>확인 문제</h2>
+  <details class="q"><summary><code>0xF &lt;&lt; 12</code>는 몇 번 니블을 덮을까요?</summary><div class="a"><code>s = 12</code>이므로 <code>(7 - k) * 4 = 12</code> → <b>k = 4</b>번 니블입니다. 2진수로는 <code>0000 0000 0000 0000 1111 0000 0000 0000</code>입니다.</div></details>
+  <details class="q"><summary><code>&amp; 0xF</code>를 빼고 <code>n &gt;&gt; s</code>만 하면?</summary><div class="a">원하는 니블 <b>위쪽 비트가 모두 따라옵니다</b>. 0번 니블을 읽을 때는 문제가 없지만, 7번 니블을 읽으면 앞의 일곱 니블 값까지 섞여 큰 수가 나옵니다.</div></details>
+  <details class="q"><summary>값을 넣을 때 자리를 비우지 않고 <code>n | (d &lt;&lt; s)</code>만 하면?</summary><div class="a">원래 있던 비트가 남아 <b>OR로 섞입니다</b>. 예를 들어 5(<code>0101</code>)가 있는 자리에 2(<code>0010</code>)를 넣으면 7(<code>0111</code>)이 됩니다. 그래서 <code>&amp; ~(MASK &lt;&lt; s)</code>로 먼저 지워야 합니다.</div></details>
+  <details class="q"><summary><code>&gt;&gt;</code>와 <code>&gt;&gt;&gt;</code>의 차이는?</summary><div class="a"><code>&gt;&gt;</code>는 부호 비트를 채우며 밀고(음수면 1이 들어옴), <code>&gt;&gt;&gt;</code>는 항상 0을 채웁니다. 맨 위 니블이 8 이상이면 <code>int</code>가 음수가 되므로, <code>&amp; 0xF</code>를 같이 쓰거나 <code>&gt;&gt;&gt;</code>를 쓰면 안전합니다.</div></details>
+</section>
+
+<!-- ================= 문제 3 · 2단계 : 니블 버블 정렬 ================= -->
+<section class="step" id="step-24" data-n="24" data-part="5" data-k="2" data-title="니블 버블 정렬" data-sub="빈칸 채우기" hidden>
+  <div class="eyebrow">문제 3 · 2단계</div>
+  <h1>배열 없이 n 안에서 정렬하기</h1>
+  <p class="lead">니블 8개에 0 ~ 9가 무작위로 들어 있습니다. <b>배열을 만들지 않고</b>, 값을 옮겨 담을 다른 변수도 두지 않고, <code>n</code> 하나 안에서 버블 정렬로 오름차순 정렬합니다. 잠시 값을 담는 <code>int</code> 임시 변수는 써도 됩니다.</p>
+  <ul class="goals"><li>비트 연산으로 읽고 쓰기</li><li>제자리(in-place) 정렬</li><li>빈칸을 채워 완성하기</li></ul>
+
+  <div class="sig">static int sort(int n)   //  0x80036515  →  0x00135568</div>
+
+  <h2>단계별로 무엇을 하는가</h2>
+  <div class="scroll">
+  <table class="data">
+    <thead><tr><th>순서</th><th>하는 일</th><th>비트 연산</th></tr></thead>
+    <tbody>
+      <tr><td>1</td><td>이웃한 두 니블 값을 <b>꺼낸다</b></td><td><code>(n &gt;&gt; s) &amp; 0xF</code> 두 번</td></tr>
+      <tr><td>2</td><td>왼쪽이 크면 <b>교환한다</b></td><td>임시 변수 + 아래 3 · 4</td></tr>
+      <tr><td>3</td><td>넣을 자리를 <b>비운다</b></td><td><code>n &amp; ~(0xF &lt;&lt; s)</code></td></tr>
+      <tr><td>4</td><td>값을 제자리로 밀어 <b>끼워 넣는다</b></td><td><code>| (d &lt;&lt; s)</code></td></tr>
+      <tr><td>5</td><td>한 바퀴 끝나면 오른쪽 끝이 <b>확정</b></td><td>안쪽 반복 범위를 <code>7 - pass</code>로</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <div class="lab" id="lab24">
+    <div class="lab-h"><b>그림으로 보기</b><span>한 단계씩 누르면 n 값이 어떻게 바뀌는지 보입니다</span></div>
+    <div class="arow" id="l24row"></div>
+    <div class="stepmsg" id="l24msg"></div>
+    <div class="row" style="margin-top:12px;gap:8px;align-items:center">
+      <button class="btn" id="l24prev" type="button">← 이전</button>
+      <button class="btn primary" id="l24next" type="button">다음 →</button>
+      <button class="btn" id="l24play" type="button">▶ 자동</button>
+      <button class="btn" id="l24reset" type="button">처음으로</button>
+      <span class="stepcnt" id="l24cnt"></span>
+    </div>
+    <p style="margin:12px 0 0;font-size:14px;color:var(--muted)">오른쪽 위 <code>n = 0x…</code>가 <b>진짜 변수 값</b>입니다. 칸처럼 보이지만 실제로는 정수 하나가 바뀌고 있을 뿐입니다. 문제 2의 버블 정렬과 순서는 똑같고, 배열 대신 비트 연산을 쓴다는 점만 다릅니다.</p>
+  </div>
+
+  <h2>실습 코드 — 빈칸 네 곳</h2>
+  <p>아래 코드에는 <span class="blank">★ 빈칸</span> 네 곳이 있습니다. 에디터에서 고쳐 실행하면 바로 결과가 바뀝니다. <b>아래에서 위로</b> 한 칸씩 채워 보세요.</p>
+  <ol class="task">
+    <li><b>①  get</b> 을 채우면 — 숫자 8개가 보입니다 (지금은 <code>0 0 0 …</code>).</li>
+    <li><b>②  set</b> 과 <b>③  swap</b> 을 채우면 — <code>0 &lt;-&gt; 7</code> 줄에서 양 끝이 바뀝니다.</li>
+    <li><b>④  sort</b> 를 채우면 — 마지막 줄이 <code>오름차순 정렬 완료</code>가 됩니다.</li>
+  </ol>
+  <div class="runner" data-src="chnib" data-name="NibbleSort.java" data-file="challenge/NibbleSort.java" data-main="NibbleSort"></div>
+
+  <div class="note"><b>씨앗값(seed).</b> <code>makeRandom(20260929)</code>은 실행할 때마다 <b>같은</b> 숫자를 만듭니다. 결과를 비교하기 쉽도록 고정해 둔 것이고, 다른 값을 넣으면 다른 배치가 나옵니다. 진짜 무작위가 필요하면 <code>(int)(Math.random() * 10)</code>을 쓰면 됩니다.</div>
+
+  <h2>막히면 여기를 펼쳐 보세요</h2>
+  <details class="q"><summary>빈칸 ① — 니블 꺼내기</summary><div class="a"><code>return (n &gt;&gt; s) &amp; MASK;</code><br><br><code>s</code>만큼 오른쪽으로 밀면 원하는 니블이 맨 아래로 내려옵니다. 그 위에 남아 있는 비트를 <code>&amp; MASK</code>로 잘라 냅니다. 두 연산의 <b>순서를 바꾸면</b> 엉뚱한 값이 나옵니다.</div></details>
+  <details class="q"><summary>빈칸 ② — 니블 넣기</summary><div class="a"><code>return (n &amp; ~(MASK &lt;&lt; s)) | (d &lt;&lt; s);</code><br><br>왼쪽 괄호가 <b>자리 비우기</b>, 오른쪽이 <b>값 끼워 넣기</b>입니다. <code>MASK &lt;&lt; s</code>는 그 자리만 1, <code>~</code>를 붙이면 그 자리만 0이 되어 AND로 지워집니다.</div></details>
+  <details class="q"><summary>빈칸 ③ — 두 니블 교환</summary><div class="a"><code>int t = get(n, i);<br>n = set(n, i, get(n, j));<br>n = set(n, j, t);<br>return n;</code><br><br>먼저 꺼내 두지 않고 <code>set</code>부터 하면 값이 덮여 사라집니다. 문제 2에서 <code>int t = a[i];</code>로 자리를 바꾸던 것과 같은 이유입니다.<br><br>비트만으로 하는 방법도 있습니다: <code>int x = get(n,i) ^ get(n,j);</code> 를 두 자리에 각각 XOR 하면 임시 변수 없이 교환됩니다.</div></details>
+  <details class="q"><summary>빈칸 ④ — 버블 정렬</summary><div class="a"><code>if (get(n, k) &gt; get(n, k + 1)) n = swap(n, k, k + 1);</code><br><br><code>swap</code>은 <b>바뀐 n 을 돌려주는</b> 메서드이므로 <code>n =</code> 으로 다시 받아야 합니다. 받지 않으면 아무 일도 일어나지 않습니다.</div></details>
+  <details class="q"><summary>정답을 맞췄는지 확인하기</summary><div class="a">씨앗값 <code>20260929</code>이면 처음이 <code>8 0 0 3 6 5 1 5</code>(<code>0x80036515</code>), 정렬 후가 <code>0 0 1 3 5 5 6 8</code>(<code>0x00135568</code>)입니다. 마지막 줄에 <code>오름차순 정렬 완료</code>가 나오면 성공입니다.</div></details>
+
+  <h2>확인 문제</h2>
+  <details class="q"><summary><code>swap</code>에서 <code>set</code>을 두 번 부를 때 순서를 바꾸면?</summary><div class="a">임시 변수에 먼저 담아 두었다면 순서를 바꿔도 결과는 같습니다. 담아 두지 않고 <code>set(n, i, get(n, j))</code> → <code>set(n, j, get(n, i))</code>로 하면, 두 번째 <code>get</code>이 <b>이미 바뀐 값</b>을 읽어 두 자리가 같은 값이 됩니다.</div></details>
+  <details class="q"><summary>맨 왼쪽 니블이 8이나 9이면 <code>n</code>이 음수가 됩니다. 문제가 될까요?</summary><div class="a">출력이 음수로 보일 뿐, 비트는 그대로입니다. 다만 <code>n &gt;&gt; s</code>는 부호 비트를 채우며 밀기 때문에 위쪽이 1로 덮입니다. <code>&amp; MASK</code>가 그 위를 잘라 주므로 안전하고, <code>&gt;&gt;&gt;</code>를 써도 됩니다.</div></details>
+  <details class="q"><summary>니블에 10 ~ 15가 들어 있어도 정렬될까요?</summary><div class="a">됩니다. 니블은 0 ~ 15를 담을 수 있고 비교도 그대로 동작합니다. 0 ~ 9로 제한한 것은 16진수로 찍었을 때 사람이 읽기 쉽게 하려는 것뿐입니다.</div></details>
+
+  <h2>연습 과제</h2>
+  <ol class="task">
+    <li>내림차순으로 정렬해 보세요. 부등호 하나만 바꾸면 됩니다.</li>
+    <li>한 바퀴 동안 교환이 없으면 <code>break</code>로 끝내도록 고쳐 보세요. (문제 2의 버블 정렬과 같은 최적화)</li>
+    <li><code>swap</code>을 XOR 방식으로 바꿔 보세요. <code>int x = get(n,i) ^ get(n,j);</code> 를 두 자리에 각각 XOR 합니다.</li>
+    <li><code>long</code>(64비트)으로 바꿔 니블 16개를 정렬해 보세요. <code>shift(k)</code>와 반복 횟수만 달라집니다.</li>
+    <li>선택 정렬로도 만들어 보세요. 가장 작은 니블의 <b>번호</b>를 찾아 한 번만 교환하면 됩니다.</li>
+  </ol>
+
+  <div class="note"><b>왜 이렇게까지 하나.</b> 실제로는 배열을 쓰는 편이 훨씬 읽기 쉽습니다. 하지만 통신 패킷, 이미지 픽셀, 하드웨어 레지스터처럼 <b>한 정수 안에 여러 값이 들어 있는</b> 자료는 흔합니다. 2부의 7490 출력 4비트도 같은 이야기였습니다. 그때는 <code>int[4]</code>로 풀었고, 여기서는 비트로 풀었습니다.</div>
+</section>
     </div>
   </main>
 
@@ -2980,6 +3109,173 @@ for (int i = 0; i < 8; i++) {          // i = 출력할 행
     }
     System.out.println();
 }</script>
+<script type="text/plain" id="chbit">// 비트 연산 눈으로 보기 — 니블 정렬에 쓸 연산들을 먼저 익힌다
+//   AND(&) 남기기 · OR(|) 합치기 · XOR(^) 뒤집기 · NOT(~) 반전 · 시프트(<< >>) 옮기기
+public class BitOps {
+
+    // 32비트를 2진수로 (4비트씩 띄어서)
+    static String bin(int v) {
+        String s = "";
+
+        for (int i = 31; i >= 0; i--) {
+            s = s + ((v >> i) & 1);
+            if (i % 4 == 0 && i > 0) s = s + " ";
+        }
+
+        return s;
+    }
+
+    static void show(String name, int v) {
+        System.out.println(name + bin(v));
+    }
+
+    public static void main(String[] args) {
+        int x = 0x37;          // 0011 0111  (십진수 55)
+        int y = 0xF;           // 0000 1111  (니블 하나를 덮는 마스크)
+
+        show("x            ", x);
+        show("y = 0xF      ", y);
+        System.out.println();
+
+        show("x & y   AND  ", x & y);      // 둘 다 1인 자리만 1 -> 필요한 비트만 남긴다
+        show("x | y   OR   ", x | y);      // 하나라도 1이면 1   -> 비트를 합친다
+        show("x ^ y   XOR  ", x ^ y);      // 다르면 1          -> 두 번 하면 제자리
+        show("~y      NOT  ", ~y);         // 0과 1을 뒤집는다  -> 마스크 뒤집기
+        System.out.println();
+
+        show("x << 4  왼쪽 ", x << 4);     // 니블 한 칸 왼쪽으로 (16배)
+        show("x >> 4  오른쪽", x >> 4);    // 니블 한 칸 오른쪽으로 (16으로 나눔)
+        System.out.println();
+
+        // 니블 하나만 꺼내는 방법 : 밀어서 맨 아래로 내린 뒤, 아래 4비트만 남긴다
+        int n = 0x3715;                    // 니블 4개 : 3 7 1 5
+        System.out.println("n = 0x" + Integer.toHexString(n));
+        System.out.println("  (n >> 8) & 0xF = " + ((n >> 8) & 0xF) + "   <- 왼쪽에서 세 번째 니블");
+        System.out.println("  (n >> 0) & 0xF = " + ((n >> 0) & 0xF) + "   <- 맨 오른쪽 니블");
+        System.out.println();
+
+        // XOR 을 두 번 하면 원래대로 돌아온다 (교환에 쓰이는 성질)
+        System.out.println("x ^ y ^ y = " + (x ^ y ^ y) + "  (원래 x 와 같다)");
+    }
+}
+</script>
+<script type="text/plain" id="chnib">// [실습] int 변수 하나에 들어 있는 니블 8개를 버블 정렬로 오름차순 정렬하기
+//
+//   규칙 1 : 배열을 만들지 않는다. 정렬은 n 안에서 일어난다
+//   규칙 2 : 값을 잠시 담아 두는 int 임시 변수는 써도 된다
+//   규칙 3 : 니블을 읽고 쓰는 일은 비트 연산으로만 한다
+//
+//   ★ 표시된 빈칸을 채워 완성하세요. 아래에서 위로 한 칸씩 채우면
+//      ① 숫자가 보이고  ②③ 교환이 되고  ④ 정렬이 됩니다.
+public class NibbleSort {
+
+    static final int MASK = 0xF;                  // 니블 하나를 덮는 마스크 (…0000 1111)
+
+    // k 번 니블이 시작하는 비트 위치.  k = 0 이 맨 왼쪽(가장 높은 자리)
+    //   k : 0  1  2  3  4  5  6  7
+    //   s : 28 24 20 16 12  8  4  0
+    static int shift(int k) {
+        return (7 - k) * 4;
+    }
+
+    // ★ 빈칸 ① ─ k 번 니블 값(0 ~ 15)을 꺼내 돌려준다
+    //    힌트 : s 만큼 오른쪽으로 민 다음, 아래 4비트만 남긴다
+    static int get(int n, int k) {
+        int s = shift(k);
+
+        return 0;                                 // <-- 이 줄을 고치세요
+    }
+
+    // ★ 빈칸 ② ─ k 번 니블에 값 d 를 넣은 결과를 돌려준다
+    //    힌트 : 그 자리를 0으로 비우고(AND), d 를 제자리로 밀어 넣는다(OR)
+    //           자리를 비울 때는 뒤집은 마스크 ~(MASK << s) 를 쓴다
+    static int set(int n, int k, int d) {
+        int s = shift(k);
+
+        return n;                                 // <-- 이 줄을 고치세요
+    }
+
+    // ★ 빈칸 ③ ─ i 번 니블과 j 번 니블을 교환한 결과를 돌려준다
+    //    힌트 : 한쪽 값을 임시 변수에 담아 두고 set 을 두 번 부른다
+    static int swap(int n, int i, int j) {
+
+        return n;                                 // <-- 이 줄을 고치세요
+    }
+
+    // ★ 빈칸 ④ ─ 버블 정렬 : 이웃한 두 니블을 비교해 왼쪽이 크면 교환
+    //    힌트 : 안쪽 for 안에서 get 두 번, 조건이 맞으면 swap
+    static int sort(int n) {
+        for (int pass = 0; pass < 7; pass++) {
+            for (int k = 0; k < 7 - pass; k++) {
+
+                // <-- 여기를 채우세요
+
+            }
+        }
+
+        return n;
+    }
+
+    /* ================= 아래는 완성되어 있습니다 ================= */
+
+    // 0 ~ 9 를 니블 8칸에 무작위로 채운다 (씨앗값이 같으면 늘 같은 값이 나온다)
+    static int makeRandom(int seed) {
+        int n = 0;
+
+        for (int k = 0; k < 8; k++) {
+            seed = seed * 1103515245 + 12345;          // 다음 난수
+            int d = ((seed >>> 16) & 0x7FFF) % 10;     // 0 ~ 9
+            n = n | (d << shift(k));                   // k 번 자리에 끼워 넣기
+        }
+
+        return n;
+    }
+
+    static String hex8(int n) {
+        String h = Integer.toHexString(n);
+        while (h.length() < 8) h = "0" + h;
+        return h;
+    }
+
+    // 니블 8개를 차례로 출력한다 (get 을 쓰므로 빈칸 ① 을 채워야 보인다)
+    static void show(String title, int n) {
+        System.out.print(title);
+
+        for (int k = 0; k < 8; k++) {
+            System.out.print(get(n, k) + " ");
+        }
+
+        System.out.println("   n = 0x" + hex8(n));
+    }
+
+    static String check(int n) {
+        int sum = 0;
+        for (int k = 0; k < 8; k++) sum = sum + get(n, k);
+
+        if (sum == 0 && n != 0) return "니블이 모두 0으로 읽힌다 — 빈칸 ① 부터 채워 보세요";
+
+        for (int k = 0; k < 7; k++) {
+            if (get(n, k) > get(n, k + 1)) return "아직 정렬되지 않았다 (" + k + "번 > " + (k + 1) + "번)";
+        }
+        return "오름차순 정렬 완료";
+    }
+
+    public static void main(String[] args) {
+        int n = makeRandom(20260929);
+
+        show("처음       ", n);
+
+        int t = swap(n, 0, 7);                 // ② ③ 확인용 : 양 끝을 바꿔 본다
+        show("0 <-> 7    ", t);
+
+        n = sort(n);                           // ④
+        show("정렬 후    ", n);
+
+        System.out.println();
+        System.out.println("확인 : " + check(n));
+    }
+}
+</script>
 <script type="text/plain" id="swapcode">int t = a[i];      // 1) i 자리 값을 잠시 맡아 둔다
 a[i] = a[j];       // 2) j 자리 값을 i 로 옮기고
 a[j] = t;          // 3) 맡아 둔 값을 j 자리에 넣는다</script>
@@ -5406,15 +5702,141 @@ function searchLab(){
   ui.reset();
 }
 
+
+/* ================= 문제 3 : 니블(4비트) 다루기 ================= */
+const NIB_SEED = 20260929;
+
+function nibMake(seed){
+  let n = 0;
+  for (let k = 0; k < 8; k++){
+    seed = (Math.imul(seed, 1103515245) + 12345) | 0;
+    const d = ((seed >>> 16) & 0x7FFF) % 10;
+    n = n | (d << ((7 - k) * 4));
+  }
+  return n | 0;
+}
+const nibGet = (n, k) => (n >>> ((7 - k) * 4)) & 0xF;
+const nibSet = (n, k, d) => { const s = (7 - k) * 4; return ((n & ~(0xF << s)) | (d << s)) | 0; };
+const hex8 = (n) => (n >>> 0).toString(16).padStart(8, "0");
+const bin32 = (n) => ((n >>> 0).toString(2).padStart(32, "0").match(/.{4}/g));
+
+/* 32비트를 4비트씩 끊어 보여 준다. hl 은 강조할 니블 번호(0 = 맨 왼쪽) */
+function bitLine(label, v, hl, note){
+  const groups = bin32(v).map((g, i) => (hl != null && i === hl) ? '<b class="nib">' + g + "</b>" : g).join(" ");
+  const w = 18 - [...label].reduce((t, ch) => t + (ch.charCodeAt(0) > 0x2000 ? 2 : 1), 0);
+  return '<span class="bl">' + label + " ".repeat(Math.max(1, w)) + "</span>" + groups + (note ? '<span class="bn">  ' + note + "</span>" : "");
+}
+
+/* ---- 니블 지도 ---- */
+function nibMapFig(){
+  const host = $("l23map"); if (!host) return;
+  const n = nibMake(NIB_SEED);
+  host.innerHTML = "";
+  for (let k = 0; k < 8; k++){
+    const c = el("div", { class: "acell" });
+    const b = el("b"); b.textContent = nibGet(n, k);
+    const i = el("small"); i.textContent = "[" + k + "]";
+    const sft = el("small", { class: "tag" }); sft.textContent = "s=" + ((7 - k) * 4);
+    c.append(b, i, sft);
+    host.appendChild(c);
+  }
+  $("l23hex").textContent = "n = 0x" + hex8(n) + "   (int 변수 하나)";
+}
+
+/* ---- 꺼내기 · 넣기 비트 그림 ---- */
+function bitLab(){
+  const box = $("l23lines"); if (!box) return;
+  const n = nibMake(NIB_SEED);
+  let mode = 0, k = 4, d = 3;
+
+  const draw = () => {
+    const s = (7 - k) * 4;
+    const lines = [];
+    if (mode === 0){
+      const shifted = n >> s;
+      lines.push(bitLine("n", n, k, "← " + k + "번 니블을 꺼내고 싶다"));
+      lines.push(bitLine("n >> " + s, shifted, 7, "오른쪽으로 " + s + "칸 밀면 맨 아래로 온다"));
+      lines.push(bitLine("0xF", 0xF, 7, "아래 4비트만 1인 마스크"));
+      lines.push(bitLine("(n >> " + s + ") & 0xF", shifted & 0xF, 7, "= " + (shifted & 0xF) + "  ← 꺼낸 값"));
+    } else {
+      const mask = 0xF << s;
+      lines.push(bitLine("n", n, k, "← " + k + "번 니블을 " + d + " 로 바꾸고 싶다"));
+      lines.push(bitLine("0xF << " + s, mask, k, "그 자리만 1"));
+      lines.push(bitLine("~(0xF << " + s + ")", ~mask, k, "뒤집으면 그 자리만 0"));
+      lines.push(bitLine("n & ~(...)", n & ~mask, k, "자리를 비운다"));
+      lines.push(bitLine(d + " << " + s, d << s, k, "넣을 값을 제자리로"));
+      lines.push(bitLine("| 합쳐 넣기", (n & ~mask) | (d << s), k, "= 0x" + hex8((n & ~mask) | (d << s))));
+    }
+    box.innerHTML = lines.join("\n");
+    $("l23dwrap").style.display = mode === 1 ? "" : "none";
+  };
+
+  const modes = $("l23modes");
+  ["꺼내기  (n >> s) & 0xF", "넣기  (n & ~(0xF << s)) | (d << s)"].forEach((name, m) => {
+    const b = el("button", { type: "button", class: "btn" + (m === 0 ? " primary" : "") });
+    b.textContent = name;
+    b.onclick = () => { mode = m; [...modes.children].forEach((x, i) => x.classList.toggle("primary", i === m)); draw(); };
+    modes.appendChild(b);
+  });
+  const ks = $("l23k");
+  for (let i = 0; i < 8; i++){
+    const b = el("button", { type: "button", class: "btn" + (i === k ? " primary" : "") });
+    b.textContent = i;
+    b.onclick = () => { k = i; [...ks.children].forEach((x, j) => x.classList.toggle("primary", j === i)); draw(); };
+    ks.appendChild(b);
+  }
+  const ds = $("l23d");
+  for (let i = 0; i <= 9; i++){
+    const b = el("button", { type: "button", class: "btn" + (i === d ? " primary" : "") });
+    b.textContent = i;
+    b.onclick = () => { d = i; [...ds.children].forEach((x, j) => x.classList.toggle("primary", j === i)); draw(); };
+    ds.appendChild(b);
+  }
+  draw();
+}
+
+/* ---- 니블 버블 정렬 단계 ---- */
+function nibSortSteps(){
+  let n = nibMake(NIB_SEED);
+  const out = [];
+  const arr = () => { const a = []; for (let k = 0; k < 8; k++) a.push(nibGet(n, k)); return a; };
+  const tail = (t) => { const f = []; for (let x = 8 - t; x < 8; x++) f.push(x); return f; };
+
+  out.push({ a: arr(), hex: hex8(n), msg: "시작 — 니블 8개가 int 하나에 들어 있다" });
+
+  for (let p = 0; p < 7; p++){
+    for (let k = 0; k < 7 - p; k++){
+      const x = nibGet(n, k), y = nibGet(n, k + 1);
+      out.push({ a: arr(), hex: hex8(n), cmp: [k, k + 1], fixed: tail(p),
+                 msg: "get 으로 꺼내 비교 : [" + k + "] " + x + " vs [" + (k + 1) + "] " + y });
+      if (x > y){
+        n = nibSet(nibSet(n, k, y), k + 1, x);
+        out.push({ a: arr(), hex: hex8(n), swap: [k, k + 1], fixed: tail(p),
+                   msg: "왼쪽이 크다 → swap : 두 자리를 비우고 값을 바꿔 넣는다" });
+      }
+    }
+    out.push({ a: arr(), hex: hex8(n), fixed: tail(p + 1),
+               msg: p + "바퀴 끝 — 오른쪽 끝 " + nibGet(n, 7 - p) + " 확정" });
+  }
+  out.push({ a: arr(), hex: hex8(n), fixed: tail(8), msg: "정렬 끝 — n 하나만으로 끝냈다" });
+  return out;
+}
+
+function nibLab(){
+  if (!$("l24row")) return;
+  const ui = stepper("l24", nibSortSteps, st => "n = 0x" + st.hex);
+  ui.reset();
+}
+
 /* ================= 단계 이동 ================= */
 const sections = [...document.querySelectorAll("section.step")];
 const STOPPERS = [];
 
 const TABS = [
   { id: "course",    label: "강좌",     parts: ["1", "2"] },
-  { id: "challenge", label: "도전문제", parts: ["3", "4"] }
+  { id: "challenge", label: "도전문제", parts: ["3", "4", "5"] }
 ];
-const GROUPS = { "1": "1부 · 메서드로 만들기", "2": "2부 · 클래스로 만들기", "3": "문제 1 · 8×8 글자 뒤집기", "4": "문제 2 · 정렬과 검색" };
+const GROUPS = { "1": "1부 · 메서드로 만들기", "2": "2부 · 클래스로 만들기", "3": "문제 1 · 8×8 글자 뒤집기", "4": "문제 2 · 정렬과 검색", "5": "문제 3 · 비트로 정렬하기" };
 const tabOf = (part) => (TABS.filter(t => t.parts.indexOf(part) >= 0)[0] || TABS[0]).id;
 let curTab = "course", curStep = 0;
 const lastStep = {};        // 탭마다 마지막으로 보던 단계
@@ -6239,7 +6661,7 @@ buildCode();
 initIDE();
 buildNav();
 buildTabs();
-[lab1, lab2, lab3, lab4, lab5, lab6, lab7, () => counterLab("l8", false), () => counterLab("l9", true), lab11, lab13, labGa, labIndex, sortLab, searchLab, () => clockLab("l15", "ss"), () => clockLab("l16", "mmss"), () => clockLab("l17", "hhmmss")].forEach(f => { try { f(); } catch(e){ console.error(e); } });
+[lab1, lab2, lab3, lab4, lab5, lab6, lab7, () => counterLab("l8", false), () => counterLab("l9", true), lab11, lab13, labGa, labIndex, sortLab, searchLab, nibMapFig, bitLab, nibLab, () => clockLab("l15", "ss"), () => clockLab("l16", "mmss"), () => clockLab("l17", "hhmmss")].forEach(f => { try { f(); } catch(e){ console.error(e); } });
 const start = location.hash.match(/step-(\d+)/);
 go(start ? +start[1] : 0, false);
 </script>
