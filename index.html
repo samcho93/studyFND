@@ -211,6 +211,21 @@ details.fold>summary:focus-visible{outline:2px solid var(--pcb);outline-offset:-
 details.fold .card{margin:0 12px 12px}
 .blank{background:var(--warn-bg);color:var(--warn-ink);border:1px dashed var(--warn-rule);border-radius:4px;padding:0 6px;font-family:var(--font-mono)}
 
+/* ---------- 2진수 그림 · 잠긴 코드 상자 ---------- */
+.binrow{font-family:var(--font-mono);font-size:13px;letter-spacing:.5px;background:var(--term);color:var(--term-ink);padding:10px 12px;border-radius:var(--radius);overflow-x:auto;white-space:nowrap}
+.binrow .dim{color:var(--term-dim)}
+.binrow b{color:#fff}
+.binrow .b1{cursor:pointer;padding:1px 0}
+.binrow .b1:hover{background:var(--pcb);color:#fff}
+.binrow .b1.on{background:var(--led);color:#fff;font-weight:700}
+.binlbl{font-size:12px;color:var(--muted);font-family:var(--font-mono);margin:12px 0 4px}
+
+.card[data-lock]:not([data-open])>pre{display:none}
+.card[data-lock]:not([data-open])>.ph{display:block}
+.card>.ph{display:none;margin:0;padding:18px 14px;color:var(--term-dim);font-family:var(--font-mono);font-size:13px;letter-spacing:.3em}
+.card[data-lock] .bar{cursor:default}
+.card[data-lock]:not([data-open]) .bar a,.card[data-lock] .bar button.copy,.card[data-lock] .bar button.open{display:none}
+
 /* ---------- lab (interactive) ---------- */
 .lab{background:var(--surface);border:1px solid var(--rule);border-radius:10px;padding:20px;margin:18px 0}
 .lab-h{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap;margin-bottom:14px}
@@ -1952,6 +1967,104 @@ java Main</pre></div>
 
   <div class="note"><b>왜 이렇게까지 하나.</b> 실제로는 배열을 쓰는 편이 훨씬 읽기 쉽습니다. 하지만 통신 패킷, 이미지 픽셀, 하드웨어 레지스터처럼 <b>한 정수 안에 여러 값이 들어 있는</b> 자료는 흔합니다. 2부의 7490 출력 4비트도 같은 이야기였습니다. 그때는 <code>int[4]</code>로 풀었고, 여기서는 비트로 풀었습니다.</div>
 </section>
+
+<!-- ================= 문제 4 : 2진수 출력 ================= -->
+<section class="step" id="step-25" data-n="25" data-part="6" data-k="1" data-title="2진수로 출력하기" data-sub="4가지 방법" hidden>
+  <div class="eyebrow">문제 4</div>
+  <h1>int 값을 2진수로 출력하기</h1>
+  <p class="lead">정수 하나를 받아 2진수로 보여 줍니다. 방법은 네 가지이고 <b>결과는 같지만 한계가 다릅니다</b>. 산술 연산으로 만드는 방법과, 비트를 직접 읽는 세 가지를 비교해 보세요.</p>
+  <ul class="goals"><li>나눗셈과 비트 읽기의 차이</li><li><code>(n &gt;&gt; i) &amp; 1</code> 한 줄</li><li>음수 · 0 · 앞자리 0 처리</li></ul>
+
+  <h2>값 입력받기</h2>
+  <p>실제 프로그램에서는 <code>Scanner</code>로 받습니다. 이 페이지의 실행기는 키보드 입력을 받지 못하므로, 예제는 값을 배열에 적어 두고 돌립니다. 아래 그림에서는 원하는 값을 직접 넣어 볼 수 있습니다.</p>
+  <div class="code" data-src="scancode" data-cap="입력 부분"></div>
+
+  <div class="lab" id="lab25">
+    <div class="lab-h"><b>그림으로 보기</b><span>값을 바꾸면 네 가지 결과가 함께 바뀝니다</span></div>
+    <div class="row" style="gap:10px;align-items:center">
+      <label class="lbl" for="l25n">n</label>
+      <input type="number" id="l25n" value="2026" style="width:140px">
+      <span class="segbtns" id="l25quick"></span>
+      <span class="arr" id="l25val"></span>
+    </div>
+
+    <div class="binlbl">① 산술 — 2로 나눈 나머지를 거꾸로 모은다</div>
+    <div class="scroll"><table class="data" id="l25tbl"></table></div>
+
+    <div class="binlbl">② 비트 — 31번부터 0번까지 그대로 (비트를 눌러 보세요)</div>
+    <div class="binrow" id="l25bits2"></div>
+    <p class="mapline" id="l25pick" style="margin-top:8px"></p>
+
+    <div class="binlbl">③ 비트 — 4자리씩 끊어서</div>
+    <div class="binrow" id="l25bits3"></div>
+
+    <div class="binlbl">④ 비트 — 앞쪽의 의미 없는 0 빼고</div>
+    <div class="binrow" id="l25bits4"></div>
+    <p class="mapline" id="l25trim" style="margin-top:8px"></p>
+  </div>
+
+  <h2>① 산술 연산으로</h2>
+  <p>2로 나누면서 <b>나머지</b>를 모으고, 마지막에 <b>거꾸로</b> 읽습니다. Step 1의 <code>cnvtDec2Bin</code>과 같은 원리이고, 나눗셈·나머지만 알면 되므로 가장 먼저 배우는 방법입니다.</p>
+  <ul>
+    <li>나머지를 <b>앞에 붙이면</b>(<code>s = (v % 2) + s</code>) 따로 뒤집지 않아도 됩니다.</li>
+    <li><code>n</code>이 <b>0</b>이면 반복문이 한 번도 돌지 않아 빈 문자열이 됩니다 → 따로 처리해야 합니다.</li>
+    <li><b>음수</b>는 <code>while (v &gt; 0)</code> 조건에 걸려 아무것도 나오지 않습니다. 위 그림에서 −7을 눌러 확인해 보세요.</li>
+  </ul>
+  <div class="runner locked" data-src="chba" data-name="BinArith.java" data-file="challenge/BinArith.java" data-main="BinArith" data-noedit="1" data-lock="ctrl-shift"></div>
+
+  <h2>② 비트 연산으로 — 32비트 그대로</h2>
+  <p>정수는 이미 2진수입니다. 만들 필요 없이 <b>있는 비트를 읽기만</b> 하면 됩니다. <code>i</code>번 비트를 읽는 방법은 문제 3에서 쓴 것과 같습니다.</p>
+  <div class="code" data-src="bitread" data-cap="비트 하나 읽기"></div>
+  <p>31번부터 0번까지 내려오며 찍으면 32자리가 그대로 나옵니다. 음수도 <b>있는 그대로</b> 보이므로, 2의 보수 표현을 눈으로 확인할 때 좋습니다.</p>
+  <div class="runner locked" data-src="chbb" data-name="BinBits32.java" data-file="challenge/BinBits32.java" data-main="BinBits32" data-noedit="1" data-lock="ctrl-shift"></div>
+
+  <h2>③ 비트 연산으로 — 4자리씩 끊어서</h2>
+  <p>32자리가 붙어 있으면 세기 어렵습니다. <b>4개마다 빈칸</b>을 하나 넣으면 읽기 쉬워지고, 4비트가 16진수 한 자리와 정확히 맞아떨어집니다(문제 3의 니블).</p>
+  <ul>
+    <li>끊는 자리는 <code>i % 4 == 0</code>일 때입니다. 비트를 찍은 <b>뒤에</b> 넣습니다.</li>
+    <li>맨 끝(<code>i == 0</code>)에는 넣지 않아야 줄 끝에 빈칸이 남지 않습니다.</li>
+  </ul>
+  <div class="runner locked" data-src="chbg" data-name="BinGroup4.java" data-file="challenge/BinGroup4.java" data-main="BinGroup4" data-noedit="1" data-lock="ctrl-shift"></div>
+
+  <h2>④ 비트 연산으로 — 앞쪽 0 빼고</h2>
+  <p>26을 <code>00000000000000000000000000011010</code>으로 보여 줄 필요는 없습니다. <b>처음 1이 나온 뒤부터</b> 찍으면 <code>11010</code>만 남습니다.</p>
+  <ul>
+    <li><code>boolean</code> 깃발 하나로 "1을 만난 적이 있는가"를 기억합니다.</li>
+    <li><code>n</code>이 0이면 1을 한 번도 못 만나 아무것도 못 찍습니다 → <b>0 한 자리</b>는 따로 찍어 줍니다.</li>
+    <li>음수는 31번 비트가 1이라 <b>잘라 낼 0이 없습니다</b>. 32자리가 그대로 나옵니다.</li>
+  </ul>
+  <div class="runner locked" data-src="chbt" data-name="BinTrim.java" data-file="challenge/BinTrim.java" data-main="BinTrim" data-noedit="1" data-lock="ctrl-shift"></div>
+
+  <h2>네 가지 비교</h2>
+  <div class="scroll">
+  <table class="data">
+    <thead><tr><th></th><th>① 산술</th><th>② 32비트</th><th>③ 4자리씩</th><th>④ 0 빼고</th></tr></thead>
+    <tbody>
+      <tr><td>26 →</td><td>11010</td><td>0000…011010</td><td>0000 … 0001 1010</td><td>11010</td></tr>
+      <tr><td>0 →</td><td>따로 처리해야 0</td><td>0 32개</td><td>0000 ×8</td><td>따로 처리해야 0</td></tr>
+      <tr class="hit"><td>−7 →</td><td><b>빈 문자열</b></td><td>1111…1001</td><td>1111 … 1001</td><td>1111…1001</td></tr>
+      <tr><td>쓰는 연산</td><td><code>%</code> <code>/</code></td><td><code>&gt;&gt;</code> <code>&amp;</code></td><td><code>&gt;&gt;</code> <code>&amp;</code> <code>%</code></td><td><code>&gt;&gt;</code> <code>&amp;</code></td></tr>
+      <tr><td>어울리는 곳</td><td>원리 이해</td><td>비트 확인 · 디버깅</td><td>사람이 읽기</td><td>값 표시</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <div class="note"><b>이미 만들어져 있습니다.</b> <code>Integer.toBinaryString(n)</code>은 ④와 같은 결과를, <code>Integer.toHexString(n)</code>은 16진수를 돌려줍니다. 그래도 직접 만들어 보는 이유는 <b>비트를 읽는 한 줄</b>(<code>(n &gt;&gt; i) &amp; 1</code>)이 다른 문제에서 계속 쓰이기 때문입니다.</div>
+
+  <h2>확인 문제</h2>
+  <details class="q"><summary>① 에서 <code>s = (v % 2) + s</code> 대신 <code>s = s + (v % 2)</code> 로 쓰면?</summary><div class="a">나머지가 나온 순서대로 붙어 <b>거꾸로 된 2진수</b>가 됩니다. 26이면 <code>01011</code>이 나옵니다. 나머지는 낮은 자리부터 나오기 때문입니다.</div></details>
+  <details class="q"><summary>② 에서 <code>& 1</code>을 빼면 어떻게 될까요?</summary><div class="a"><code>n &gt;&gt; i</code>는 그 위의 비트까지 모두 남은 <b>정수</b>입니다. 26을 넣으면 <code>0 0 … 1 3 6 13 26</code> 처럼 찍힙니다. <code>&amp; 1</code>이 맨 아래 한 자리만 잘라 주는 역할입니다.</div></details>
+  <details class="q"><summary>③ 에서 <code>i &gt; 0</code> 조건을 빼면?</summary><div class="a">마지막 비트 뒤에도 빈칸이 하나 붙습니다. 눈에 잘 안 띄지만 문자열을 비교하거나 파일로 저장할 때 문제가 됩니다.</div></details>
+  <details class="q"><summary>④ 를 깃발 없이 만들 수 있을까요?</summary><div class="a">가장 높은 1의 자리를 먼저 찾아 그 자리부터 반복하면 됩니다. <code>int top = 31; while (top &gt; 0 &amp;&amp; ((n &gt;&gt; top) &amp; 1) == 0) top--;</code> 그다음 <code>top</code>부터 0까지 찍습니다.</div></details>
+
+  <h2>연습 과제</h2>
+  <ol class="task">
+    <li>8자리마다 끊어(바이트 단위) 출력해 보세요. <code>i % 8 == 0</code> 으로 바꾸면 됩니다.</li>
+    <li>2진수뿐 아니라 16진수도 같이 출력해 보세요. 4비트씩 읽어 <code>0123456789ABCDEF</code> 중 하나를 고르면 됩니다.</li>
+    <li>① 을 음수에서도 동작하게 고쳐 보세요. 힌트 : 부호를 따로 떼고 절댓값을 변환하거나, <code>&gt;&gt;&gt;</code>를 쓰는 방법이 있습니다.</li>
+    <li>2진수 문자열을 받아 다시 <code>int</code>로 되돌리는 메서드를 만들어 보세요. (<code>'1'</code>이면 <code>v = v * 2 + 1</code>)</li>
+    <li>자리마다 <code>1</code>의 개수를 세는 <code>bitCount</code>를 만들어 보세요.</li>
+  </ol>
+</section>
     </div>
   </main>
 
@@ -3120,6 +3233,132 @@ for (int i = 0; i < 8; i++) {          // i = 출력할 행
     }
     System.out.println();
 }</script>
+<script type="text/plain" id="scancode">import java.util.Scanner;
+
+Scanner sc = new Scanner(System.in);
+System.out.print("정수 입력 : ");
+int n = sc.nextInt();</script>
+<script type="text/plain" id="bitread">int b = (n >> i) & 1;     // i 번 비트 하나
+
+//  n >> i   : 읽고 싶은 비트를 맨 아래로 내린다
+//  & 1      : 그 아래 한 자리만 남긴다 (나머지는 잘라 낸다)</script>
+<script type="text/plain" id="chba">// 방법 ① 산술 연산으로 2진수 만들기
+//   2로 나눈 나머지를 거꾸로 모은다 (Step 1 의 cnvtDec2Bin 과 같은 원리)
+public class BinArith {
+
+    static String toBin(int n) {
+        if (n == 0) return "0";                // 0 은 반복문이 한 번도 돌지 않는다
+
+        String s = "";
+        int v = n;
+
+        while (v > 0) {
+            s = (v % 2) + s;                   // 나머지를 '앞에' 붙인다
+            v = v / 2;                         // 몫으로 다시 나눈다
+        }
+
+        return s;
+    }
+
+    public static void main(String[] args) {
+        // 실제로 값을 입력받으려면 :
+        //   Scanner sc = new Scanner(System.in);
+        //   int n = sc.nextInt();
+        int[] test = {0, 5, 26, 2026, -7};
+
+        for (int i = 0; i < test.length; i++) {
+            System.out.println(test[i] + " -> [" + toBin(test[i]) + "]");
+        }
+
+        System.out.println();
+        System.out.println("-7 은 while (v > 0) 을 한 번도 돌지 못해 빈 문자열이 된다");
+    }
+}
+</script>
+<script type="text/plain" id="chbb">// 방법 ② 비트 연산으로 32비트 전부 출력
+//   맨 위(31번) 비트부터 0번까지 한 칸씩 내려오며 한 자리씩 찍는다
+public class BinBits32 {
+
+    static void print32(int n) {
+        for (int i = 31; i >= 0; i--) {
+            System.out.print((n >> i) & 1);    // i 번 비트만 꺼내 찍는다
+        }
+
+        System.out.println();
+    }
+
+    public static void main(String[] args) {
+        int[] test = {0, 5, 26, 2026, -7};
+
+        for (int i = 0; i < test.length; i++) {
+            System.out.print(test[i] + "\t");
+            print32(test[i]);
+        }
+
+        System.out.println();
+        System.out.println("음수는 맨 앞(부호) 비트가 1 이라 앞쪽이 1 로 가득 찬다");
+    }
+}
+</script>
+<script type="text/plain" id="chbg">// 방법 ③ 비트 연산 + 4자리씩 끊어 출력
+//   ② 와 같지만, 니블(4비트) 경계마다 빈칸을 하나 넣는다
+public class BinGroup4 {
+
+    static void print4(int n) {
+        for (int i = 31; i >= 0; i--) {
+            System.out.print((n >> i) & 1);
+
+            if (i % 4 == 0 && i > 0) System.out.print(" ");   // 4개마다 한 칸 띄우기
+        }
+
+        System.out.println();
+    }
+
+    public static void main(String[] args) {
+        int[] test = {0, 5, 26, 2026, -7};
+
+        for (int i = 0; i < test.length; i++) {
+            System.out.print(test[i] + "\t");
+            print4(test[i]);
+        }
+
+        System.out.println();
+        System.out.println("4자리씩 끊으면 16진수와 한 자리씩 맞아떨어진다");
+    }
+}
+</script>
+<script type="text/plain" id="chbt">// 방법 ④ 비트 연산 + 앞쪽의 의미 없는 0 빼고 출력
+//   1 이 처음 나온 뒤부터 찍기 시작한다
+public class BinTrim {
+
+    static void printTrim(int n) {
+        boolean start = false;                 // 1 을 만난 적이 있는가
+
+        for (int i = 31; i >= 0; i--) {
+            int b = (n >> i) & 1;
+
+            if (b == 1) start = true;          // 여기서부터 의미 있는 자리
+            if (start) System.out.print(b);
+        }
+
+        if (start == false) System.out.print("0");   // n 이 0 이면 한 번도 못 찍는다
+
+        System.out.println();
+    }
+
+    public static void main(String[] args) {
+        int[] test = {0, 5, 26, 2026, -7};
+
+        for (int i = 0; i < test.length; i++) {
+            System.out.print(test[i] + "\t");
+            printTrim(test[i]);
+        }
+
+        System.out.println();
+        System.out.println("음수는 31번 비트가 1 이라 잘라 낼 0 이 없다 (32자리 그대로)");
+    }
+}
+</script>
 <script type="text/plain" id="chbit">// 비트 연산 눈으로 보기 — 니블 정렬에 쓸 연산들을 먼저 익힌다
 //   AND(&) 남기기 · OR(|) 합치기 · XOR(^) 뒤집기 · NOT(~) 반전 · 시프트(<< >>) 옮기기
 public class BitOps {
@@ -5876,15 +6115,88 @@ function nibLab(){
   ui.reset();
 }
 
+
+/* ================= 문제 4 : 2진수로 출력하기 ================= */
+function binOf(n){ return (n >>> 0).toString(2).padStart(32, "0"); }
+
+function binLab(){
+  if (!$("l25bits2")) return;
+  let n = 2026, pick = null;
+
+  const draw = () => {
+    const b = binOf(n);
+
+    /* ② 32비트 붙여서 — 비트마다 클릭할 수 있다 */
+    $("l25bits2").innerHTML = b.split("").map((c, x) => {
+      const i = 31 - x;
+      return '<span class="b1' + (pick === i ? " on" : "") + '" data-i="' + i + '">' + c + "</span>";
+    }).join("");
+
+    /* ③ 4자리씩 */
+    $("l25bits3").innerHTML = (b.match(/.{4}/g) || []).map(g => "<span>" + g + "</span>").join(" ");
+
+    /* ④ 앞쪽 0 빼고 */
+    const one = b.indexOf("1");
+    $("l25bits4").innerHTML = one < 0
+      ? '<span class="dim">0000000000000000000000000000000</span>0'
+      : '<span class="dim">' + b.slice(0, one) + "</span><b>" + b.slice(one) + "</b>";
+    $("l25trim").textContent = one < 0 ? "= 0   (전부 0 이면 한 자리는 남겨야 한다)"
+                                       : "= " + b.slice(one) + "   (" + (32 - one) + "자리)";
+
+    /* ① 산술 : 2로 나눈 나머지 표 */
+    let rows = "<thead><tr><th>단계</th><th>v</th><th>v % 2</th><th>v / 2</th></tr></thead><tbody>";
+    if (n < 0){
+      rows += '<tr><td colspan="4">v = ' + n + " 은 <b>while (v &gt; 0)</b> 조건에 걸려 한 번도 돌지 않는다</td></tr>";
+    } else if (n === 0){
+      rows += '<tr><td colspan="4">v = 0 도 한 번도 돌지 않는다. 그래서 <b>0 은 따로 처리</b>한다</td></tr>';
+    } else {
+      let v = n, step = 1, got = "";
+      while (v > 0 && step <= 34){
+        const r = v % 2;
+        got = r + got;
+        rows += "<tr><td>" + step + "</td><td>" + v + "</td><td><b>" + r + "</b></td><td>" + Math.floor(v / 2) + "</td></tr>";
+        v = Math.floor(v / 2); step++;
+      }
+      rows += '<tr class="hit"><td colspan="4">나머지를 <b>아래에서 위로</b> 읽으면 ' + got + "</td></tr>";
+    }
+    $("l25tbl").innerHTML = rows + "</tbody>";
+
+    $("l25pick").textContent = pick == null
+      ? "② 줄의 비트를 눌러 보세요"
+      : "(n >> " + pick + ") & 1  =  " + ((n >> pick) & 1) + "      ← " + pick + "번 비트";
+    $("l25val").textContent = "n = " + n + "   (0x" + (n >>> 0).toString(16) + ")";
+  };
+
+  $("l25bits2").addEventListener("click", (e) => {
+    const t = e.target.closest("[data-i]"); if (!t) return;
+    pick = pick === +t.dataset.i ? null : +t.dataset.i;
+    draw();
+  });
+
+  const inp = $("l25n");
+  inp.addEventListener("input", () => {
+    const v = parseInt(inp.value, 10);
+    n = isNaN(v) ? 0 : (v | 0); pick = null; draw();
+  });
+  [0, 5, 26, 2026, -7].forEach(v => {
+    const b = el("button", { type: "button", class: "btn" });
+    b.textContent = v;
+    b.onclick = () => { n = v; inp.value = v; pick = null; draw(); };
+    $("l25quick").appendChild(b);
+  });
+
+  draw();
+}
+
 /* ================= 단계 이동 ================= */
 const sections = [...document.querySelectorAll("section.step")];
 const STOPPERS = [];
 
 const TABS = [
   { id: "course",    label: "강좌",     parts: ["1", "2"] },
-  { id: "challenge", label: "도전문제", parts: ["3", "4", "5"] }
+  { id: "challenge", label: "도전문제", parts: ["3", "4", "5", "6"] }
 ];
-const GROUPS = { "1": "1부 · 메서드로 만들기", "2": "2부 · 클래스로 만들기", "3": "문제 1 · 8×8 글자 뒤집기", "4": "문제 2 · 정렬과 검색", "5": "문제 3 · 비트로 정렬하기" };
+const GROUPS = { "1": "1부 · 메서드로 만들기", "2": "2부 · 클래스로 만들기", "3": "문제 1 · 8×8 글자 뒤집기", "4": "문제 2 · 정렬과 검색", "5": "문제 3 · 비트로 정렬하기", "6": "문제 4 · 2진수로 출력하기" };
 const tabOf = (part) => (TABS.filter(t => t.parts.indexOf(part) >= 0)[0] || TABS[0]).id;
 let curTab = "course", curStep = 0;
 const lastStep = {};        // 탭마다 마지막으로 보던 단계
@@ -6467,15 +6779,19 @@ function buildCards(){
     const isMain = box.classList.contains("runner");
     const step = box.closest("section.step");
 
+    const noedit = box.dataset.noedit === "1";
+    let prog = null;
     if (isMain){
       const deps = (box.dataset.deps || "").split(/\s+/).filter(Boolean).map(id => ID2NAME.get(id));
-      const prog = { id: box.dataset.src, name, main: box.dataset.main, deps, step: +step.dataset.n };
-      PROGRAMS.set(prog.id, prog);
-      box.__prog = prog;
-      [name].concat(deps).forEach(fn => {
-        if (!FILE_PROGS.has(fn)) FILE_PROGS.set(fn, []);
-        FILE_PROGS.get(fn).push(prog);
-      });
+      prog = { id: box.dataset.src, name, main: box.dataset.main, deps, step: +step.dataset.n, noedit };
+      if (!noedit){
+        PROGRAMS.set(prog.id, prog);
+        box.__prog = prog;
+        [name].concat(deps).forEach(fn => {
+          if (!FILE_PROGS.has(fn)) FILE_PROGS.set(fn, []);
+          FILE_PROGS.get(fn).push(prog);
+        });
+      }
     }
 
     const card = el("div", { class: "card" });
@@ -6485,15 +6801,28 @@ function buildCards(){
     if (!isMain){ const b = el("span", { class: "hint" }); b.textContent = "main 없음 · 함께 컴파일"; bar.appendChild(b); }
     const sp = el("span", { class: "sp" }); bar.appendChild(sp);
     if (box.dataset.file){ const a = el("a", { href: box.dataset.file, target: "_blank", rel: "noopener", style: "color:inherit;font-size:12px" }); a.textContent = "전체 파일"; bar.appendChild(a); }
-    const copy = el("button", { type: "button" }); copy.textContent = "복사";
-    const open = el("button", { type: "button" }); open.textContent = "에디터에서 열기";
-    const runIt = el("button", { type: "button", class: "run", title: isMain ? "이 프로그램을 실행합니다 (Ctrl + Enter)" : "이 클래스를 쓰는 이 단계의 프로그램을 실행합니다" });
+    const copy = el("button", { type: "button", class: "copy" }); copy.textContent = "복사";
+    const open = el("button", { type: "button", class: "open" }); open.textContent = "에디터에서 열기";
+    const runIt = el("button", { type: "button", class: "run", title: isMain ? "이 프로그램을 실행합니다" : "이 클래스를 쓰는 이 단계의 프로그램을 실행합니다" });
     runIt.textContent = isMain ? "▶ 실행" : "▶ 함께 실행";
-    bar.append(copy, open, runIt);
+    if (noedit) bar.append(runIt); else bar.append(copy, open, runIt);
 
     const pre = el("pre"); const code = el("code", { class: "language-java" });
     pre.appendChild(code); paint(code, f.text); f.views.push(code);
     card.append(bar, pre);
+    if (box.dataset.lock){
+      card.dataset.lock = box.dataset.lock;
+      const ph = el("pre", { class: "ph" }); ph.textContent = "· · ·";
+      card.appendChild(ph);
+      bar.addEventListener("dblclick", (e) => {
+        e.preventDefault();
+        const need = card.dataset.lock;
+        const ok = need === "ctrl-shift" ? ((e.ctrlKey || e.metaKey) && e.shiftKey) : (e.ctrlKey || e.metaKey);
+        if (!ok) return;
+        if (card.hasAttribute("data-open")) card.removeAttribute("data-open");
+        else card.setAttribute("data-open", "1");
+      });
+    }
     card.__prog = box.__prog;
     box.replaceWith(card);
     card.dataset.file = name;
@@ -6515,9 +6844,14 @@ function buildCards(){
       if (window.innerWidth <= 1100) $("edPane").scrollIntoView({ block: "nearest" });
     };
     runIt.onclick = () => {
-      const prog = progOfCard();
-      if (!prog) return;
-      openProgram(prog, name);
+      if (noedit && prog){                       // 에디터에 올리지 않고 바로 실행
+        runFiles(prog.deps.concat([prog.name]), prog.main, prog.name, runIt);
+        if (window.innerWidth <= 1100) $("consPane").scrollIntoView({ block: "nearest" });
+        return;
+      }
+      const target = progOfCard();
+      if (!target) return;
+      openProgram(target, name);
       runCurrent();
       if (window.innerWidth <= 1100) $("consPane").scrollIntoView({ block: "nearest" });
     };
@@ -6604,34 +6938,39 @@ function markStale(){
   if (c.dataset.ran === "1"){ c.classList.add("stale"); $("outMeta").textContent = "코드가 바뀜 — 다시 실행"; }
 }
 
-function runCurrent(){
-  if (!CURRENT) return;
-  const btn = $("edRun"), cons = $("consPane"), pre = $("outPre"), meta = $("outMeta");
-  btn.disabled = true; btn.textContent = "실행 중…";
+/* 파일 목록을 받아 실행하고 오른쪽 칸에 결과를 보여 준다 */
+function runFiles(names, main, title, btn){
+  const cons = $("consPane"), pre = $("outPre"), meta = $("outMeta");
+  const label = btn ? btn.textContent : null;
+  if (btn){ btn.disabled = true; btn.textContent = "실행 중…"; }
   cons.classList.remove("stale"); meta.textContent = "";
-  $("outTitle").textContent = "실행 결과 · " + CURRENT.name;
+  $("outTitle").textContent = "실행 결과 · " + title;
   setTimeout(() => {
     let r;
     try {
-      const sources = CURRENT.deps.map(fn => ({ name: fn, code: JFILES.get(fn).text }));
-      sources.push({ name: CURRENT.name, code: JFILES.get(CURRENT.name).text });
-      r = JavaMini.run(sources, Object.assign({ mainClass: CURRENT.main }, RUN_LIMITS));
+      const sources = names.map(fn => ({ name: fn, code: JFILES.get(fn).text }));
+      r = JavaMini.run(sources, Object.assign({ mainClass: main }, RUN_LIMITS));
     } catch (err){
       r = { output: "", error: { kind: "internal", text: String(err && err.message || err) }, ms: 0 };
     }
     pre.textContent = "";
     if (r.output) pre.appendChild(document.createTextNode(r.output));
     if (r.error){
-      const s = el("span", { class: "err" });
-      s.textContent = (r.output && !r.output.endsWith("\n") ? "\n" : "") + r.error.text + "\n";
-      pre.appendChild(s);
+      const sp = el("span", { class: "err" });
+      sp.textContent = (r.output && !r.output.endsWith("\n") ? "\n" : "") + r.error.text + "\n";
+      pre.appendChild(sp);
     }
     if (!r.output && !r.error) pre.appendChild(el("span", { class: "dim" }, "(출력 없음)"));
     const lines = r.output ? r.output.replace(/\n$/, "").split("\n").length : 0;
     meta.textContent = r.ms + "ms · " + lines.toLocaleString() + "줄";
     pre.scrollTop = 0; cons.dataset.ran = "1";
-    btn.disabled = false; btn.textContent = "▶ 실행";
+    if (btn){ btn.disabled = false; btn.textContent = label; }
   }, 16);
+}
+
+function runCurrent(){
+  if (!CURRENT) return;
+  runFiles(CURRENT.deps.concat([CURRENT.name]), CURRENT.main, CURRENT.name, $("edRun"));
 }
 
 /* ---------------- 단계가 바뀌면 그 단계의 프로그램을 올린다 ---------------- */
@@ -6709,7 +7048,7 @@ buildCode();
 initIDE();
 buildNav();
 buildTabs();
-[lab1, lab2, lab3, lab4, lab5, lab6, lab7, () => counterLab("l8", false), () => counterLab("l9", true), lab11, lab13, labGa, labIndex, sortLab, searchLab, nibMapFig, bitLab, nibLab, lockFolds, () => clockLab("l15", "ss"), () => clockLab("l16", "mmss"), () => clockLab("l17", "hhmmss")].forEach(f => { try { f(); } catch(e){ console.error(e); } });
+[lab1, lab2, lab3, lab4, lab5, lab6, lab7, () => counterLab("l8", false), () => counterLab("l9", true), lab11, lab13, labGa, labIndex, sortLab, searchLab, nibMapFig, bitLab, nibLab, binLab, lockFolds, () => clockLab("l15", "ss"), () => clockLab("l16", "mmss"), () => clockLab("l17", "hhmmss")].forEach(f => { try { f(); } catch(e){ console.error(e); } });
 const start = location.hash.match(/step-(\d+)/);
 go(start ? +start[1] : 0, false);
 </script>
