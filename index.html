@@ -1998,7 +1998,7 @@ java Main</pre></div>
     <div class="binlbl">③ 비트 — 4자리씩 끊어서</div>
     <div class="binrow" id="l25bits3"></div>
 
-    <div class="binlbl">④ 비트 — 앞쪽의 의미 없는 0 빼고</div>
+    <div class="binlbl">④ 비트 — 앞쪽의 의미 없는 0 빼고, 남은 자리를 4자리씩</div>
     <div class="binrow" id="l25bits4"></div>
     <p class="mapline" id="l25trim" style="margin-top:8px"></p>
   </div>
@@ -2026,34 +2026,37 @@ java Main</pre></div>
   </ul>
   <div class="runner locked" data-src="chbg" data-name="BinGroup4.java" data-file="challenge/BinGroup4.java" data-main="BinGroup4" data-noedit="1" data-lock="ctrl-shift"></div>
 
-  <h2>④ 비트 연산으로 — 앞쪽 0 빼고</h2>
-  <p>26을 <code>00000000000000000000000000011010</code>으로 보여 줄 필요는 없습니다. <b>처음 1이 나온 뒤부터</b> 찍으면 <code>11010</code>만 남습니다.</p>
+  <h2>④ 비트 연산으로 — 앞쪽 0 빼고 4자리씩</h2>
+  <p>26을 <code>00000000000000000000000000011010</code>으로 보여 줄 필요는 없습니다. <b>처음 1이 나온 뒤부터</b> 찍고, 거기에 ③의 <b>4자리 끊기</b>를 함께 쓰면 <code>1 1010</code>이 됩니다.</p>
   <ul>
-    <li><code>boolean</code> 깃발 하나로 "1을 만난 적이 있는가"를 기억합니다.</li>
+    <li><code>boolean</code> 깃발 하나로 "1을 만난 적이 있는가"를 기억합니다. 빈칸도 <b>깃발이 선 뒤에만</b> 넣습니다.</li>
+    <li>빈칸을 넣는 자리(<code>i % 4 == 0</code>)는 ③과 <b>똑같습니다</b>. 자리 번호로 끊기 때문에 <b>오른쪽 묶음은 늘 4자리</b>이고, 맨 앞 묶음만 짧아집니다. 위아래를 비교해 보세요 — <code>… 0001 1010</code>과 <code>1 1010</code>의 빈칸 위치가 같습니다.</li>
+    <li>그래서 16진수와의 대응도 그대로입니다. <code>1 1010</code> → <code>1</code>과 <code>A</code> → <code>0x1A</code>.</li>
     <li><code>n</code>이 0이면 1을 한 번도 못 만나 아무것도 못 찍습니다 → <b>0 한 자리</b>는 따로 찍어 줍니다.</li>
-    <li>음수는 31번 비트가 1이라 <b>잘라 낼 0이 없습니다</b>. 32자리가 그대로 나옵니다.</li>
+    <li>음수는 31번 비트가 1이라 <b>잘라 낼 0이 없습니다</b>. 32자리가 8묶음 그대로 나옵니다.</li>
   </ul>
   <div class="runner locked" data-src="chbt" data-name="BinTrim.java" data-file="challenge/BinTrim.java" data-main="BinTrim" data-noedit="1" data-lock="ctrl-shift"></div>
 
   <h2>네 가지 비교</h2>
   <div class="scroll">
   <table class="data">
-    <thead><tr><th></th><th>① 산술</th><th>② 32비트</th><th>③ 4자리씩</th><th>④ 0 빼고</th></tr></thead>
+    <thead><tr><th></th><th>① 산술</th><th>② 32비트</th><th>③ 4자리씩</th><th>④ 0 빼고 4자리씩</th></tr></thead>
     <tbody>
-      <tr><td>26 →</td><td>11010</td><td>0000…011010</td><td>0000 … 0001 1010</td><td>11010</td></tr>
+      <tr><td>26 →</td><td>11010</td><td>0000…011010</td><td>0000 … 0001 1010</td><td>1 1010</td></tr>
       <tr><td>0 →</td><td>따로 처리해야 0</td><td>0 32개</td><td>0000 ×8</td><td>따로 처리해야 0</td></tr>
-      <tr class="hit"><td>−7 →</td><td><b>빈 문자열</b></td><td>1111…1001</td><td>1111 … 1001</td><td>1111…1001</td></tr>
-      <tr><td>쓰는 연산</td><td><code>%</code> <code>/</code></td><td><code>&gt;&gt;</code> <code>&amp;</code></td><td><code>&gt;&gt;</code> <code>&amp;</code> <code>%</code></td><td><code>&gt;&gt;</code> <code>&amp;</code></td></tr>
-      <tr><td>어울리는 곳</td><td>원리 이해</td><td>비트 확인 · 디버깅</td><td>사람이 읽기</td><td>값 표시</td></tr>
+      <tr class="hit"><td>−7 →</td><td><b>빈 문자열</b></td><td>1111…1001</td><td>1111 … 1001</td><td>1111 … 1001</td></tr>
+      <tr><td>쓰는 연산</td><td><code>%</code> <code>/</code></td><td><code>&gt;&gt;</code> <code>&amp;</code></td><td><code>&gt;&gt;</code> <code>&amp;</code> <code>%</code></td><td><code>&gt;&gt;</code> <code>&amp;</code> <code>%</code></td></tr>
+      <tr><td>어울리는 곳</td><td>원리 이해</td><td>비트 확인 · 디버깅</td><td>사람이 읽기</td><td>값 표시 · 16진수 대응</td></tr>
     </tbody>
   </table>
   </div>
-  <div class="note"><b>이미 만들어져 있습니다.</b> <code>Integer.toBinaryString(n)</code>은 ④와 같은 결과를, <code>Integer.toHexString(n)</code>은 16진수를 돌려줍니다. 그래도 직접 만들어 보는 이유는 <b>비트를 읽는 한 줄</b>(<code>(n &gt;&gt; i) &amp; 1</code>)이 다른 문제에서 계속 쓰이기 때문입니다.</div>
+  <div class="note"><b>이미 만들어져 있습니다.</b> <code>Integer.toBinaryString(n)</code>은 ④에서 <b>빈칸만 없는</b> 결과를, <code>Integer.toHexString(n)</code>은 16진수를 돌려줍니다. 그래도 직접 만들어 보는 이유는 <b>비트를 읽는 한 줄</b>(<code>(n &gt;&gt; i) &amp; 1</code>)이 다른 문제에서 계속 쓰이기 때문입니다.</div>
 
   <h2>확인 문제</h2>
   <details class="q"><summary>① 에서 <code>s = (v % 2) + s</code> 대신 <code>s = s + (v % 2)</code> 로 쓰면?</summary><div class="a">나머지가 나온 순서대로 붙어 <b>거꾸로 된 2진수</b>가 됩니다. 26이면 <code>01011</code>이 나옵니다. 나머지는 낮은 자리부터 나오기 때문입니다.</div></details>
   <details class="q"><summary>② 에서 <code>& 1</code>을 빼면 어떻게 될까요?</summary><div class="a"><code>n &gt;&gt; i</code>는 그 위의 비트까지 모두 남은 <b>정수</b>입니다. 26을 넣으면 <code>0 0 … 1 3 6 13 26</code> 처럼 찍힙니다. <code>&amp; 1</code>이 맨 아래 한 자리만 잘라 주는 역할입니다.</div></details>
   <details class="q"><summary>③ 에서 <code>i &gt; 0</code> 조건을 빼면?</summary><div class="a">마지막 비트 뒤에도 빈칸이 하나 붙습니다. 눈에 잘 안 띄지만 문자열을 비교하거나 파일로 저장할 때 문제가 됩니다.</div></details>
+  <details class="q"><summary>④ 에서 26이 <code>1 1010</code>인데, 왜 <code>0001 1010</code>처럼 앞을 채우지 않을까요?</summary><div class="a">앞을 채우면 <b>지운 0을 다시 넣는 셈</b>이라 ③과 같아집니다. 반대로 <b>왼쪽부터</b> 4개씩 끊으면(<code>1101 0</code>) 오른쪽 묶음이 짧아져 16진수 자리와 어긋납니다. 자리 번호로 끊어야(<code>i % 4 == 0</code>) 오른쪽이 맞습니다.</div></details>
   <details class="q"><summary>④ 를 깃발 없이 만들 수 있을까요?</summary><div class="a">가장 높은 1의 자리를 먼저 찾아 그 자리부터 반복하면 됩니다. <code>int top = 31; while (top &gt; 0 &amp;&amp; ((n &gt;&gt; top) &amp; 1) == 0) top--;</code> 그다음 <code>top</code>부터 0까지 찍습니다.</div></details>
 
   <h2>연습 과제</h2>
@@ -3327,8 +3330,8 @@ public class BinGroup4 {
     }
 }
 </script>
-<script type="text/plain" id="chbt">// 방법 ④ 비트 연산 + 앞쪽의 의미 없는 0 빼고 출력
-//   1 이 처음 나온 뒤부터 찍기 시작한다
+<script type="text/plain" id="chbt">// 방법 ④ 비트 연산 + 앞쪽의 의미 없는 0 빼고 4자리씩 출력
+//   1 이 처음 나온 뒤부터 찍고, ③ 과 같은 자리에서 빈칸을 넣는다
 public class BinTrim {
 
     static void printTrim(int n) {
@@ -3338,7 +3341,12 @@ public class BinTrim {
             int b = (n >> i) & 1;
 
             if (b == 1) start = true;          // 여기서부터 의미 있는 자리
-            if (start) System.out.print(b);
+
+            if (start) {
+                System.out.print(b);
+
+                if (i % 4 == 0 && i > 0) System.out.print(" ");   // 4자리마다 한 칸
+            }
         }
 
         if (start == false) System.out.print("0");   // n 이 0 이면 한 번도 못 찍는다
@@ -3355,6 +3363,7 @@ public class BinTrim {
         }
 
         System.out.println();
+        System.out.println("빈칸 자리는 ③ 과 똑같다 → 오른쪽 묶음은 늘 4자리, 맨 앞만 짧다");
         System.out.println("음수는 31번 비트가 1 이라 잘라 낼 0 이 없다 (32자리 그대로)");
     }
 }
@@ -6137,11 +6146,13 @@ function binLab(){
 
     /* ④ 앞쪽 0 빼고 */
     const one = b.indexOf("1");
+    const g = (b.match(/.{4}/g) || []).join(" ");     // 빈칸 자리는 ③ 과 똑같다
+    const gi = g.indexOf("1");
     $("l25bits4").innerHTML = one < 0
-      ? '<span class="dim">0000000000000000000000000000000</span>0'
-      : '<span class="dim">' + b.slice(0, one) + "</span><b>" + b.slice(one) + "</b>";
+      ? '<span class="dim">' + g.slice(0, g.length - 1) + "</span><b>0</b>"
+      : '<span class="dim">' + g.slice(0, gi) + "</span><b>" + g.slice(gi) + "</b>";
     $("l25trim").textContent = one < 0 ? "= 0   (전부 0 이면 한 자리는 남겨야 한다)"
-                                       : "= " + b.slice(one) + "   (" + (32 - one) + "자리)";
+                                       : "= " + g.slice(gi) + "   (" + (32 - one) + "자리)";
 
     /* ① 산술 : 2로 나눈 나머지 표 */
     let rows = "<thead><tr><th>단계</th><th>v</th><th>v % 2</th><th>v / 2</th></tr></thead><tbody>";
