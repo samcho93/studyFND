@@ -2010,13 +2010,13 @@ java Main</pre></div>
     <li><code>n</code>이 <b>0</b>이면 반복문이 한 번도 돌지 않아 빈 문자열이 됩니다 → 따로 처리해야 합니다.</li>
     <li><b>음수</b>는 <code>while (v &gt; 0)</code> 조건에 걸려 아무것도 나오지 않습니다. 위 그림에서 −7을 눌러 확인해 보세요.</li>
   </ul>
-  <div class="runner locked" data-src="chba" data-name="BinArith.java" data-file="challenge/BinArith.java" data-main="BinArith" data-noedit="1" data-lock="ctrl-shift"></div>
+  <div class="runner" data-src="chba" data-name="BinArith.java" data-file="challenge/BinArith.java" data-main="BinArith"></div>
 
   <h2>② 비트 연산으로 — 32비트 그대로</h2>
   <p>정수는 이미 2진수입니다. 만들 필요 없이 <b>있는 비트를 읽기만</b> 하면 됩니다. <code>i</code>번 비트를 읽는 방법은 문제 3에서 쓴 것과 같습니다.</p>
   <div class="code" data-src="bitread" data-cap="비트 하나 읽기"></div>
   <p>31번부터 0번까지 내려오며 찍으면 32자리가 그대로 나옵니다. 음수도 <b>있는 그대로</b> 보이므로, 2의 보수 표현을 눈으로 확인할 때 좋습니다.</p>
-  <div class="runner locked" data-src="chbb" data-name="BinBits32.java" data-file="challenge/BinBits32.java" data-main="BinBits32" data-noedit="1" data-lock="ctrl-shift"></div>
+  <div class="runner" data-src="chbb" data-name="BinBits32.java" data-file="challenge/BinBits32.java" data-main="BinBits32"></div>
 
   <h2>③ 비트 연산으로 — 4자리씩 끊어서</h2>
   <p>32자리가 붙어 있으면 세기 어렵습니다. <b>4개마다 빈칸</b>을 하나 넣으면 읽기 쉬워지고, 4비트가 16진수 한 자리와 정확히 맞아떨어집니다(문제 3의 니블).</p>
@@ -2024,7 +2024,7 @@ java Main</pre></div>
     <li>끊는 자리는 <code>i % 4 == 0</code>일 때입니다. 비트를 찍은 <b>뒤에</b> 넣습니다.</li>
     <li>맨 끝(<code>i == 0</code>)에는 넣지 않아야 줄 끝에 빈칸이 남지 않습니다.</li>
   </ul>
-  <div class="runner locked" data-src="chbg" data-name="BinGroup4.java" data-file="challenge/BinGroup4.java" data-main="BinGroup4" data-noedit="1" data-lock="ctrl-shift"></div>
+  <div class="runner" data-src="chbg" data-name="BinGroup4.java" data-file="challenge/BinGroup4.java" data-main="BinGroup4"></div>
 
   <h2>④ 비트 연산으로 — 앞쪽 0 빼고 4자리씩</h2>
   <p>26을 <code>00000000000000000000000000011010</code>으로 보여 줄 필요는 없습니다. <b>처음 1이 나온 뒤부터</b> 찍고, 거기에 ③의 <b>4자리 끊기</b>를 함께 쓰면 <code>1 1010</code>이 됩니다.</p>
@@ -2035,7 +2035,7 @@ java Main</pre></div>
     <li><code>n</code>이 0이면 1을 한 번도 못 만나 아무것도 못 찍습니다 → <b>0 한 자리</b>는 따로 찍어 줍니다.</li>
     <li>음수는 31번 비트가 1이라 <b>잘라 낼 0이 없습니다</b>. 32자리가 8묶음 그대로 나옵니다.</li>
   </ul>
-  <div class="runner locked" data-src="chbt" data-name="BinTrim.java" data-file="challenge/BinTrim.java" data-main="BinTrim" data-noedit="1" data-lock="ctrl-shift"></div>
+  <div class="runner" data-src="chbt" data-name="BinTrim.java" data-file="challenge/BinTrim.java" data-main="BinTrim"></div>
 
   <h2>네 가지 비교</h2>
   <div class="scroll">
