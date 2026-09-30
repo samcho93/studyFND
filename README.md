@@ -54,6 +54,9 @@ GitHub Pages를 켜면(Settings → Pages → `main` 브랜치, `/ (root)`) 웹�
 | 6 | 카운터 4개: MM:SS | `ClockMMSS.java` |
 | 7 | 칩 18개 조립: 12시간제 시계, AM/PM | `Main.java` |
 | 8 | 칩 3개를 고치지 않고 한 부품으로 감싸 같은 시계 다시 만들기 | `Digit.java`, `DigitClock.java` |
+| 9 | `Digit`을 물려받아 규칙을 덧붙이기 (상속) | `ModDigit.java`, `LogDigit.java` |
+
+`ModDigit`은 N이 되면 스스로 0으로 돌아가는 자리입니다. 시계 본문에서 `s10.reset(s10.bit(2) & s10.bit(1), 0, 0)` 하던 일을 자리 자신이 하게 만든 것으로, `setClock`을 재정의해 **부모 일을 먼저 시키고**(`super.setClock`) 규칙 한 줄을 뒤에 더합니다. `LogDigit`은 세는 일은 부모에게 맡기고 클럭 수·바뀐 횟수·한 바퀴 돈 횟수·지나간 값만 적어 둡니다. 둘 다 `Digit`과 칩 세 개를 **한 줄도 고치지 않습니다**.
 
 ### 도전문제 (`challenge/`)
 
@@ -128,6 +131,8 @@ GitHub Pages를 켜면(Settings → Pages → `main` 브랜치, `/ (root)`) 웹�
     ├── Main.java       12시간제 디지털 시계 (칩 3종 조립)
     ├── Digit.java      칩 3개를 가진 '한 자리' 클래스
     ├── DigitClock.java Digit 6개로 만든 같은 시계
+    ├── ModDigit.java   Digit 상속 : N 이 되면 스스로 0 으로
+    ├── LogDigit.java   Digit 상속 : 지나간 값과 자리올림 기록
     └── ... 테스트 프로그램
 └── challenge/          도전문제 (8×8 글자 뒤집고 돌리기)
     ├── Letter.java     8×8 배열에 '가' (획을 그어 채우기)
