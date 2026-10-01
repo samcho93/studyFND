@@ -226,6 +226,16 @@ details.fold .card{margin:0 12px 12px}
 .card[data-lock] .bar{cursor:default}
 .card[data-lock]:not([data-open]) .bar a,.card[data-lock] .bar button.copy,.card[data-lock] .bar button.open{display:none}
 
+/* ---------- 그림퍼즐 판 ---------- */
+.board{font-family:var(--font-mono);font-size:13px;line-height:1.4;white-space:pre;background:var(--term);color:var(--term-ink);padding:12px 14px;border-radius:var(--radius);overflow-x:auto;-webkit-user-select:none;user-select:none}
+.board .c{color:#fff}
+.board .c.hole{color:var(--term-dim)}
+.board .c.can{cursor:pointer;background:var(--pcb);border-radius:3px}
+.board .c.can:hover{background:var(--led);color:#fff}
+.board.done .c{color:var(--led)}
+.lab:focus{outline:2px solid var(--pcb);outline-offset:2px}
+.lab .hintline{font-size:12px;color:var(--muted);margin:10px 0 0}
+
 /* ---------- lab (interactive) ---------- */
 .lab{background:var(--surface);border:1px solid var(--rule);border-radius:10px;padding:20px;margin:18px 0}
 .lab-h{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap;margin-bottom:14px}
@@ -2068,6 +2078,87 @@ java Main</pre></div>
     <li>자리마다 <code>1</code>의 개수를 세는 <code>bitCount</code>를 만들어 보세요.</li>
   </ol>
 </section>
+
+<!-- ================= 문제 5 : 그림퍼즐 ================= -->
+<section class="step" id="step-26" data-n="26" data-part="7" data-k="1" data-title="그림퍼즐 맞추기" data-sub="n×n 밀기 퍼즐" hidden>
+  <div class="eyebrow">문제 5</div>
+  <h1>그림퍼즐 맞추기</h1>
+  <p class="lead"><code>n × n</code> 판에 숫자를 섞어 놓고 <b>빈칸 옆의 숫자를 밀어</b> 1 부터 <code>n×n-1</code> 까지 순서대로 맞추는 게임입니다. 판은 <code>+-----+</code> 와 <code>|</code> 로 그리고, 움직임은 <b>W A S D</b> 로 받습니다.</p>
+  <ul class="goals"><li>2차원 배열에서 <code>r * n + c</code> 자리 계산</li><li>빈칸을 기준으로 한 범위 검사</li><li>섞기와 <b>풀 수 있는 판</b></li></ul>
+
+  <div class="lab" id="lab26" tabindex="0">
+    <div class="lab-h"><b>직접 해 보기</b><span>빈칸 옆의 숫자를 누르면 그 숫자가 빈칸으로 밀려 들어갑니다</span></div>
+    <div class="row" style="gap:10px;align-items:center;flex-wrap:wrap">
+      <label class="lbl" for="l26n">n</label>
+      <input type="number" id="l26n" value="3" min="3" max="7" style="width:90px">
+      <span class="segbtns" id="l26quick"></span>
+      <button type="button" class="btn" id="l26mix">다시 섞기</button>
+      <span class="arr" id="l26cnt"></span>
+    </div>
+    <div class="board" id="l26board"></div>
+    <p class="mapline" id="l26msg" style="margin-top:8px"></p>
+    <p class="hintline">판을 한 번 누른 뒤에는 키보드 <b>W A S D</b> 로도 움직입니다. 움직일 수 있는 칸에만 색이 들어옵니다.</p>
+  </div>
+
+  <h2>판 그리기</h2>
+  <p>가로줄과 숫자줄을 번갈아 찍습니다. 가로줄은 <code>+</code> 뒤에 <code>-----+</code> 를 <code>n</code> 번 이어 붙이면 되고, 숫자줄은 <code>|</code> 뒤에 <b>5글자로 맞춘 칸</b>과 <code>|</code> 를 이어 붙입니다.</p>
+  <details class="fold" data-lock="1">
+    <summary>cell( ) — 칸 하나를 5글자로</summary>
+    <div class="code" data-src="pzcell"></div>
+  </details>
+  <p>칸 폭을 5로 정해 두면 한 자리 수와 두 자리 수가 섞여도 줄이 틀어지지 않습니다. 빈칸은 <b>빈 문자 5개</b>입니다.</p>
+
+  <h2>빈칸과 움직임</h2>
+  <p>움직이는 것은 <b>빈칸이 아니라 숫자</b>입니다. <code>W</code> 는 "빈칸이 위로"가 아니라 <b>"빈칸 아래의 숫자가 위로"</b> 입니다. 위 그림에서 칸을 누를 때 어느 키와 같은지 함께 나오니 비교해 보세요.</p>
+  <div class="scroll">
+  <table class="data">
+    <thead><tr><th>키</th><th>움직이는 숫자</th><th>빈칸은</th><th>자리 계산</th></tr></thead>
+    <tbody>
+      <tr><td><b>W</b></td><td>빈칸 <b>아래</b>의 숫자가 위로</td><td>아래로 내려간다</td><td><code>sr = r + 1</code></td></tr>
+      <tr><td><b>S</b></td><td>빈칸 <b>위</b>의 숫자가 아래로</td><td>위로 올라간다</td><td><code>sr = r - 1</code></td></tr>
+      <tr><td><b>A</b></td><td>빈칸 <b>오른쪽</b>의 숫자가 왼쪽으로</td><td>오른쪽으로</td><td><code>sc = c + 1</code></td></tr>
+      <tr><td><b>D</b></td><td>빈칸 <b>왼쪽</b>의 숫자가 오른쪽으로</td><td>왼쪽으로</td><td><code>sc = c - 1</code></td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>빈칸이 모퉁이에 있으면 네 방향 중 둘은 판 밖을 가리킵니다. 그래서 자리를 구한 뒤 <b>범위 검사</b>를 하고, 벗어나면 움직이지 않았다고 알려 줍니다.</p>
+  <details class="fold" data-lock="1">
+    <summary>move( ) — 범위 검사가 핵심</summary>
+    <div class="code" data-src="pzmove"></div>
+  </details>
+
+  <h2>섞기 — 아무렇게나 늘어놓으면 안 됩니다</h2>
+  <p>숫자를 무작위로 늘어놓으면 <b>절반은 절대 맞출 수 없는 판</b>이 됩니다. 밀기 퍼즐은 가능한 배열이 두 무리로 갈리고, 한쪽에서 다른 쪽으로는 아무리 밀어도 건너갈 수 없기 때문입니다. 두 숫자만 바꿔 놓은 판이 그 예입니다.</p>
+  <div class="note"><b>그래서 거꾸로 섞습니다.</b> 맞춰진 판에서 시작해 <b>되는 방향으로 수십 번 움직이면</b>, 어떻게 섞여도 되돌아갈 길이 반드시 있습니다. 위 그림의 <b>다시 섞기</b>도 이렇게 섞습니다.</p>
+  <p>시범 프로그램은 이 성질을 그대로 보여 줍니다. 섞을 때 <b>실제로 움직인 키만 모아 두고</b>, 그것을 <b>뒤에서부터 반대 방향</b>(<code>w↔s</code>, <code>a↔d</code>)으로 누르면 처음 판으로 돌아옵니다.</p>
+
+  <h2>끝 검사</h2>
+  <p><code>i</code> 번째 칸이 <code>i + 1</code> 인지 차례로 보고, 마지막 칸이 빈칸인지 봅니다. 한 칸이라도 어긋나면 그 자리에서 <code>false</code> 입니다.</p>
+  <details class="fold" data-lock="1">
+    <summary>done( ) — 다 맞췄나</summary>
+    <div class="code" data-src="pzdone"></div>
+  </details>
+
+  <h2>전체 코드</h2>
+  <p>게임 본체는 <b>Puzzle.java</b> 입니다. <code>Scanner</code> 로 <code>n</code> 과 키를 받으므로 <b>터미널에서 실행</b>해야 실제로 플레이할 수 있습니다. 이 페이지의 실행기는 키보드 입력을 받지 못하니, 같은 메서드를 쓰면서 누를 키만 미리 적어 둔 <b>PuzzleDemo</b> 의 <b>▶ 실행</b>으로 동작을 먼저 확인하세요.</p>
+  <div class="srcfile" data-src="chpz" data-name="Puzzle.java" data-file="challenge/Puzzle.java" data-noedit="1" data-lock="ctrl"></div>
+  <div class="runner" data-src="chpd" data-name="PuzzleDemo.java" data-file="challenge/PuzzleDemo.java" data-main="PuzzleDemo" data-deps="chpz" data-noedit="1" data-lock="ctrl"></div>
+
+  <h2>확인 문제</h2>
+  <details class="q"><summary><code>W</code> 를 눌렀는데 아무 일도 없습니다. 왜일까요?</summary><div class="a">빈칸이 <b>맨 아래 줄</b>에 있으면 "빈칸 아래의 숫자"가 없습니다. <code>sr = r + 1</code> 이 <code>n</code> 이 되어 범위 검사에 걸리고 <code>false</code> 가 돌아옵니다. 빈칸이 모퉁이면 두 방향이 늘 막힙니다.</div></details>
+  <details class="q"><summary>칸 폭을 5 가 아니라 숫자 길이만큼만 쓰면?</summary><div class="a">한 자리와 두 자리가 섞이면서 <b>세로줄이 틀어집니다</b>. <code>|1|10|2|</code> 처럼 되어 표로 보이지 않습니다. 그래서 짧은 숫자 앞뒤에 빈칸을 넣어 폭을 맞춥니다.</div></details>
+  <details class="q"><summary>1 부터 <code>n×n-1</code> 을 그냥 무작위로 늘어놓으면 안 되는 이유는?</summary><div class="a">그렇게 만든 판의 <b>절반은 풀리지 않습니다</b>. 밀기로 갈 수 있는 배열과 갈 수 없는 배열이 반반으로 갈려 있어서, 게임이 영원히 끝나지 않습니다. 맞춰진 판에서 되는 방향으로 섞으면 이 문제가 없습니다.</div></details>
+  <details class="q"><summary><code>blank()</code> 가 <code>r * n + c</code> 한 수를 돌려주는 까닭은?</summary><div class="a">자바 메서드는 값을 하나만 돌려주므로, 행과 열을 한 수에 담았습니다. 꺼낼 때는 <code>r = p / n</code>, <code>c = p % n</code> 입니다. 문제 1의 8×8 글자에서 쓴 것과 같은 방법입니다.</div></details>
+
+  <h2>연습 과제</h2>
+  <ol class="task">
+    <li>움직인 횟수와 함께 <b>최소 몇 번이면 되는가</b>를 보여 주려면 무엇이 필요할까요? (너비 우선 탐색 — 어려우니 3×3 부터)</li>
+    <li><code>u</code> 키로 <b>한 번 되돌리기</b>를 만들어 보세요. 움직인 키를 문자열에 모아 두면 됩니다(시범 프로그램과 같은 방법).</li>
+    <li>숫자 대신 <b>글자</b>를 넣어 단어 퍼즐로 바꿔 보세요. <code>int[][]</code> 를 <code>char[][]</code> 로 바꾸고 끝 검사만 고치면 됩니다.</li>
+    <li>맞춰진 뒤 문제 1의 <b>8×8 글자</b>를 한 칸씩 쪼개 넣으면 그림퍼즐이 됩니다. 칸마다 <code>#</code> 과 빈칸으로 된 작은 그림을 넣어 보세요.</li>
+    <li>섞는 횟수를 <code>n*n*20</code> 이 아니라 사용자에게 받아, <b>적게 섞으면 쉬워지는지</b> 확인해 보세요.</li>
+  </ol>
+</section>
     </div>
   </main>
 
@@ -3245,6 +3336,199 @@ int n = sc.nextInt();</script>
 
 //  n >> i   : 읽고 싶은 비트를 맨 아래로 내린다
 //  & 1      : 그 아래 한 자리만 남긴다 (나머지는 잘라 낸다)</script>
+<script type="text/plain" id="pzcell">// 어떤 숫자든 5글자로 맞춘다 (빈칸은 0 으로 둔다)
+static String cell(int v) {
+    if (v == 0)  return "     ";
+    if (v < 10)  return "  " + v + "  ";
+
+    return "  " + v + " ";
+}</script>
+<script type="text/plain" id="pzmove">int p = blank(), r = p / n, c = p % n;    // 빈칸 자리
+int sr = r, sc = c;                       // 밀려 올 숫자의 자리
+
+if (k == 'w') sr = r + 1;                 // 아래 숫자가 위로
+
+if (sr < 0 || sr >= n || sc < 0 || sc >= n) return false;   // 판 밖
+
+b[r][c] = b[sr][sc];                      // 숫자를 빈칸으로
+b[sr][sc] = 0;                            // 있던 자리가 빈칸이 된다</script>
+<script type="text/plain" id="pzdone">static boolean done() {
+    for (int i = 0; i < n * n - 1; i++)
+        if (b[i / n][i % n] != i + 1) return false;
+
+    return b[n - 1][n - 1] == 0;
+}</script>
+<script type="text/plain" id="chpz">import java.util.Scanner;
+
+// 그림퍼즐 : n x n 판에서 숫자를 밀어 1 ~ n*n-1 순서로 맞추는 게임
+//   빈칸은 0 으로 두고, 빈칸 옆의 숫자만 빈칸으로 밀려 들어간다
+public class Puzzle {
+
+    static int n;                          // 판 크기
+    static int[][] b;                      // 판 (0 = 빈칸)
+
+    // ---- 맞춰진 판 만들기 : 1 2 3 … 그리고 오른쪽 아래는 빈칸 ----
+    static void start(int size) {
+        n = size;
+        b = new int[n][n];
+
+        for (int i = 0; i < n * n - 1; i++) b[i / n][i % n] = i + 1;
+
+        b[n - 1][n - 1] = 0;
+    }
+
+    // ---- 빈칸 찾기 : 자리를 r * n + c 한 수로 돌려준다 ----
+    static int blank() {
+        for (int r = 0; r < n; r++)
+            for (int c = 0; c < n; c++)
+                if (b[r][c] == 0) return r * n + c;
+
+        return -1;
+    }
+
+    // ---- 칸 하나 그리기 : 어떤 숫자든 5글자로 맞춘다 ----
+    static String cell(int v) {
+        if (v == 0)  return "     ";
+        if (v < 10)  return "  " + v + "  ";
+
+        return "  " + v + " ";
+    }
+
+    // ---- 판 그리기 ----
+    static void draw() {
+        String bar = "+";
+        for (int c = 0; c < n; c++) bar = bar + "-----+";
+
+        for (int r = 0; r < n; r++) {
+            System.out.println(bar);
+
+            String line = "|";
+            for (int c = 0; c < n; c++) line = line + cell(b[r][c]) + "|";
+
+            System.out.println(line);
+        }
+
+        System.out.println(bar);
+    }
+
+    // ---- 숫자 한 개 밀기 : 움직였으면 true ----
+    //   W 는 '빈칸이 위로' 가 아니라 '아래 숫자가 위로' 다
+    static boolean move(char k) {
+        int p = blank(), r = p / n, c = p % n;
+        int sr = r, sc = c;                          // 밀려 올 숫자의 자리
+
+        if      (k == 'w' || k == 'W') sr = r + 1;   // 아래 숫자가 위로
+        else if (k == 's' || k == 'S') sr = r - 1;   // 위 숫자가 아래로
+        else if (k == 'a' || k == 'A') sc = c + 1;   // 오른쪽 숫자가 왼쪽으로
+        else if (k == 'd' || k == 'D') sc = c - 1;   // 왼쪽 숫자가 오른쪽으로
+        else return false;
+
+        if (sr < 0 || sr >= n || sc < 0 || sc >= n) return false;   // 판 밖이면 못 움직인다
+
+        b[r][c] = b[sr][sc];                         // 숫자를 빈칸으로
+        b[sr][sc] = 0;                               // 있던 자리가 빈칸이 된다
+
+        return true;
+    }
+
+    // ---- 섞기 : 되는 방향으로만 여러 번 움직인다 ----
+    //   숫자를 아무렇게나 늘어놓으면 '절대 못 푸는 판' 이 절반이나 나온다
+    static void shuffle(int cnt) {
+        String keys = "wasd";
+
+        for (int i = 0; i < cnt; i++) move(keys.charAt((int)(Math.random() * 4)));
+    }
+
+    // ---- 다 맞췄나 : 1 2 3 … 순서이고 끝은 빈칸 ----
+    static boolean done() {
+        for (int i = 0; i < n * n - 1; i++)
+            if (b[i / n][i % n] != i + 1) return false;
+
+        return b[n - 1][n - 1] == 0;
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+
+        System.out.print("판 크기 n (3 이상) : ");
+        int size = sc.nextInt();
+        if (size < 3) size = 3;
+
+        start(size);
+        shuffle(size * size * 20);
+        while (done()) shuffle(size * size * 20);     // 섞다가 맞아 버리면 다시
+
+        int cnt = 0;
+        draw();
+
+        while (done() == false) {
+            System.out.print("W A S D (q 는 그만) : ");
+            String in = sc.next();
+            char k = in.charAt(0);
+
+            if (k == 'q' || k == 'Q') {
+                System.out.println("그만둡니다");
+                return;
+            }
+
+            if (move(k)) {
+                cnt++;
+                draw();
+                System.out.println(cnt + "번 움직였습니다");
+            }
+            else {
+                System.out.println("그 방향으로는 움직일 수 없습니다");
+            }
+        }
+
+        System.out.println();
+        System.out.println("맞췄습니다! " + cnt + "번 움직였습니다");
+    }
+}
+</script>
+<script type="text/plain" id="chpd">// PuzzleDemo : 키보드 없이 돌려 보는 시범
+//   Puzzle 의 메서드를 그대로 쓰고, 누를 키만 미리 적어 둔다 (돌릴 때마다 같은 판)
+public class PuzzleDemo {
+
+    // 반대 방향 : w <-> s, a <-> d
+    static char back(char k) {
+        if (k == 'w') return 's';
+        if (k == 's') return 'w';
+        if (k == 'a') return 'd';
+
+        return 'a';
+    }
+
+    public static void main(String[] args) {
+        String mix  = "ssddwwaassdd";                 // 섞으려고 누르는 키
+        String real = "";                             // 그중 실제로 움직인 키만 모은다
+
+        Puzzle.start(3);
+        System.out.println("① 맞춰진 판 — 오른쪽 아래가 빈칸");
+        Puzzle.draw();
+
+        for (int i = 0; i < mix.length(); i++)
+            if (Puzzle.move(mix.charAt(i))) real = real + mix.charAt(i);
+
+        System.out.println("② [" + mix + "] 를 눌러 섞은 판   (" + real.length() + "번 움직였다)");
+        Puzzle.draw();
+
+        System.out.println("③ 움직인 키를 뒤에서부터 반대 방향으로 누르면 되돌아온다");
+
+        for (int i = real.length() - 1; i >= 0; i--) {
+            char k = back(real.charAt(i));
+
+            Puzzle.move(k);
+            System.out.println("[" + k + "]");
+            Puzzle.draw();
+        }
+
+        System.out.println(Puzzle.done() ? "맞췄습니다!" : "아직 안 맞았습니다");
+        System.out.println();
+        System.out.println("※ 못 움직인 키는 되돌릴 것도 없다 — 그래서 '실제로 움직인 키' 만 모아 둔다");
+    }
+}
+</script>
 <script type="text/plain" id="chba">// 방법 ① 산술 연산으로 2진수 만들기
 //   2로 나눈 나머지를 거꾸로 모은다 (Step 1 의 cnvtDec2Bin 과 같은 원리)
 public class BinArith {
@@ -6199,15 +6483,144 @@ function binLab(){
   draw();
 }
 
+
+/* ================= 문제 5 : 그림퍼즐 (마우스로 직접) ================= */
+/*  메서드 이름을 Puzzle.java 와 똑같이 두었으니 코드와 나란히 놓고 보면 된다  */
+function puzzleLab(){
+  if (!$("l26board")) return;
+  let n = 3, b = [], moves = 0, last = "", win = false;
+
+  const start = (size) => {                        // 맞춰진 판
+    n = size; b = [];
+    for (let r = 0; r < n; r++){
+      b.push([]);
+      for (let c = 0; c < n; c++) b[r].push(r * n + c + 1);
+    }
+    b[n - 1][n - 1] = 0;
+    moves = 0; last = ""; win = false;
+  };
+
+  const blank = () => {                            // 빈칸 자리를 r * n + c 로
+    for (let r = 0; r < n; r++)
+      for (let c = 0; c < n; c++)
+        if (b[r][c] === 0) return r * n + c;
+    return -1;
+  };
+
+  const cell = (v) => v === 0 ? "     " : (v < 10 ? "  " + v + "  " : "  " + v + " ");
+
+  const move = (k) => {                            // 숫자 한 개 밀기
+    const p = blank(), r = (p / n) | 0, c = p % n;
+    let sr = r, sc = c;
+
+    if (k === "w") sr = r + 1;                     // 아래 숫자가 위로
+    else if (k === "s") sr = r - 1;                // 위 숫자가 아래로
+    else if (k === "a") sc = c + 1;                // 오른쪽 숫자가 왼쪽으로
+    else if (k === "d") sc = c - 1;                // 왼쪽 숫자가 오른쪽으로
+    else return false;
+
+    if (sr < 0 || sr >= n || sc < 0 || sc >= n) return false;
+
+    b[r][c] = b[sr][sc]; b[sr][sc] = 0;
+    return true;
+  };
+
+  const done = () => {
+    for (let i = 0; i < n * n - 1; i++) if (b[(i / n) | 0][i % n] !== i + 1) return false;
+    return b[n - 1][n - 1] === 0;
+  };
+
+  const shuffle = (cnt) => {                       // 되는 방향으로만 섞는다
+    const keys = "wasd";
+    for (let i = 0; i < cnt; i++) move(keys[(Math.random() * 4) | 0]);
+    if (done()) shuffle(cnt);                      // 섞다가 맞아 버리면 다시
+  };
+
+  /* 클릭한 칸이 빈칸 옆이면, 어느 키를 누른 것과 같은지 돌려준다 */
+  const keyOf = (r, c) => {
+    const p = blank(), br = (p / n) | 0, bc = p % n;
+    if (c === bc && r === br + 1) return "w";
+    if (c === bc && r === br - 1) return "s";
+    if (r === br && c === bc + 1) return "a";
+    if (r === br && c === bc - 1) return "d";
+    return "";
+  };
+
+  const draw = () => {
+    let bar = "+";
+    for (let c = 0; c < n; c++) bar += "-----+";
+
+    let out = "";
+    for (let r = 0; r < n; r++){
+      out += bar + "\n|";
+      for (let c = 0; c < n; c++){
+        const k = keyOf(r, c), v = b[r][c];
+        out += '<span class="c' + (v === 0 ? " hole" : (k && !win ? " can" : "")) + '"'
+             + ' data-r="' + r + '" data-c="' + c + '"'
+             + (k && !win ? ' title="' + k.toUpperCase() + ' 와 같다"' : "")
+             + ">" + cell(v) + "</span>|";
+      }
+      out += "\n";
+    }
+    out += bar;
+
+    const bd = $("l26board");
+    bd.innerHTML = out;
+    bd.classList.toggle("done", win);
+
+    $("l26cnt").textContent = moves + "번 움직였습니다";
+    $("l26msg").innerHTML = win
+      ? "<b>맞췄습니다!</b> 1 부터 " + (n * n - 1) + " 까지 순서대로 · " + moves + "번"
+      : (last ? "방금 누른 칸 = <b>" + last.toUpperCase() + "</b> 키" : "빈칸 옆의 숫자를 눌러 보세요 (W A S D 도 됩니다)");
+  };
+
+  const play = (k) => {
+    if (win || !move(k)) return;
+    moves++; last = k; win = done();
+    draw();
+  };
+
+  $("l26board").addEventListener("click", (e) => {
+    const t = e.target.closest("[data-r]"); if (!t) return;
+    const k = keyOf(+t.dataset.r, +t.dataset.c);
+    if (k) play(k);
+  });
+
+  const lab = $("lab26");
+  lab.addEventListener("keydown", (e) => {
+    const k = (e.key || "").toLowerCase();
+    if ("wasd".indexOf(k) >= 0 && k){ e.preventDefault(); play(k); }
+  });
+
+  const fresh = (size) => { start(size); shuffle(size * size * 20); draw(); };
+
+  const inp = $("l26n");
+  inp.addEventListener("change", () => {
+    let v = parseInt(inp.value, 10);
+    if (isNaN(v) || v < 3) v = 3;
+    if (v > 7) v = 7;                              // 페이지 폭에 맞춘 상한
+    inp.value = v; fresh(v);
+  });
+  [3, 4, 5].forEach(v => {
+    const btn = el("button", { type: "button", class: "btn" });
+    btn.textContent = v + "×" + v;
+    btn.onclick = () => { inp.value = v; fresh(v); };
+    $("l26quick").appendChild(btn);
+  });
+  $("l26mix").onclick = () => fresh(n);
+
+  fresh(3);
+}
+
 /* ================= 단계 이동 ================= */
 const sections = [...document.querySelectorAll("section.step")];
 const STOPPERS = [];
 
 const TABS = [
   { id: "course",    label: "강좌",     parts: ["1", "2"] },
-  { id: "challenge", label: "도전문제", parts: ["3", "4", "5", "6"] }
+  { id: "challenge", label: "도전문제", parts: ["3", "4", "5", "6", "7"] }
 ];
-const GROUPS = { "1": "1부 · 메서드로 만들기", "2": "2부 · 클래스로 만들기", "3": "문제 1 · 8×8 글자 뒤집기", "4": "문제 2 · 정렬과 검색", "5": "문제 3 · 비트로 정렬하기", "6": "문제 4 · 2진수로 출력하기" };
+const GROUPS = { "1": "1부 · 메서드로 만들기", "2": "2부 · 클래스로 만들기", "3": "문제 1 · 8×8 글자 뒤집기", "4": "문제 2 · 정렬과 검색", "5": "문제 3 · 비트로 정렬하기", "6": "문제 4 · 2진수로 출력하기", "7": "문제 5 · 그림퍼즐 맞추기" };
 const tabOf = (part) => (TABS.filter(t => t.parts.indexOf(part) >= 0)[0] || TABS[0]).id;
 let curTab = "course", curStep = 0;
 const lastStep = {};        // 탭마다 마지막으로 보던 단계
@@ -6755,7 +7168,8 @@ document.querySelectorAll("svg.fnd[data-digit]").forEach(s => renderFnd(s, TABLE
 const JFILES = new Map();     // "TTL7490.java" -> { text, original, editors:[], views:[] }
 const ID2NAME = new Map();    // 원문 블록 id -> 파일 이름
 const PROGRAMS = new Map();   // 프로그램 id -> { id, name, main, deps:[이름], step }
-const FILE_PROGS = new Map(); // 파일 이름 -> 그 파일을 쓰는 프로그램들
+const FILE_PROGS = new Map();
+const NOEDIT_STEP = new Map();      // 단계 번호 -> 에디터를 거치지 않는 프로그램 // 파일 이름 -> 그 파일을 쓰는 프로그램들
 const RUN_LIMITS = { maxOutput: 160000, timeLimitMs: 4000, maxSteps: 30000000 };
 let CURRENT = null;           // 지금 하단 에디터에 올라온 프로그램
 
@@ -6795,7 +7209,10 @@ function buildCards(){
     if (isMain){
       const deps = (box.dataset.deps || "").split(/\s+/).filter(Boolean).map(id => ID2NAME.get(id));
       prog = { id: box.dataset.src, name, main: box.dataset.main, deps, step: +step.dataset.n, noedit };
-      if (!noedit){
+      if (noedit){
+        if (!NOEDIT_STEP.has(prog.step)) NOEDIT_STEP.set(prog.step, prog);   // 같은 단계의 딸림 파일이 찾아 쓴다
+      }
+      else {
         PROGRAMS.set(prog.id, prog);
         box.__prog = prog;
         [name].concat(deps).forEach(fn => {
@@ -6855,8 +7272,9 @@ function buildCards(){
       if (window.innerWidth <= 1100) $("edPane").scrollIntoView({ block: "nearest" });
     };
     runIt.onclick = () => {
-      if (noedit && prog){                       // 에디터에 올리지 않고 바로 실행
-        runFiles(prog.deps.concat([prog.name]), prog.main, prog.name, runIt);
+      const direct = noedit ? (prog || NOEDIT_STEP.get(+step.dataset.n)) : null;
+      if (direct){                                // 에디터에 올리지 않고 바로 실행
+        runFiles(direct.deps.concat([direct.name]), direct.main, direct.name, runIt);
         if (window.innerWidth <= 1100) $("consPane").scrollIntoView({ block: "nearest" });
         return;
       }
@@ -7059,7 +7477,7 @@ buildCode();
 initIDE();
 buildNav();
 buildTabs();
-[lab1, lab2, lab3, lab4, lab5, lab6, lab7, () => counterLab("l8", false), () => counterLab("l9", true), lab11, lab13, labGa, labIndex, sortLab, searchLab, nibMapFig, bitLab, nibLab, binLab, lockFolds, () => clockLab("l15", "ss"), () => clockLab("l16", "mmss"), () => clockLab("l17", "hhmmss")].forEach(f => { try { f(); } catch(e){ console.error(e); } });
+[lab1, lab2, lab3, lab4, lab5, lab6, lab7, () => counterLab("l8", false), () => counterLab("l9", true), lab11, lab13, labGa, labIndex, sortLab, searchLab, nibMapFig, bitLab, nibLab, binLab, puzzleLab, lockFolds, () => clockLab("l15", "ss"), () => clockLab("l16", "mmss"), () => clockLab("l17", "hhmmss")].forEach(f => { try { f(); } catch(e){ console.error(e); } });
 const start = location.hash.match(/step-(\d+)/);
 go(start ? +start[1] : 0, false);
 </script>
