@@ -71,12 +71,21 @@ public class Puzzle {
         return true;
     }
 
+    // ---- 빈칸을 오른쪽 아래 제자리로 ----
+    //   아래로 더 못 갈 때까지, 그 다음 오른쪽으로 더 못 갈 때까지 움직인다
+    static void home() {
+        while (move('w')) { }        // w 는 빈칸이 한 칸 내려가는 움직임
+        while (move('a')) { }        // a 는 빈칸이 한 칸 오른쪽으로
+    }
+
     // ---- 섞기 : 되는 방향으로만 여러 번 움직인다 ----
     //   숫자를 아무렇게나 늘어놓으면 '절대 못 푸는 판' 이 절반이나 나온다
     static void shuffle(int cnt) {
         String keys = "wasd";
 
         for (int i = 0; i < cnt; i++) move(keys.charAt((int)(Math.random() * 4)));
+
+        home();                      // 시작할 때 빈칸은 늘 오른쪽 아래
     }
 
     // ---- 다 맞췄나 : 1 2 3 … 순서이고 끝은 빈칸 ----

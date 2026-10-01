@@ -2129,7 +2129,13 @@ java Main</pre></div>
 
   <h2>섞기 — 아무렇게나 늘어놓으면 안 됩니다</h2>
   <p>숫자를 무작위로 늘어놓으면 <b>절반은 절대 맞출 수 없는 판</b>이 됩니다. 밀기 퍼즐은 가능한 배열이 두 무리로 갈리고, 한쪽에서 다른 쪽으로는 아무리 밀어도 건너갈 수 없기 때문입니다. 두 숫자만 바꿔 놓은 판이 그 예입니다.</p>
-  <div class="note"><b>그래서 거꾸로 섞습니다.</b> 맞춰진 판에서 시작해 <b>되는 방향으로 수십 번 움직이면</b>, 어떻게 섞여도 되돌아갈 길이 반드시 있습니다. 위 그림의 <b>다시 섞기</b>도 이렇게 섞습니다.</p>
+  <div class="note"><b>그래서 거꾸로 섞습니다.</b> 맞춰진 판에서 시작해 <b>되는 방향으로 수십 번 움직이면</b>, 어떻게 섞여도 되돌아갈 길이 반드시 있습니다. 위 그림의 <b>다시 섞기</b>도 이렇게 섞습니다.</div>
+  <p>그런데 그렇게만 섞으면 <b>빈칸이 아무 자리에나</b> 남습니다. 처음 판은 빈칸이 늘 <b>오른쪽 아래</b>여야 하니, 섞은 뒤에 빈칸을 제자리로 돌려놓습니다. 돌려놓는 것도 <b>정상적인 움직임</b>이라 풀 수 있는 판은 그대로입니다.</p>
+  <details class="fold" data-lock="1">
+    <summary>home( ) — 빈칸을 제자리로</summary>
+    <div class="code" data-src="pzhome"></div>
+  </details>
+  <p>그래서 게임을 시작하면 <code>W</code> 와 <code>A</code> 는 늘 막혀 있습니다. 빈칸이 모퉁이라 <b>첫 수는 <code>S</code> 아니면 <code>D</code></b> 뿐입니다. 위 그림에서 확인해 보세요.</p>
   <p>시범 프로그램은 이 성질을 그대로 보여 줍니다. 섞을 때 <b>실제로 움직인 키만 모아 두고</b>, 그것을 <b>뒤에서부터 반대 방향</b>(<code>w↔s</code>, <code>a↔d</code>)으로 누르면 처음 판으로 돌아옵니다.</p>
 
   <h2>끝 검사</h2>
@@ -2145,7 +2151,7 @@ java Main</pre></div>
   <div class="runner" data-src="chpd" data-name="PuzzleDemo.java" data-file="challenge/PuzzleDemo.java" data-main="PuzzleDemo" data-deps="chpz" data-noedit="1" data-lock="ctrl"></div>
 
   <h2>확인 문제</h2>
-  <details class="q"><summary><code>W</code> 를 눌렀는데 아무 일도 없습니다. 왜일까요?</summary><div class="a">빈칸이 <b>맨 아래 줄</b>에 있으면 "빈칸 아래의 숫자"가 없습니다. <code>sr = r + 1</code> 이 <code>n</code> 이 되어 범위 검사에 걸리고 <code>false</code> 가 돌아옵니다. 빈칸이 모퉁이면 두 방향이 늘 막힙니다.</div></details>
+  <details class="q"><summary>시작하자마자 <code>W</code> 를 눌렀는데 아무 일도 없습니다. 왜일까요?</summary><div class="a">처음 빈칸은 <b>오른쪽 아래 모퉁이</b>입니다. <code>W</code> 는 "빈칸 아래의 숫자"를 올리는 것인데 그 아래에는 칸이 없습니다. <code>sr = r + 1</code> 이 <code>n</code> 이 되어 범위 검사에 걸리고 <code>false</code> 가 돌아옵니다. 같은 이유로 <code>A</code> 도 막혀 있어 <b>첫 수는 <code>S</code> 나 <code>D</code></b> 뿐입니다.</div></details>
   <details class="q"><summary>칸 폭을 5 가 아니라 숫자 길이만큼만 쓰면?</summary><div class="a">한 자리와 두 자리가 섞이면서 <b>세로줄이 틀어집니다</b>. <code>|1|10|2|</code> 처럼 되어 표로 보이지 않습니다. 그래서 짧은 숫자 앞뒤에 빈칸을 넣어 폭을 맞춥니다.</div></details>
   <details class="q"><summary>1 부터 <code>n×n-1</code> 을 그냥 무작위로 늘어놓으면 안 되는 이유는?</summary><div class="a">그렇게 만든 판의 <b>절반은 풀리지 않습니다</b>. 밀기로 갈 수 있는 배열과 갈 수 없는 배열이 반반으로 갈려 있어서, 게임이 영원히 끝나지 않습니다. 맞춰진 판에서 되는 방향으로 섞으면 이 문제가 없습니다.</div></details>
   <details class="q"><summary><code>blank()</code> 가 <code>r * n + c</code> 한 수를 돌려주는 까닭은?</summary><div class="a">자바 메서드는 값을 하나만 돌려주므로, 행과 열을 한 수에 담았습니다. 꺼낼 때는 <code>r = p / n</code>, <code>c = p % n</code> 입니다. 문제 1의 8×8 글자에서 쓴 것과 같은 방법입니다.</div></details>
@@ -3352,6 +3358,12 @@ if (sr < 0 || sr >= n || sc < 0 || sc >= n) return false;   // 판 밖
 
 b[r][c] = b[sr][sc];                      // 숫자를 빈칸으로
 b[sr][sc] = 0;                            // 있던 자리가 빈칸이 된다</script>
+<script type="text/plain" id="pzhome">// 빈칸을 오른쪽 아래 제자리로
+//   w 는 빈칸이 한 칸 내려가는 움직임, a 는 한 칸 오른쪽으로 가는 움직임
+static void home() {
+    while (move('w')) { }        // 아래로 더 못 갈 때까지
+    while (move('a')) { }        // 오른쪽으로 더 못 갈 때까지
+}</script>
 <script type="text/plain" id="pzdone">static boolean done() {
     for (int i = 0; i < n * n - 1; i++)
         if (b[i / n][i % n] != i + 1) return false;
@@ -3431,12 +3443,21 @@ public class Puzzle {
         return true;
     }
 
+    // ---- 빈칸을 오른쪽 아래 제자리로 ----
+    //   아래로 더 못 갈 때까지, 그 다음 오른쪽으로 더 못 갈 때까지 움직인다
+    static void home() {
+        while (move('w')) { }        // w 는 빈칸이 한 칸 내려가는 움직임
+        while (move('a')) { }        // a 는 빈칸이 한 칸 오른쪽으로
+    }
+
     // ---- 섞기 : 되는 방향으로만 여러 번 움직인다 ----
     //   숫자를 아무렇게나 늘어놓으면 '절대 못 푸는 판' 이 절반이나 나온다
     static void shuffle(int cnt) {
         String keys = "wasd";
 
         for (int i = 0; i < cnt; i++) move(keys.charAt((int)(Math.random() * 4)));
+
+        home();                      // 시작할 때 빈칸은 늘 오른쪽 아래
     }
 
     // ---- 다 맞췄나 : 1 2 3 … 순서이고 끝은 빈칸 ----
@@ -6530,9 +6551,15 @@ function puzzleLab(){
     return b[n - 1][n - 1] === 0;
   };
 
+  const home = () => {                             // 빈칸을 오른쪽 아래 제자리로
+    while (move("w")){ }                           // 아래로 더 못 갈 때까지
+    while (move("a")){ }                           // 오른쪽으로 더 못 갈 때까지
+  };
+
   const shuffle = (cnt) => {                       // 되는 방향으로만 섞는다
     const keys = "wasd";
     for (let i = 0; i < cnt; i++) move(keys[(Math.random() * 4) | 0]);
+    home();                                        // 시작할 때 빈칸은 늘 오른쪽 아래
     if (done()) shuffle(cnt);                      // 섞다가 맞아 버리면 다시
   };
 
