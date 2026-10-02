@@ -24,7 +24,7 @@ GitHub Pages를 켜면(Settings → Pages → `main` 브랜치, `/ (root)`) 웹�
   지원하지 않는 것: 상속, 인터페이스, 제네릭, `try`/`catch`, `switch`, 실수 연산, 스레드, 파일 입출력.
 - 끝나지 않는 반복문이나 너무 많은 출력은 실행기가 스스로 멈추고 알려 줍니다(4초 · 16만 자).
 
-실행기가 진짜 Java와 같은 결과를 내는지는, 이 저장소의 **37개 프로그램 전부**를 JDK 17의 `javac` · `java`로 돌린 출력과 한 글자까지 대조해 확인했습니다.
+실행기가 진짜 Java와 같은 결과를 내는지는, 이 저장소의 **프로그램 35개**를 JDK 17의 `javac` · `java`로 돌린 출력과 한 글자까지 대조해 확인했습니다. 나머지 셋은 성격이 달라 실제 `java`로만 돌려 봅니다 — `Puzzle.java`는 키보드 입력을 받고, `TestModDigit`·`TestLogDigit`은 **상속**을 쓰는데 페이지 실행기가 `extends`를 지원하지 않습니다.
 
 ## 강좌 구성
 
@@ -79,7 +79,7 @@ GitHub Pages를 켜면(Settings → Pages → `main` 브랜치, `/ (root)`) 웹�
 | 단계 | 내용 | 파일 |
 |---|---|---|
 | 1 | 니블(4비트) 8칸과 비트 연산 (`&` `|` `^` `~` `<<` `>>`) | `BitOps.java` |
-| 2 | **빈칸 채우기 실습** — 니블 버블 정렬을 비트 연산만으로 | `NibbleSort.java` |
+| 2 | **빈칸 채우기 실습** — 니블 버블 정렬을 비트 연산만으로 | `NibbleSort.java` (실습), `NibbleSortDone.java` (답) |
 
 `int` 32비트를 4비트씩 끊어 0 ~ 9를 여덟 개 넣고, 배열도 복사본도 없이 그 변수 안에서 버블 정렬합니다. `NibbleSort.java`에는 **빈칸 네 곳**(꺼내기 · 넣기 · 교환 · 정렬)이 있어 직접 채워 실행해 보는 실습용입니다. 아래에서 위로 한 칸씩 채우면 ① 숫자가 보이고 ②③ 교환이 되고 ④ 정렬이 끝나도록 만들어 두었습니다. 씨앗값 `20260929` 기준으로 `0x80036515` → `0x00135568` 이 나오면 성공입니다.
 
@@ -156,6 +156,7 @@ GitHub Pages를 켜면(Settings → Pages → `main` 브랜치, `/ (root)`) 웹�
     ├── LinearSearch.java · BinarySearch.java     검색
     ├── BitOps.java      비트 연산 확인
     ├── NibbleSort.java  니블 정렬 실습 (빈칸 있음)
+    ├── NibbleSortDone.java  위 실습의 답 (페이지에서는 접혀 있다)
     └── BinArith.java · BinBits32.java · BinGroup4.java · BinTrim.java   2진수 출력 4가지
 ```
 
